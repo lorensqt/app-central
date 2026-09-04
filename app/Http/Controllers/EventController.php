@@ -202,7 +202,7 @@ class EventController extends Controller
     {
         $event->load(['committee', 'registrations']);
         
-        return view('committees.events-app.manage_event', compact('event'));
+        return view('committees.events-app.manage_events.index', compact('event'));
     }
 
     /**

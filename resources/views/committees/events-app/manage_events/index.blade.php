@@ -54,7 +54,7 @@
                     </span>
                 </div>
                 <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">{{ $event->title }}</h1>
-                <div class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-line max-h-32 overflow-y-auto custom-scrollbar pr-2">{{ $event->description }}</div>
+                <div class="text-slate-550 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-line max-h-32 overflow-y-auto custom-scrollbar pr-2">{{ $event->description }}</div>
             </div>
 
             <!-- Header Quick Actions -->
@@ -94,7 +94,7 @@
                 <form action="{{ route('committees.events.destroy', $event) }}" method="POST" data-confirm="Are you sure you want to delete this event?" data-confirm-sub="All guest registrations for this assembly will be permanently deleted." data-confirm-title="Delete Scheduled Assembly" class="w-full sm:w-auto inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="w-full sm:w-auto text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 bg-red-50 dark:bg-red-950/20 hover:border-transparent px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 transition duration-150 inline-flex items-center justify-center shadow-sm focus:outline-none">
+                    <button type="submit" class="w-full sm:w-auto text-xs font-semibold text-red-650 dark:text-red-400 hover:text-white hover:bg-red-650 bg-red-50 dark:bg-red-950/20 hover:border-transparent px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 transition duration-150 inline-flex items-center justify-center shadow-sm focus:outline-none">
                         Delete Event
                     </button>
                 </form>
@@ -175,443 +175,20 @@
                 Summary & Analytics
             </button>
 
-            <!-- Tab 3 Button: Inactive Placeholder -->
-            <button class="px-5 py-3 border-b-2 border-transparent text-slate-300 dark:text-slate-700 font-semibold text-sm cursor-not-allowed flex items-center gap-2 whitespace-nowrap" disabled title="Settings modules will be added in a future revision.">
-                <svg class="w-4 h-4 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Tab 3 Button: Manage Questions -->
+            <button onclick="switchTab('questions')" id="tab-btn-questions" class="tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                 </svg>
-                Advanced Settings
-                <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[8px] font-bold rounded uppercase tracking-wider">UI Only</span>
+                Manage Questions
             </button>
         </div>
 
-        <!-- TAB 1: REGISTRATION REQUESTS PANEL -->
-        <div id="tab-panel-requests" class="space-y-6">
-            <!-- Filter Actions Strip -->
-            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 shadow-sm">
-                <!-- Left Side: Live Search Box -->
-                <div class="relative flex-grow max-w-md bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_8px_rgba(15,23,42,0.01)] transition duration-200">
-                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </span>
-                    <input type="text" id="applicant-search" onkeyup="filterApplicants()" placeholder="Search applicants by name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
-                </div>
+        @include('committees.events-app.manage_events.requests')
 
-                <!-- Right Side: Filter Buttons for Quick Toggle (All, Pending, Approved, Declined) -->
-                <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80 shrink-0">
-                    <button type="button" onclick="setStatusFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm transition duration-150">
-                        All ({{ $event->registrations->count() }})
-                    </button>
-                    <button type="button" onclick="setStatusFilter('pending')" id="filter-btn-pending" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
-                        Pending ({{ $event->registrations->where('status', 'pending')->count() }})
-                    </button>
-                    <button type="button" onclick="setStatusFilter('approved')" id="filter-btn-approved" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
-                        Approved ({{ $event->registrations->where('status', 'approved')->count() }})
-                    </button>
-                    <button type="button" onclick="setStatusFilter('declined')" id="filter-btn-declined" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
-                        Declined ({{ $event->registrations->where('status', 'declined')->count() }})
-                    </button>
-                </div>
-            </div>
+        @include('committees.events-app.manage_events.summary')
 
-            <!-- Applicants Table (High Aesthetic Layout) -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-[0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
-                @if($event->registrations->isEmpty())
-                    <div class="text-center py-16 text-slate-400 dark:text-slate-500 text-sm italic space-y-3">
-                        <svg class="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <p>No rsvp applications have been received for this assembly yet.</p>
-                        <p class="text-xs text-slate-450 dark:text-slate-500 not-italic">Copy the public RSVP link above and share it with potential attendees!</p>
-                    </div>
-                @else
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="w-full text-left text-sm border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    <th class="py-3.5 px-6 w-12 text-center select-none text-[10px] tracking-wider text-slate-400">Sel</th>
-                                    <th class="py-3.5 px-6">Attendee Profile</th>
-                                    <th class="py-3.5 px-6">Email Address</th>
-                                    <th class="py-3.5 px-6">Ticket Code</th>
-                                    <th class="py-3.5 px-6">Gender</th>
-                                    <th class="py-3.5 px-6">Submission Time</th>
-                                    <th class="py-3.5 px-6">Status</th>
-                                    <th class="py-3.5 px-6 text-right">Moderation Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="applicants-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/80">
-                                @foreach($event->registrations->sortByDesc('created_at') as $reg)
-                                    <tr class="applicant-row hover:bg-slate-50/50 dark:hover:bg-slate-800/35 transition duration-150" 
-                                        data-id="{{ $reg->id }}"
-                                        data-name="{{ strtolower($reg->name) }}" 
-                                        data-email="{{ strtolower($reg->email) }}" 
-                                        data-code="{{ strtolower($reg->ticket_code) }}"
-                                        data-status="{{ $reg->status }}">
-                                        
-                                        <!-- Selection Checkbox -->
-                                        <td class="py-4 px-6 text-center select-none">
-                                            <input type="checkbox" class="applicant-checkbox w-4 h-4 rounded border-slate-300 dark:border-slate-700/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-900 transition duration-150" data-id="{{ $reg->id }}">
-                                        </td>
-                                        
-                                        <!-- Profile / Avatar Initials -->
-                                        <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">
-                                            <div class="flex items-center gap-3">
-                                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
-                                                    {{ substr($reg->name, 0, 2) }}
-                                                </span>
-                                                <span class="truncate text-slate-800 dark:text-slate-200 font-semibold">{{ $reg->name }}</span>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Email Address -->
-                                        <td class="py-4 px-6 text-slate-500 dark:text-slate-400 font-mono text-xs">{{ $reg->email }}</td>
-                                        
-                                        <!-- Ticket Code Column -->
-                                        <td class="py-4 px-6 font-mono text-xs text-purple-650 dark:text-purple-400 font-bold">
-                                            {{ $reg->ticket_code ?? 'N/A' }}
-                                        </td>
-                                        
-                                        <!-- Gender Identity -->
-                                        <td class="py-4 px-6 text-slate-600 dark:text-slate-400 text-xs">
-                                            <span class="px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-100/80 dark:border-slate-800/80 rounded-lg font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                                                {{ $reg->gender ?? 'Unspecified' }}
-                                            </span>
-                                        </td>
-                                        
-                                        <!-- Time Stamp -->
-                                        <td class="py-4 px-6 text-slate-500 dark:text-slate-400 text-xs">
-                                            {{ $reg->created_at ? $reg->created_at->format('M j, Y • g:i A') : 'N/A' }}
-                                        </td>
-                                        
-                                        <!-- Status Badge -->
-                                        <td class="py-4 px-6">
-                                            @if($reg->status === 'approved')
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                    Approved
-                                                </span>
-                                                <div class="attendance-badge-wrapper mt-1">
-                                                    @if($reg->attended)
-                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                            Attended
-                                                        </span>
-                                                    @else
-                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
-                                                            Absent
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            @elseif($reg->status === 'declined')
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                                    Declined
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider animate-pulse">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                                    Pending
-                                                </span>
-                                            @endif
-                                        </td>
-                                        
-                                        <!-- Actions Column -->
-                                        <td class="py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
-                                            @if($reg->status === 'pending')
-                                                <!-- Approve Form -->
-                                                <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white dark:hover:text-slate-900 hover:bg-emerald-500 dark:hover:bg-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                        Approve
-                                                    </button>
-                                                </form>
-
-                                                <!-- Decline Form -->
-                                                <form action="{{ route('committees.registrations.decline', $reg) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="text-xs font-semibold text-red-500 dark:text-red-400 hover:text-white dark:hover:text-slate-900 hover:bg-red-500 dark:hover:bg-red-400 border border-red-200 dark:border-red-900/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                        Decline
-                                                    </button>
-                                                </form>
-                                            @elseif($reg->status === 'approved')
-                                                <!-- Attendance Check Toggle -->
-                                                <form action="{{ route('committees.registrations.toggle_attendance', $reg) }}" method="POST" class="inline toggle-attendance-form">
-                                                    @csrf
-                                                    <button type="submit" class="text-xs font-semibold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 dark:hover:bg-amber-550' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600' }} hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                        {{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}
-                                                    </button>
-                                                </form>
-                                            @endif
-
-                                            <!-- Delete Registration Form -->
-                                            <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="inline delete-registration-form" data-name="{{ $reg->name }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
-                                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Client-side No Results State inside table -->
-                    <div id="no-applicants-matched" class="hidden text-center py-12 text-slate-400 dark:text-slate-500 text-sm bg-slate-50/50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800">
-                        <svg class="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        No attendee registrations match your filter or search query.
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- TAB 2: SUMMARY & ANALYTICS PANEL (REPORT MODULE) -->
-        <div id="tab-panel-summary" class="hidden space-y-6">
-            <!-- Grid of Analytics Stats Card -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Card 1: Total Submissions -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Total Submissions</span>
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ $event->registrations->count() }}</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Total RSVP forms filled</p>
-                    </div>
-                </div>
-
-                <!-- Card 2: Approved Attendee Queue -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Approved Seats</span>
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white font-sans">
-                            {{ $event->registrations->where('status', 'approved')->count() }}
-                        </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            @php
-                                $total = $event->registrations->count();
-                                $approved = $event->registrations->where('status', 'approved')->count();
-                                $appRate = $total > 0 ? round(($approved / $total) * 100) : 0;
-                            @endphp
-                            Approval rate is <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ $appRate }}%</span>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Card 3: Pending Queue -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Awaiting Review</span>
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white font-sans">
-                            {{ $event->registrations->where('status', 'pending')->count() }}
-                        </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Applications in queue</p>
-                    </div>
-                </div>
-
-                <!-- Card 4: Declined Count -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Declined Seats</span>
-                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </span>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white font-sans">
-                            {{ $event->registrations->where('status', 'declined')->count() }}
-                        </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Requests rejected</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Visual breakdown -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Bar Breakdown of registrations -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm lg:col-span-2 space-y-6">
-                    <h4 class="font-bold text-slate-900 dark:text-white text-base">Seat Occupancy Breakdown</h4>
-                    
-                    <div class="space-y-4">
-                        <!-- Progress 1: Approved -->
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400">Approved Attendance</span>
-                                <span class="text-slate-900 dark:text-white">{{ $approved }} seats ({{ $appRate }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                                <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $appRate }}%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Progress 2: Pending -->
-                        @php
-                            $pending = $event->registrations->where('status', 'pending')->count();
-                            $pendRate = $total > 0 ? round(($pending / $total) * 100) : 0;
-                        @endphp
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400">Pending Review Pipeline</span>
-                                <span class="text-slate-900 dark:text-white">{{ $pending }} in-queue ({{ $pendRate }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                                <div class="bg-amber-400 h-full rounded-full transition-all duration-500" style="width: {{ $pendRate }}%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Progress 3: Declined -->
-                        @php
-                            $declined = $event->registrations->where('status', 'declined')->count();
-                            $decRate = $total > 0 ? round(($declined / $total) * 100) : 0;
-                        @endphp
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400">Declined Requests</span>
-                                <span class="text-slate-900 dark:text-white">{{ $declined }} requests ({{ $decRate }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                                <div class="bg-red-500 h-full rounded-full transition-all duration-500" style="width: {{ $decRate }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gender Demographics Breakdown -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm space-y-6">
-                    <h4 class="font-bold text-slate-900 dark:text-white text-base">Gender Demographics</h4>
-                    
-                    <div class="space-y-4.5">
-                        @php
-                            $males = $event->registrations->where('gender', 'Male')->count();
-                            $females = $event->registrations->where('gender', 'Female')->count();
-                            $lgbtq = $event->registrations->where('gender', 'LGBTQ+')->count();
-                            $unspecified = $event->registrations->whereNull('gender')->count();
-                            $others = $total - ($males + $females + $lgbtq + $unspecified);
-                            
-                            $malePct = $total > 0 ? round(($males / $total) * 100) : 0;
-                            $femalePct = $total > 0 ? round(($females / $total) * 100) : 0;
-                            $lgbtPct = $total > 0 ? round(($lgbtq / $total) * 100) : 0;
-                            $otherPct = $total > 0 ? round(($others / $total) * 100) : 0;
-                            $unspPct = $total > 0 ? round(($unspecified / $total) * 100) : 0;
-                        @endphp
-
-                        <!-- Male Progress -->
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span> Male
-                                </span>
-                                <span class="text-slate-800 dark:text-slate-200">{{ $males }} ({{ $malePct }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: {{ $malePct }}%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Female Progress -->
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-pink-500"></span> Female
-                                </span>
-                                <span class="text-slate-800 dark:text-slate-200">{{ $females }} ({{ $femalePct }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div class="bg-pink-500 h-full rounded-full transition-all duration-500" style="width: {{ $femalePct }}%"></div>
-                            </div>
-                        </div>
-
-                        <!-- LGBTQ+ Progress -->
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span> LGBTQ+
-                                </span>
-                                <span class="text-slate-800 dark:text-slate-200">{{ $lgbtq }} ({{ $lgbtPct }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div class="bg-purple-500 h-full rounded-full transition-all duration-500" style="width: {{ $lgbtPct }}%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Others Progress -->
-                        @if($others > 0)
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Others (Specified)
-                                </span>
-                                <span class="text-slate-800 dark:text-slate-200">{{ $others }} ({{ $otherPct }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div class="bg-indigo-400 h-full rounded-full transition-all duration-500" style="width: {{ $otherPct }}%"></div>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Unspecified/Prior Progress -->
-                        @if($unspecified > 0)
-                        <div class="space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> Unspecified
-                                </span>
-                                <span class="text-slate-800 dark:text-slate-200">{{ $unspecified }} ({{ $unspPct }}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div class="bg-slate-400 h-full rounded-full transition-all duration-500" style="width: {{ $unspPct }}%"></div>
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Print Actions Banner -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="space-y-1 text-left w-full sm:w-auto">
-                    <h4 class="font-bold text-slate-900 dark:text-white text-base">Print Summary Report</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xl">Need to share attendee metrics and gender demographics with your divisional leads? Print or save a PDF summary containing all active registrations, pending applicants, and venue locations.</p>
-                </div>
-
-                <button onclick="window.print()" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-md hover:shadow-lg focus:outline-none">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                    </svg>
-                    Print/Save PDF Report
-                </button>
-            </div>
-        </div>
+        @include('committees.events-app.manage_events.questions')
     </div>
 
     <!-- Floating Bulk Actions Bar -->
@@ -639,40 +216,40 @@
     </div>
 </div>
 
-    <!-- BACKDROP MODAL: EDIT EVENT DETAILS -->
-    <div id="edit-event-modal"
-        class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl p-5 sm:p-8 flex flex-col max-h-[90vh] transition-all duration-300 transform scale-95 opacity-0"
-            id="edit-event-modal-content">
-            <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-                <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-snug">Edit Assembly Details</h3>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Modify scheduling, venue, cover image, or seat limits.</p>
-                </div>
-                <button onclick="closeEditEventModal()"
-                    class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+<!-- BACKDROP MODAL: EDIT EVENT DETAILS -->
+<div id="edit-event-modal"
+    class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl p-5 sm:p-8 flex flex-col max-h-[90vh] transition-all duration-300 transform scale-95 opacity-0"
+        id="edit-event-modal-content">
+        <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
+            <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-snug">Edit Assembly Details</h3>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Modify scheduling, venue, cover image, or seat limits.</p>
             </div>
+            <button onclick="closeEditEventModal()"
+                class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
 
-            <form action="{{ route('committees.events.update', $event) }}" method="POST" class="flex-grow flex flex-col min-h-0 mt-4 sm:mt-6">
-                @csrf
-                @method('PUT')
+        <form action="{{ route('committees.events.update', $event) }}" method="POST" class="flex-grow flex flex-col min-h-0 mt-4 sm:mt-6">
+            @csrf
+            @method('PUT')
 
-                <!-- Scrollable Form Fields Content Wrapper -->
-                <div class="flex-grow overflow-y-auto custom-scrollbar space-y-5 pr-1 -mr-1">
-                    <!-- Event Title -->
-                    <div class="space-y-2">
-                        <label for="edit_event_title"
-                            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event Title</label>
-                        <input type="text" name="title" id="edit_event_title" required
-                            value="{{ $event->title }}"
-                            placeholder="e.g. Q3 Strategic Planning Assembly"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
+            <!-- Scrollable Form Fields Content Wrapper -->
+            <div class="flex-grow overflow-y-auto custom-scrollbar space-y-5 pr-1 -mr-1">
+                <!-- Event Title -->
+                <div class="space-y-2">
+                    <label for="edit_event_title"
+                        class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event Title</label>
+                    <input type="text" name="title" id="edit_event_title" required
+                        value="{{ $event->title }}"
+                        placeholder="e.g. Q3 Strategic Planning Assembly"
+                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+                </div>
 
                 <!-- Event Description -->
                 <div class="space-y-2">
@@ -766,21 +343,21 @@
                             class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
                     </div>
                 </div>
-                </div> <!-- Close scrollable content wrapper -->
+            </div> <!-- Close scrollable content wrapper -->
 
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-4 sm:mt-6">
-                    <button type="button" onclick="closeEditEventModal()"
-                        class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="text-xs font-semibold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-sm active:scale-[0.98]">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-4 sm:mt-6">
+                <button type="button" onclick="closeEditEventModal()"
+                    class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="text-xs font-semibold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-sm active:scale-[0.98]">
+                    Save Changes
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -803,16 +380,23 @@
     function switchTab(targetTab) {
         const tabRequestsBtn = document.getElementById('tab-btn-requests');
         const tabSummaryBtn = document.getElementById('tab-btn-summary');
+        const tabQuestionsBtn = document.getElementById('tab-btn-questions');
+        
         const panelRequests = document.getElementById('tab-panel-requests');
         const panelSummary = document.getElementById('tab-panel-summary');
+        const panelQuestions = document.getElementById('tab-panel-questions');
 
-        if (!tabRequestsBtn || !tabSummaryBtn || !panelRequests || !panelSummary) return;
+        if (!tabRequestsBtn || !tabSummaryBtn || !tabQuestionsBtn || !panelRequests || !panelSummary || !panelQuestions) return;
 
         // Reset Styles
-        tabRequestsBtn.className = "tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
-        tabSummaryBtn.className = "tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+        const btns = [tabRequestsBtn, tabSummaryBtn, tabQuestionsBtn];
+        btns.forEach(btn => {
+            btn.className = "tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+        });
+        
         panelRequests.classList.add('hidden');
         panelSummary.classList.add('hidden');
+        panelQuestions.classList.add('hidden');
 
         // Apply active Styles
         if (targetTab === 'requests') {
@@ -821,10 +405,22 @@
         } else if (targetTab === 'summary') {
             tabSummaryBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
             panelSummary.classList.remove('hidden');
+        } else if (targetTab === 'questions') {
+            tabQuestionsBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            panelQuestions.classList.remove('hidden');
         }
 
         currentTab = targetTab;
     }
+
+    // Auto-switch to requested tab from query parameter on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab) {
+            switchTab(tab);
+        }
+    });
 
     // Client-side filtering & searching inside registration applicants table
     let activeStatusFilter = 'all';
@@ -1153,7 +749,7 @@
                         </span>
                         <div class="attendance-badge-wrapper mt-1">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-455"></span>
                                 Absent
                             </span>
                         </div>
@@ -1188,7 +784,7 @@
                         <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${row.getAttribute('data-name')}">
                             @csrf
                             <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
+                            <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-650 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -1202,7 +798,7 @@
                         <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${row.getAttribute('data-name')}">
                             @csrf
                             <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
+                            <button type="submit" class="text-xs font-semibold text-red-650 dark:text-red-400 hover:text-white hover:bg-red-605 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -1361,13 +957,192 @@
 
         document.body.innerHTML = `
             <div style="font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; color: black; background: white; padding: 40px; box-sizing: border-box;">
-                ${printContent}
+                \${printContent}
             </div>
         `;
         window.print();
         document.body.innerHTML = originalContent;
         window.location.reload(); // Reload to safely restore state
     }
+
+    let questionIndex = parseInt(document.getElementById('custom-questions-container')?.dataset.count || 0);
+
+    function reindexCustomQuestions() {
+        const container = document.getElementById('custom-questions-container');
+        if (!container) return;
+
+        const rows = container.querySelectorAll('[id^="field-row-"]');
+        rows.forEach((row, index) => {
+            row.id = `field-row-${index}`;
+            
+            // Update hidden ID input name
+            const idInput = row.querySelector('input[type="hidden"]');
+            if (idInput) {
+                idInput.name = `registration_fields[${index}][id]`;
+            }
+
+            // Update label input name
+            const labelInput = row.querySelector('input[type="text"]');
+            if (labelInput) {
+                labelInput.name = `registration_fields[${index}][label]`;
+            }
+
+            // Update checkbox name
+            const checkboxInput = row.querySelector('input[type="checkbox"]');
+            if (checkboxInput) {
+                checkboxInput.name = `registration_fields[${index}][required]`;
+            }
+
+            // Update remove button onclick
+            const removeBtn = row.querySelector('button[onclick^="removeQuestionField"]');
+            if (removeBtn) {
+                removeBtn.setAttribute('onclick', `removeQuestionField('field-row-${index}')`);
+            }
+        });
+
+        questionIndex = rows.length;
+        container.dataset.count = rows.length;
+    }
+
+    function addQuestionField() {
+        const container = document.getElementById('custom-questions-container');
+        if (!container) return;
+
+        const uniqueId = 'field_' + Date.now() + Math.random().toString(36).substr(2, 5);
+        const index = questionIndex++;
+        
+        const row = document.createElement('div');
+        row.className = "py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 animate-fade-in";
+        row.id = `field-row-${index}`;
+        
+        row.innerHTML = `
+            <div class="flex-grow flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-400">#</span>
+                <input type="hidden" name="registration_fields[${index}][id]" value="${uniqueId}">
+                <input type="text" name="registration_fields[${index}][label]" required
+                    placeholder="e.g. Address"
+                    class="flex-grow rounded-xl border border-slate-300 dark:border-slate-800 py-2.5 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+            </div>
+            <div class="flex items-center gap-4 justify-between sm:justify-end shrink-0">
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" name="registration_fields[${index}][required]" value="1"
+                        class="w-4 h-4 rounded border-slate-300 dark:border-slate-800 text-purple-650 bg-white dark:bg-slate-950 focus:ring-purple-500/20">
+                    <span class="text-xs text-slate-550 dark:text-slate-400 font-semibold">Required?</span>
+                </label>
+                <button type="button" onclick="removeQuestionField('field-row-${index}')"
+                    class="text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-500 bg-rose-50 dark:bg-rose-950/30 p-2 rounded-xl border border-rose-100 dark:border-rose-900/30 transition duration-150 flex items-center justify-center shrink-0 shadow-sm"
+                    title="Remove question">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(row);
+        reindexCustomQuestions();
+    }
+
+    function removeQuestionField(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.remove();
+            reindexCustomQuestions();
+        }
+    }
+
+    // Dynamically render the custom questions list using data from the server
+    function renderCustomQuestionsList(fields) {
+        const container = document.getElementById('custom-questions-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        fields.forEach((field, index) => {
+            const row = document.createElement('div');
+            row.className = "py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 animate-fade-in";
+            row.id = `field-row-${index}`;
+            
+            const isChecked = field.required ? 'checked' : '';
+            
+            row.innerHTML = `
+                <div class="flex-grow flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-400">#</span>
+                    <input type="hidden" name="registration_fields[${index}][id]" value="${field.id || ''}">
+                    <input type="text" name="registration_fields[${index}][label]" value="${field.label || ''}" required
+                        placeholder="e.g. Address"
+                        class="flex-grow rounded-xl border border-slate-300 dark:border-slate-800 py-2.5 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+                </div>
+                <div class="flex items-center gap-4 justify-between sm:justify-end shrink-0">
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" name="registration_fields[${index}][required]" value="1" ${isChecked}
+                            class="w-4 h-4 rounded border-slate-300 dark:border-slate-800 text-purple-650 bg-white dark:bg-slate-950 focus:ring-purple-500/20">
+                        <span class="text-xs text-slate-550 dark:text-slate-400 font-semibold">Required?</span>
+                    </label>
+                    <button type="button" onclick="removeQuestionField('field-row-${index}')"
+                        class="text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-500 bg-rose-50 dark:bg-rose-950/30 p-2 rounded-xl border border-rose-100 dark:border-rose-900/30 transition duration-150 flex items-center justify-center shrink-0 shadow-sm"
+                        title="Remove question">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+
+        questionIndex = fields.length;
+        container.dataset.count = fields.length;
+    }
+
+    // Intercept Custom Questions Form submission to make it AJAX/Live
+    document.addEventListener('DOMContentLoaded', () => {
+        const questionsForm = document.querySelector('#tab-panel-questions form');
+        if (questionsForm) {
+            questionsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const submitBtn = questionsForm.querySelector('button[type="submit"]');
+                if (!submitBtn || submitBtn.disabled) return;
+
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Saving Configuration...';
+
+                const formData = new FormData(questionsForm);
+
+                fetch(questionsForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHTML;
+                    if (data.success) {
+                        window.showToast(data.message, 'success');
+                        
+                        // Dynamically update the custom questions list in real-time without refreshing the page!
+                        if (data.registration_fields) {
+                            renderCustomQuestionsList(data.registration_fields);
+                        }
+                    } else {
+                        window.showToast(data.message || 'Failed to save configuration.', 'error');
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHTML;
+                    window.showToast('Server connection failed.', 'error');
+                });
+            });
+        }
+    });
 </script>
 
 <!-- BACKDROP MODAL: VENUE CHECK-IN POSTER -->
@@ -1399,7 +1174,7 @@
 
             <div class="space-y-1">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Scan QR to Self Check-In</p>
-                <p class="text-[10px] text-slate-500 leading-relaxed max-w-xs mx-auto">Please scan this barcode with your smartphone, enter your registered email address, and verify your pass code to mark yourself attended.</p>
+                <p class="text-[10px] text-slate-550 leading-relaxed max-w-xs mx-auto">Please scan this barcode with your smartphone, enter your registered email address, and verify your pass code to mark yourself attended.</p>
             </div>
         </div>
 
