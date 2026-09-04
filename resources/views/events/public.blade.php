@@ -312,7 +312,25 @@
                     </div>
                 </div>
 
+                <!-- Arrival / Entry Instructions Card -->
+                @if($event->location_type !== 'virtual' && $event->arrival_instructions)
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-[0_8px_30px_rgba(15,23,42,0.02)] space-y-4">
+                    <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <span class="p-1 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 shrink-0">
+                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </span>
+                        <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Entry & Arrival Instructions</h3>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/60 dark:border-slate-800/80 text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-line font-medium shadow-inner">
+                        {{ $event->arrival_instructions }}
+                    </div>
+                </div>
+                @endif
+
                 <!-- Google Maps Embed Visualization -->
+                @if($event->location_type !== 'virtual')
                 <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-[0_8px_30px_rgba(15,23,42,0.02)] space-y-4">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">Venue Map</h3>
                     <div class="rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 h-64 shadow-inner">
@@ -326,6 +344,7 @@
                         </iframe>
                     </div>
                 </div>
+                @endif
             </div>
 
             <!-- Right Column: Registration Form Card (5 Columns) -->
@@ -389,8 +408,13 @@
                             <div class="space-y-2">
                                 <label for="gender-select" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Gender Identity</label>
                                 <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </span>
                                     <select id="gender-select" onchange="handleGenderChange(this)" required 
-                                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-600 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none">
+                                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-10 text-slate-600 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none cursor-pointer">
                                         <option value="" disabled {{ old('gender') ? '' : 'selected' }}>Select your gender</option>
                                         <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
                                         <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>

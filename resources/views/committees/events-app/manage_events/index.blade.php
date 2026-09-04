@@ -3,6 +3,7 @@
 @section('title', $event->title . ' - Event Workspace')
 
 @section('content')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     /* Custom scrollbar for table container & lists */
     .custom-scrollbar::-webkit-scrollbar {
@@ -21,6 +22,122 @@
     }
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {
         background-color: rgba(156, 163, 175, 0.15);
+    }
+
+    /* PREMIUM FLATPICKR LIGHT & DARK MODE ACCENTED OVERRIDES (COMPACT & UN-BLOATED) */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08), 0 6px 10px -6px rgba(0, 0, 0, 0.08) !important;
+        font-family: inherit !important;
+        padding: 4px !important;
+        width: 260px !important;
+    }
+    .dark .flatpickr-calendar {
+        background: #0f172a !important; /* slate-900 */
+        border: 1px solid rgba(51, 65, 85, 0.5) !important; /* slate-700 */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    }
+    .flatpickr-days {
+        width: 252px !important;
+    }
+    .dayContainer {
+        width: 252px !important;
+        min-width: 252px !important;
+        max-width: 252px !important;
+    }
+    .flatpickr-day {
+        border-radius: 0.5rem !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        max-width: 32px !important;
+        margin: 1px 2px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.prevMonthDay.selected, .flatpickr-day.nextMonthDay.selected {
+        background: #9333ea !important; /* purple-600 */
+        border-color: #9333ea !important;
+        color: #ffffff !important;
+        border-radius: 0.5rem !important;
+    }
+    .flatpickr-day:hover {
+        background: rgba(147, 51, 234, 0.1) !important;
+        border-color: transparent !important;
+        border-radius: 0.5rem !important;
+    }
+    .dark .flatpickr-day {
+        color: #f1f5f9 !important; /* slate-100 */
+    }
+    .dark .flatpickr-day.flatpickr-disabled, .dark .flatpickr-day.flatpickr-disabled:hover {
+        color: rgba(255, 255, 255, 0.15) !important;
+    }
+    .flatpickr-months {
+        padding: 4px 0 !important;
+    }
+    .flatpickr-months .flatpickr-month {
+        color: #0f172a !important;
+        height: 28px !important;
+    }
+    .dark .flatpickr-months .flatpickr-month {
+        color: #ffffff !important;
+    }
+    .flatpickr-current-month {
+        font-size: 12px !important;
+        padding: 2px 0 0 0 !important;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        font-weight: 700 !important;
+    }
+    .flatpickr-current-month input.cur-year {
+        font-weight: 700 !important;
+    }
+    .dark .flatpickr-current-month input.cur-year, .dark .flatpickr-current-month .flatpickr-monthDropdown-months {
+        color: #ffffff !important;
+    }
+    .flatpickr-time {
+        border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+        height: 36px !important;
+        line-height: 36px !important;
+    }
+    .dark .flatpickr-time {
+        border-top: 1px solid rgba(51, 65, 85, 0.5) !important;
+        background: #0f172a !important;
+    }
+    .flatpickr-time input {
+        font-size: 12px !important;
+    }
+    .flatpickr-time .numInputWrapper {
+        height: 36px !important;
+    }
+    .dark .flatpickr-time input, .dark .flatpickr-time .flatpickr-am-pm {
+        color: #ffffff !important;
+    }
+    .dark .flatpickr-time input:hover, .dark .flatpickr-time .flatpickr-am-pm:hover, .dark .flatpickr-time input:focus, .dark .flatpickr-time .flatpickr-am-pm:focus {
+        background: rgba(147, 51, 234, 0.1) !important;
+    }
+    .flatpickr-day.today {
+        border-color: #c084fc !important; /* purple-400 */
+        border-radius: 0.5rem !important;
+    }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        fill: #64748b !important;
+        padding: 4px !important;
+    }
+    .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+        fill: #cbd5e1 !important;
+    }
+    .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+        color: #cbd5e1 !important;
+    }
+    .flatpickr-weekday {
+        font-weight: 700 !important;
+        color: #64748b !important;
+        font-size: 10px !important;
+    }
+    .dark .flatpickr-weekday {
+        color: #94a3b8 !important;
     }
 </style>
 
@@ -61,9 +178,9 @@
             <div class="flex flex-wrap gap-2.5 w-full md:w-auto shrink-0">
                 <!-- Generate Poster Button -->
                 @if($event->registration_type === 'venue_confirmation')
-                    <button onclick="openCheckInPosterModal()" class="w-full sm:w-auto text-xs font-semibold text-emerald-650 dark:text-emerald-400 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-2.5 rounded-xl border border-emerald-250 dark:border-emerald-900/30 transition duration-150 inline-flex items-center justify-center gap-2 shadow-sm focus:outline-none">
+                    <button onclick="openCheckInPosterModal()" class="w-full sm:w-auto text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 transition duration-150 inline-flex items-center justify-center gap-2 shadow-sm focus:outline-none">
                         <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 8v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m-3 3h6M5 12h14M3 7h6v6H3V7zm0 10h6v6H3v-6zm12 0h6v6h-6v-6zm0-10h6v6h-6V7z" />
                         </svg>
                         Get Check-In Poster
                     </button>
@@ -94,7 +211,7 @@
                 <form action="{{ route('committees.events.destroy', $event) }}" method="POST" data-confirm="Are you sure you want to delete this event?" data-confirm-sub="All guest registrations for this assembly will be permanently deleted." data-confirm-title="Delete Scheduled Assembly" class="w-full sm:w-auto inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="w-full sm:w-auto text-xs font-semibold text-red-650 dark:text-red-400 hover:text-white hover:bg-red-650 bg-red-50 dark:bg-red-950/20 hover:border-transparent px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 transition duration-150 inline-flex items-center justify-center shadow-sm focus:outline-none">
+                    <button type="submit" class="w-full sm:w-auto text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 bg-red-50 dark:bg-red-950/20 hover:border-transparent px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 transition duration-150 inline-flex items-center justify-center shadow-sm focus:outline-none">
                         Delete Event
                     </button>
                 </form>
@@ -110,7 +227,7 @@
                     </svg>
                 </span>
                 <div class="truncate">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Date & Time</p>
+                    <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Actual Event Date</p>
                     <p class="font-semibold text-slate-850 dark:text-slate-300 truncate" title="{{ $event->event_date->format('l, F j, Y • g:i A') }}">{{ $event->event_date->format('l, M j • g:i A') }}</p>
                 </div>
             </div>
@@ -143,6 +260,22 @@
     </div>
 
     <!-- Feedback messages -->
+    @if ($errors->any())
+        <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 text-rose-800 dark:text-rose-400 text-sm space-y-1 shadow-sm">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="font-bold">Please correct the following errors:</span>
+            </div>
+            <ul class="list-disc list-inside pl-8 text-xs space-y-0.5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if(session('status'))
         <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-400 text-sm flex items-center gap-3 shadow-sm">
             <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,151 +349,11 @@
     </div>
 </div>
 
-<!-- BACKDROP MODAL: EDIT EVENT DETAILS -->
-<div id="edit-event-modal"
-    class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl p-5 sm:p-8 flex flex-col max-h-[90vh] transition-all duration-300 transform scale-95 opacity-0"
-        id="edit-event-modal-content">
-        <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-            <div>
-                <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-snug">Edit Assembly Details</h3>
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Modify scheduling, venue, cover image, or seat limits.</p>
-            </div>
-            <button onclick="closeEditEventModal()"
-                class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        <form action="{{ route('committees.events.update', $event) }}" method="POST" class="flex-grow flex flex-col min-h-0 mt-4 sm:mt-6">
-            @csrf
-            @method('PUT')
-
-            <!-- Scrollable Form Fields Content Wrapper -->
-            <div class="flex-grow overflow-y-auto custom-scrollbar space-y-5 pr-1 -mr-1">
-                <!-- Event Title -->
-                <div class="space-y-2">
-                    <label for="edit_event_title"
-                        class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event Title</label>
-                    <input type="text" name="title" id="edit_event_title" required
-                        value="{{ $event->title }}"
-                        placeholder="e.g. Q3 Strategic Planning Assembly"
-                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                </div>
-
-                <!-- Event Description -->
-                <div class="space-y-2">
-                    <label for="edit_event_desc"
-                        class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</label>
-                    <textarea name="description" id="edit_event_desc" required rows="4"
-                        placeholder="Describe the assembly purpose..."
-                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">{{ $event->description }}</textarea>
-                </div>
-
-                <!-- Event Cover Image URL -->
-                <div class="space-y-2">
-                    <label for="edit_event_image"
-                        class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event Cover Image URL (Optional)</label>
-                    <input type="url" name="image" id="edit_event_image"
-                        value="{{ $event->image }}"
-                        placeholder="e.g. https://images.unsplash.com/..."
-                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                </div>
-
-                <!-- Registration Type Selection -->
-                <div class="space-y-2">
-                    <label for="edit_registration_type" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registration Type</label>
-                    <div class="relative">
-                        <select id="edit_registration_type" name="registration_type" required 
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none">
-                            <option value="admin_approval" {{ $event->registration_type === 'admin_approval' ? 'selected' : '' }}>Approval by Admin (Traditional Pipe)</option>
-                            <option value="venue_confirmation" {{ $event->registration_type === 'venue_confirmation' ? 'selected' : '' }}>Confirmation on Venue (Self Check-in / QR)</option>
-                        </select>
-                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-455 dark:text-slate-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Registration Deadline / Cancellation Cutoff -->
-                <div class="space-y-2">
-                    <label for="edit_registration_deadline" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registration & Cancellation Deadline (Optional)</label>
-                    <input type="datetime-local" name="registration_deadline" id="edit_registration_deadline"
-                        value="{{ $event->registration_deadline ? $event->registration_deadline->format('Y-m-d\TH:i') : '' }}"
-                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                </div>
-
-                <!-- Event Seating Capacity -->
-                <div class="space-y-2">
-                    <label for="edit-capacity-select" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Attendance Capacity</label>
-                    <div class="relative">
-                        <select id="edit-capacity-select" onchange="handleEditCapacityChange(this)" required 
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none">
-                            <option value="unlimited" {{ $event->max_participants === null ? 'selected' : '' }}>No Limit (Unlimited Capacity)</option>
-                            <option value="limited" {{ $event->max_participants !== null ? 'selected' : '' }}>Limited Capacity (Specify Seats)</option>
-                        </select>
-                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-455 dark:text-slate-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Custom Capacity Input -->
-                <div id="edit-capacity-input-wrapper" class="space-y-2 {{ $event->max_participants === null ? 'hidden' : '' }}">
-                    <label for="edit_max_participants" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Max Participants</label>
-                    <input type="number" name="max_participants" id="edit_max_participants" min="1" 
-                        value="{{ $event->max_participants }}"
-                        placeholder="e.g. 50"
-                        class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300"
-                        {{ $event->max_participants !== null ? 'required' : '' }}>
-                </div>
-
-                <!-- Grid: Date & Location -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Event Date -->
-                    <div class="space-y-2">
-                        <label for="edit_event_date"
-                            class="block text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Date & Time</label>
-                        <input type="datetime-local" name="event_date" id="edit_event_date" required
-                            value="{{ $event->event_date->format('Y-m-d\TH:i') }}"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
-
-                    <!-- Location -->
-                    <div class="space-y-2">
-                        <label for="edit_event_location"
-                            class="block text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Venue Location</label>
-                        <input type="text" name="location" id="edit_event_location" required
-                            value="{{ $event->location }}"
-                            placeholder="e.g. Boardroom C, Zoom Video"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
-                </div>
-            </div> <!-- Close scrollable content wrapper -->
-
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-4 sm:mt-6">
-                <button type="button" onclick="closeEditEventModal()"
-                    class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="text-xs font-semibold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-sm active:scale-[0.98]">
-                    Save Changes
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+@include('committees.events-app.events-components.edit_event_modal')
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     // Copy event shareable link to clipboard
     function copyEventLink(url) {
@@ -420,6 +413,22 @@
         if (tab) {
             switchTab(tab);
         }
+
+        // Initialize Premium Custom Flatpickr Datetime Pickers for edit modal
+        const flatpickrConfig = {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            altInput: true,
+            altFormat: "F j, Y • h:i K",
+            minDate: "today",
+            altInputClass: "w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.002]",
+            locale: {
+                firstDayOfWeek: 1
+            }
+        };
+
+        flatpickr("#edit_event_date", flatpickrConfig);
+        flatpickr("#edit_registration_deadline", flatpickrConfig);
     });
 
     // Client-side filtering & searching inside registration applicants table
@@ -521,6 +530,19 @@
             wrapper.classList.add('hidden');
             input.removeAttribute('required');
             input.value = '';
+        }
+    }
+
+    function toggleEditArrivalInstructions() {
+        const wrapper = document.getElementById('edit-arrival-instructions-wrapper');
+        if (!wrapper) return;
+        
+        if (wrapper.classList.contains('hidden')) {
+            wrapper.classList.remove('hidden');
+            document.getElementById('edit_arrival_instructions').focus();
+        } else {
+            wrapper.classList.add('hidden');
+            document.getElementById('edit_arrival_instructions').value = '';
         }
     }
 

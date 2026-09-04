@@ -3,6 +3,8 @@
 @section('title', $committee ? $committee->name . ' - Workspace' : 'Events Management')
 
 @section('content')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         /* Custom scrollbar for custom dropdown menu */
         .custom-scrollbar::-webkit-scrollbar {
@@ -25,6 +27,122 @@
 
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
             background-color: rgba(156, 163, 175, 0.15);
+        }
+
+        /* PREMIUM FLATPICKR LIGHT & DARK MODE ACCENTED OVERRIDES (COMPACT & UN-BLOATED) */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            border-radius: 1.25rem !important;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08), 0 6px 10px -6px rgba(0, 0, 0, 0.08) !important;
+            font-family: inherit !important;
+            padding: 4px !important;
+            width: 260px !important;
+        }
+        .dark .flatpickr-calendar {
+            background: #0f172a !important; /* slate-900 */
+            border: 1px solid rgba(51, 65, 85, 0.5) !important; /* slate-700 */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        }
+        .flatpickr-days {
+            width: 252px !important;
+        }
+        .dayContainer {
+            width: 252px !important;
+            min-width: 252px !important;
+            max-width: 252px !important;
+        }
+        .flatpickr-day {
+            border-radius: 0.5rem !important;
+            height: 32px !important;
+            line-height: 32px !important;
+            max-width: 32px !important;
+            margin: 1px 2px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.prevMonthDay.selected, .flatpickr-day.nextMonthDay.selected {
+            background: #9333ea !important; /* purple-600 */
+            border-color: #9333ea !important;
+            color: #ffffff !important;
+            border-radius: 0.5rem !important;
+        }
+        .flatpickr-day:hover {
+            background: rgba(147, 51, 234, 0.1) !important;
+            border-color: transparent !important;
+            border-radius: 0.5rem !important;
+        }
+        .dark .flatpickr-day {
+            color: #f1f5f9 !important; /* slate-100 */
+        }
+        .dark .flatpickr-day.flatpickr-disabled, .dark .flatpickr-day.flatpickr-disabled:hover {
+            color: rgba(255, 255, 255, 0.15) !important;
+        }
+        .flatpickr-months {
+            padding: 4px 0 !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            color: #0f172a !important;
+            height: 28px !important;
+        }
+        .dark .flatpickr-months .flatpickr-month {
+            color: #ffffff !important;
+        }
+        .flatpickr-current-month {
+            font-size: 12px !important;
+            padding: 2px 0 0 0 !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-weight: 700 !important;
+        }
+        .flatpickr-current-month input.cur-year {
+            font-weight: 700 !important;
+        }
+        .dark .flatpickr-current-month input.cur-year, .dark .flatpickr-current-month .flatpickr-monthDropdown-months {
+            color: #ffffff !important;
+        }
+        .flatpickr-time {
+            border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+            height: 36px !important;
+            line-height: 36px !important;
+        }
+        .dark .flatpickr-time {
+            border-top: 1px solid rgba(51, 65, 85, 0.5) !important;
+            background: #0f172a !important;
+        }
+        .flatpickr-time input {
+            font-size: 12px !important;
+        }
+        .flatpickr-time .numInputWrapper {
+            height: 36px !important;
+        }
+        .dark .flatpickr-time input, .dark .flatpickr-time .flatpickr-am-pm {
+            color: #ffffff !important;
+        }
+        .dark .flatpickr-time input:hover, .dark .flatpickr-time .flatpickr-am-pm:hover, .dark .flatpickr-time input:focus, .dark .flatpickr-time .flatpickr-am-pm:focus {
+            background: rgba(147, 51, 234, 0.1) !important;
+        }
+        .flatpickr-day.today {
+            border-color: #c084fc !important; /* purple-400 */
+            border-radius: 0.5rem !important;
+        }
+        .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+            fill: #64748b !important;
+            padding: 4px !important;
+        }
+        .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+            fill: #cbd5e1 !important;
+        }
+        .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+            color: #cbd5e1 !important;
+        }
+        .flatpickr-weekday {
+            font-weight: 700 !important;
+            color: #64748b !important;
+            font-size: 10px !important;
+        }
+        .dark .flatpickr-weekday {
+            color: #94a3b8 !important;
         }
     </style>
     <div class="space-y-8 max-w-7xl mx-auto">
@@ -87,16 +205,6 @@
         </div>
 
         <!-- Feedback messages -->
-        @if (session('status'))
-            <div
-                class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-400 text-sm flex items-center gap-3 shadow-sm">
-                <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{{ session('status') }}</span>
-            </div>
-        @endif
 
         @if (session('error'))
             <div
@@ -296,17 +404,37 @@
                                             </svg>
                                             <span class="truncate">{{ $event->event_date->format('l, M j • g:i A') }}</span>
                                         </div>
-                                        <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->location) }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Open Location in Google Maps">
-                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            <span class="truncate underline decoration-dotted" title="{{ $event->location }}">{{ $event->location }}</span>
-                                        </a>
+                                        @if($event->location_type === 'virtual')
+                                            <a href="{{ $event->location }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Join Zoom/Teams Virtual Assembly">
+                                                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                </svg>
+                                                <span class="truncate underline decoration-dotted font-semibold text-purple-600 dark:text-purple-400">Join Virtual Assembly</span>
+                                            </a>
+                                        @else
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->location) }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Open Location in Google Maps">
+                                                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span class="truncate underline decoration-dotted" title="{{ $event->location }}">{{ $event->location }}</span>
+                                            </a>
+                                        @endif
                                     </div>
+                                    @if($event->location_type === 'physical' && !empty($event->arrival_instructions))
+                                        <div class="mt-3 p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl text-xs text-slate-500 dark:text-slate-400 leading-relaxed text-left flex items-start gap-2">
+                                            <svg class="w-4 h-4 text-purple-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <div>
+                                                <span class="font-bold text-slate-700 dark:text-slate-300">Arrival Instructions:</span>
+                                                {{ $event->arrival_instructions }}
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <!-- Actions Row -->
@@ -369,150 +497,14 @@
 
     <!-- BACKDROP MODAL: SCHEDULE NEW EVENT (Add Event Modal) -->
     @if ($committee)
-        <div id="add-event-modal"
-            class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl p-5 sm:p-8 flex flex-col max-h-[90vh] transition-all duration-300 transform scale-95 opacity-0"
-                id="add-event-modal-content">
-                <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-                    <div>
-                        <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-snug">Schedule New Assembly</h3>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Create a public shareable event for the
-                            {{ $committee->name }}.</p>
-                    </div>
-                    <button onclick="closeAddEventModal()"
-                        class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <form action="{{ route('committees.events.store') }}" method="POST" class="flex-grow flex flex-col min-h-0 mt-4 sm:mt-6">
-                    @csrf
-                    <!-- Scrollable Form Fields Content Wrapper -->
-                    <div class="flex-grow overflow-y-auto custom-scrollbar space-y-5 pr-1 -mr-1">
-                        <!-- Hidden Committee Field -->
-                        <input type="hidden" name="committee_id" value="{{ $committee->id }}">
-
-                        <!-- Event Title -->
-                        <div class="space-y-2">
-                            <label for="event_title"
-                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event
-                                Title</label>
-                            <input type="text" name="title" id="event_title" required
-                                placeholder="e.g. Q3 Strategic Planning Assembly"
-                                class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                        </div>
-
-                    <!-- Event Description -->
-                    <div class="space-y-2">
-                        <label for="event_desc"
-                            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</label>
-                        <textarea name="description" id="event_desc" required rows="4"
-                            placeholder="Describe the assembly purpose, preparation rules, agenda items, etc..."
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300"></textarea>
-                    </div>
-
-                    <!-- Event Cover Image URL -->
-                    <div class="space-y-2">
-                        <label for="event_image"
-                            class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Event Cover Image URL (Optional)</label>
-                        <input type="url" name="image" id="event_image"
-                            placeholder="e.g. https://images.unsplash.com/photo-1540575467063-178a50c2df87"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
-
-                    <!-- Registration Type Selection -->
-                    <div class="space-y-2">
-                        <label for="registration_type" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registration Type</label>
-                        <div class="relative">
-                            <select id="registration_type" name="registration_type" required 
-                                class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none">
-                                <option value="admin_approval" selected>Approval by Admin (Traditional Pipe)</option>
-                                <option value="venue_confirmation">Confirmation on Venue (Self Check-in / QR)</option>
-                            </select>
-                            <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-450 dark:text-slate-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Registration & Cancellation Deadline -->
-                    <div class="space-y-2">
-                        <label for="registration_deadline" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registration & Cancellation Deadline (Optional)</label>
-                        <input type="datetime-local" name="registration_deadline" id="registration_deadline"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
-
-                    <!-- Event Seating Capacity -->
-                    <div class="space-y-2">
-                        <label for="capacity-select" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Attendance Capacity</label>
-                        <div class="relative">
-                            <select id="capacity-select" onchange="handleCapacityChange(this)" required 
-                                class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none">
-                                <option value="unlimited" selected>No Limit (Unlimited Capacity)</option>
-                                <option value="limited">Limited Capacity (Specify Seats)</option>
-                            </select>
-                            <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-450 dark:text-slate-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Custom Capacity Input (Smoothly displays via JS if "limited" is selected) -->
-                    <div id="capacity-input-wrapper" class="space-y-2 hidden">
-                        <label for="max_participants" class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Max Participants</label>
-                        <input type="number" name="max_participants" id="max_participants" min="1" placeholder="e.g. 50"
-                            class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                    </div>
-
-                    <!-- Grid: Date & Location -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Event Date -->
-                        <div class="space-y-2">
-                            <label for="event_date"
-                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date &
-                                Time</label>
-                            <input type="datetime-local" name="event_date" id="event_date" required
-                                class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                        </div>
-
-                        <!-- Location -->
-                        <div class="space-y-2">
-                            <label for="event_location"
-                                class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Venue
-                                Location</label>
-                            <input type="text" name="location" id="event_location" required
-                                placeholder="e.g. Boardroom C, Zoom Video"
-                                class="w-full rounded-xl border border-slate-300/80 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                        </div>
-                    </div>
-                    </div>
-
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-4 sm:mt-6">
-                        <button type="button" onclick="closeAddEventModal()"
-                            class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="text-xs font-semibold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-sm active:scale-[0.98]">
-                            Schedule Assembly
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        @include('committees.events-app.events-components.add_event_modal')
     @endif
 @endsection
 
 @section('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // Custom Dropdown Handling
         // Custom Dropdown Handling
         function toggleDropdown(type) {
             const dropdowns = ['month', 'year', 'committee'];
@@ -626,6 +618,189 @@
             });
         }
 
+        // Leaflet-Google Hybrid Global Instances
+        let map;
+        let marker;
+        let debounceTimeout;
+
+        function initHybridMap() {
+            if (map) {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+                return;
+            }
+
+            const defaultCoords = [14.5995, 120.9842]; // Manila Centered
+
+            // Initialize Leaflet map
+            map = L.map('google-map').setView(defaultCoords, 13);
+
+            // POINT TO GOOGLE MAPS PUBLIC ROAD TILES SERVER (100% Free, No Keys!)
+            L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 21,
+                attribution: '© Google Maps'
+            }).addTo(map);
+
+            // Interactive Pin Marker
+            marker = L.marker(defaultCoords, { draggable: true }).addTo(map);
+
+            // Marker Drag reverse geocoding
+            marker.on('dragend', function() {
+                const pos = marker.getLatLng();
+                reverseGeocode(pos.lat, pos.lng);
+            });
+
+            // Map click geocoding
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+        }
+
+        // Live Free autocomplete Nominatim searches
+        function autocompleteLocation(query) {
+            clearTimeout(debounceTimeout);
+            const suggestionsContainer = document.getElementById('map-search-suggestions');
+            if (!query || query.trim().length < 3) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+
+            debounceTimeout = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&countrycodes=ph`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsContainer.innerHTML = '';
+                        if (data && data.length > 0) {
+                            suggestionsContainer.classList.remove('hidden');
+                            data.forEach(item => {
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'w-full text-left px-4 py-3 text-xs text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/20 transition-all duration-150 flex items-start gap-2.5';
+                                
+                                const addressParts = item.display_name.split(',');
+                                const title = addressParts[0] || '';
+                                const subtitle = addressParts.slice(1).join(',').trim();
+
+                                btn.innerHTML = `
+                                    <span class="text-purple-500 mt-0.5 select-none">📍</span>
+                                    <div class="truncate flex-grow">
+                                        <div class="font-bold text-slate-800 dark:text-slate-100 truncate">${title}</div>
+                                        ${subtitle ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">${subtitle}</div>` : ''}
+                                    </div>
+                                `;
+                                btn.onclick = () => {
+                                    selectAddress(item.display_name, parseFloat(item.lat), parseFloat(item.lon));
+                                };
+                                suggestionsContainer.appendChild(btn);
+                            });
+                        } else {
+                            suggestionsContainer.classList.add('hidden');
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }, 400);
+        }
+
+        function selectAddress(address, lat, lon) {
+            document.getElementById('event_location').value = address;
+            document.getElementById('map-search-suggestions').innerHTML = '';
+            document.getElementById('map-search-suggestions').classList.add('hidden');
+
+            if (map) {
+                const latlng = [lat, lon];
+                map.setView(latlng, 16);
+                marker.setLatLng(latlng);
+            }
+        }
+
+        function reverseGeocode(lat, lon) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.getElementById('event_location').value = data.display_name;
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        // Toggle Physical vs Virtual
+        function toggleLocationType(type) {
+            const physicalWrapper = document.getElementById('physical-location-wrapper');
+            const virtualWrapper = document.getElementById('virtual-location-wrapper');
+            const inputLocation = document.getElementById('event_location');
+            const inputMeetingLink = document.getElementById('event_meeting_link');
+
+            const labelPhysical = document.getElementById('label_location_type_physical');
+            const labelVirtual = document.getElementById('label_location_type_virtual');
+
+            if (type === 'physical') {
+                physicalWrapper.classList.remove('hidden');
+                virtualWrapper.classList.add('hidden');
+                inputLocation.setAttribute('required', 'required');
+                inputMeetingLink.removeAttribute('required');
+
+                // Style active state
+                labelPhysical.className = "flex items-center justify-center gap-2 p-3.5 bg-slate-50 dark:bg-slate-950 border-2 border-purple-500 dark:border-purple-500 rounded-2xl cursor-pointer transition-all duration-200 select-none text-slate-800 dark:text-slate-200 font-bold text-xs";
+                labelVirtual.className = "flex items-center justify-center gap-2 p-3.5 bg-slate-50 dark:bg-slate-950 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-800 cursor-pointer transition-all duration-200 select-none text-slate-550 dark:text-slate-400 font-semibold text-xs";
+
+                setTimeout(() => {
+                    if (map && marker) {
+                        map.invalidateSize();
+                        map.setView(marker.getLatLng(), map.getZoom());
+                    }
+                }, 100);
+            } else {
+                physicalWrapper.classList.add('hidden');
+                virtualWrapper.classList.remove('hidden');
+                inputLocation.removeAttribute('required');
+                inputMeetingLink.setAttribute('required', 'required');
+
+                // Style active state
+                labelPhysical.className = "flex items-center justify-center gap-2 p-3.5 bg-slate-50 dark:bg-slate-950 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-800 cursor-pointer transition-all duration-200 select-none text-slate-550 dark:text-slate-400 font-semibold text-xs";
+                labelVirtual.className = "flex items-center justify-center gap-2 p-3.5 bg-slate-50 dark:bg-slate-950 border-2 border-purple-500 dark:border-purple-500 rounded-2xl cursor-pointer transition-all duration-200 select-none text-slate-800 dark:text-slate-200 font-bold text-xs";
+            }
+        }
+
+        // Toggle Arrival / Entry instructions text block
+        function toggleArrivalInstructions() {
+            const wrapper = document.getElementById('arrival-instructions-wrapper');
+            wrapper.classList.toggle('hidden');
+        }
+
+        // Intercept form submission to copy meeting link to location input when virtual is selected
+        document.addEventListener('DOMContentLoaded', () => {
+            const addEventForm = document.querySelector('#add-event-modal form');
+            if (addEventForm) {
+                addEventForm.addEventListener('submit', function(e) {
+                    const locType = document.querySelector('input[name="location_type"]:checked').value;
+                    if (locType === 'virtual') {
+                        const meetingLink = document.getElementById('event_meeting_link').value;
+                        document.getElementById('event_location').value = meetingLink;
+                    }
+                });
+            }
+
+            // Initialize Premium Custom Flatpickr Datetime Pickers
+            const flatpickrConfig = {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                altInput: true,
+                altFormat: "F j, Y • h:i K",
+                minDate: "today",
+                altInputClass: "w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 cursor-pointer shadow-sm hover:scale-[1.002]",
+                locale: {
+                    firstDayOfWeek: 1
+                }
+            };
+
+            flatpickr("#event_date", flatpickrConfig);
+            flatpickr("#registration_deadline", flatpickrConfig);
+        });
+
         // Modal Control: Smooth animation transitions
         function openAddEventModal() {
             const modal = document.getElementById('add-event-modal');
@@ -639,6 +814,9 @@
                 modal.classList.remove('opacity-0');
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
+                
+                // Load/draw interactive Leaflet-Google Hybrid Map
+                initHybridMap();
             }, 10);
         }
 

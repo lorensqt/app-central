@@ -13,6 +13,8 @@ class Event extends Model
         'description',
         'event_date',
         'location',
+        'location_type',
+        'arrival_instructions',
         'image',
         'max_participants',
         'registration_type',
