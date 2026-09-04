@@ -73,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         // Committee Event Management Actions (Available to anyone in the committee)
         Route::post('/committees/events', [AdminEventController::class, 'store'])->name('committees.events.store');
         Route::put('/committees/events/{event}', [AdminEventController::class, 'update'])->name('committees.events.update');
+        Route::post('/committees/events/{event}/fields', [AdminEventController::class, 'updateFields'])->name('committees.events.update_fields');
         Route::delete('/committees/events/{event}', [AdminEventController::class, 'destroy'])->name('committees.events.destroy');
         Route::post('/committees/registrations/{registration}/approve', [AdminEventController::class, 'approveRegistration'])->name('committees.registrations.approve');
         Route::post('/committees/registrations/{registration}/decline', [AdminEventController::class, 'declineRegistration'])->name('committees.registrations.decline');

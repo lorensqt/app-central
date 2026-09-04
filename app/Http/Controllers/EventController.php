@@ -15,7 +15,7 @@ class EventController extends Controller
     {
         $event->load('committee');
 
-        return view('events.public', compact('event'));
+        return view('committees.events-app.events-components.public', compact('event'));
     }
 
     /**
@@ -23,11 +23,44 @@ class EventController extends Controller
      */
     public function registerPublic(Request $request, Event $event)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'gender' => 'required|string|max:255',
-        ]);
+        ];
+
+        // Support both old and new formats
+        $fieldsConfig = $event->registration_fields ?? [];
+        $isNewFormat = false;
+
+        if (is_array($fieldsConfig)) {
+            foreach ($fieldsConfig as $k => $v) {
+                if (is_array($v) && isset($v['label'])) {
+                    $isNewFormat = true;
+                    break;
+                }
+            }
+        }
+
+        if ($isNewFormat) {
+            foreach ($fieldsConfig as $field) {
+                $fieldId = $field['id'] ?? null;
+                if ($fieldId) {
+                    $requirement = (!empty($field['required'])) ? 'required' : 'nullable';
+                    $rules["custom_fields.{$fieldId}"] = "{$requirement}|string|max:255";
+                }
+            }
+        } else {
+            // Old fallback format compatibility - map to custom_fields.field
+            foreach (['phone', 'job_title', 'company', 'birthday'] as $field) {
+                if (isset($fieldsConfig[$field]['enabled']) && $fieldsConfig[$field]['enabled']) {
+                    $requirement = (!empty($fieldsConfig[$field]['required'])) ? 'required' : 'nullable';
+                    $rules["custom_fields.{$field}"] = "{$requirement}|string|max:255";
+                }
+            }
+        }
+
+        $validated = $request->validate($rules);
 
         $email = strtolower($validated['email']);
 
@@ -69,14 +102,47 @@ class EventController extends Controller
             } while (EventRegistration::where('event_id', $event->id)->where('ticket_code', $ticket_code)->exists());
         }
 
+        // Gather serialized custom fields
+        $customFields = [];
+        if ($isNewFormat) {
+            // New dynamic fields format
+            foreach ($fieldsConfig as $field) {
+                $fieldId = $field['id'] ?? null;
+                $label = $field['label'] ?? '';
+                if ($fieldId && $label) {
+                    $val = data_get($validated, "custom_fields.{$fieldId}") ?? $request->input("custom_fields.{$fieldId}");
+                    if ($val !== null) {
+                        $customFields[$label] = $val;
+                    }
+                }
+            }
+        } else {
+            // Old format
+            foreach (['phone', 'job_title', 'company', 'birthday'] as $field) {
+                $labelMap = [
+                    'phone' => 'Phone Number',
+                    'job_title' => 'Corporate Title / Position',
+                    'company' => 'Company / Department',
+                    'birthday' => 'Birth Date'
+                ];
+                $label = $labelMap[$field] ?? ucwords(str_replace('_', ' ', $field));
+                
+                $val = data_get($validated, "custom_fields.{$field}") ?? $request->input("custom_fields.{$field}");
+                if ($val !== null) {
+                    $customFields[$label] = $val;
+                }
+            }
+        }
+
         // Create registration
         $registration = EventRegistration::create([
             'event_id' => $event->id,
             'name' => $validated['name'],
             'email' => $email,
-            'gender' => $validated['gender'],
+            'gender' => $validated['gender'] ?? null,
             'status' => $status,
             'ticket_code' => $ticket_code,
+            'custom_fields' => !empty($customFields) ? $customFields : null,
         ]);
 
         if ($status === 'approved') {
@@ -115,7 +181,7 @@ class EventController extends Controller
         $committee = $committees->firstWhere('id', $selectedCommitteeId);
         $events = $committee ? Event::where('committee_id', $committee->id)->latest()->with('registrations')->get() : collect();
 
-        return view('committees.events', compact('committees', 'committee', 'events'));
+        return view('committees.events-app.events', compact('committees', 'committee', 'events'));
     }
 
     /**
@@ -126,7 +192,7 @@ class EventController extends Controller
         $committees = \App\Models\Committee::all();
         $events = Event::where('committee_id', $committee->id)->latest()->with('registrations')->get();
 
-        return view('committees.events', compact('committees', 'committee', 'events'));
+        return view('committees.events-app.events', compact('committees', 'committee', 'events'));
     }
 
     /**
@@ -136,7 +202,7 @@ class EventController extends Controller
     {
         $event->load(['committee', 'registrations']);
         
-        return view('committees.manage_event', compact('event'));
+        return view('committees.events-app.manage_event', compact('event'));
     }
 
     /**
@@ -150,7 +216,7 @@ class EventController extends Controller
 
         $event = $registration->event->load('committee');
 
-        return view('events.manage_ticket', compact('registration', 'event'));
+        return view('committees.events-app.events-components.manage_ticket', compact('registration', 'event'));
     }
 
     /**
@@ -184,7 +250,7 @@ class EventController extends Controller
             return redirect()->route('events.public_show', $event);
         }
 
-        return view('events.check_in', compact('event'));
+        return view('committees.events-app.events-components.check_in', compact('event'));
     }
 
     /**
@@ -238,7 +304,7 @@ class EventController extends Controller
      */
     public function checkInSuccess(Event $event)
     {
-        return view('events.check_in_success', compact('event'));
+        return view('committees.events-app.events-components.check_in_success', compact('event'));
     }
 
     /**

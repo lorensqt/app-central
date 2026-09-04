@@ -16,11 +16,13 @@ class EventRegistration extends Model
         'attended',
         'attended_at',
         'ticket_code',
+        'custom_fields',
     ];
 
     protected $casts = [
         'attended_at' => 'datetime',
         'attended' => 'boolean',
+        'custom_fields' => 'array',
     ];
 
     /**

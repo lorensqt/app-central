@@ -25,6 +25,7 @@ class AdminEventController extends Controller
             'max_participants' => 'nullable|integer|min:1',
             'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
+            'registration_fields' => 'nullable|array',
             'committee_id' => 'nullable|exists:committees,id',
         ], [
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
@@ -61,6 +62,7 @@ class AdminEventController extends Controller
             'max_participants' => 'nullable|integer|min:1',
             'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
+            'registration_fields' => 'nullable|array',
         ], [
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
@@ -269,5 +271,29 @@ class AdminEventController extends Controller
         }
 
         return redirect()->back()->with('status', 'Successfully deleted selected registrations.');
+    }
+
+    /**
+     * Update the event's dynamic registration fields configuration.
+     */
+    public function updateFields(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'registration_fields' => 'nullable|array',
+        ]);
+
+        $event->update([
+            'registration_fields' => $validated['registration_fields'] ?? [],
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'RSVP registration questions updated successfully.',
+                'registration_fields' => $event->fresh()->registration_fields ?? [],
+            ]);
+        }
+
+        return redirect()->back()->with('status', 'RSVP registration questions updated successfully.');
     }
 }

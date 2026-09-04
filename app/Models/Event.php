@@ -17,12 +17,14 @@ class Event extends Model
         'max_participants',
         'registration_type',
         'registration_deadline',
+        'registration_fields',
         'committee_id',
     ];
 
     protected $casts = [
         'event_date' => 'datetime',
         'registration_deadline' => 'datetime',
+        'registration_fields' => 'array',
     ];
 
     /**
