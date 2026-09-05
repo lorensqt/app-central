@@ -21,6 +21,7 @@ class AdminEventController extends Controller
             'description' => 'required|string',
             'terms_and_policy' => 'required|string',
             'event_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:event_date',
             'location' => 'required|string|max:255',
             'location_type' => 'required|string|in:physical,virtual',
             'arrival_instructions' => 'nullable|string',
@@ -61,6 +62,7 @@ class AdminEventController extends Controller
             'description' => 'required|string',
             'terms_and_policy' => 'required|string',
             'event_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:event_date',
             'location' => 'required|string|max:255',
             'location_type' => 'required|string|in:physical,virtual',
             'arrival_instructions' => 'nullable|string',
@@ -301,5 +303,71 @@ class AdminEventController extends Controller
         }
 
         return redirect()->back()->with('status', 'RSVP registration questions updated successfully.');
+    }
+
+    /**
+     * Update the event's post-event survey configuration.
+     */
+    public function updateSurvey(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'survey_enabled' => 'nullable|boolean',
+            'survey_questions' => 'nullable|array',
+        ]);
+
+        $event->update([
+            'survey_enabled' => $request->boolean('survey_enabled'),
+            'survey_questions' => $validated['survey_questions'] ?? [],
+        ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Post-event survey configuration updated successfully.',
+                'survey_enabled' => $event->survey_enabled,
+                'survey_questions' => $event->survey_questions ?? [],
+            ]);
+        }
+
+        return redirect()->back()->with('status', 'Post-event survey configuration updated successfully.');
+    }
+
+    /**
+     * Broadcast post-event survey emails to approved attendees.
+     */
+    public function broadcastSurveys(Request $request, Event $event)
+    {
+        if (!$event->survey_enabled || empty($event->survey_questions)) {
+            return redirect()->back()->with('error', 'Post-event survey must be enabled and have questions before broadcasting.');
+        }
+
+        // Get approved attendees (we can send to those whose status is 'approved')
+        $attendees = $event->registrations()->where('status', 'approved')->get();
+
+        if ($attendees->isEmpty()) {
+            return redirect()->back()->with('error', 'No approved attendees found to send the survey to.');
+        }
+
+        $sentCount = 0;
+        $failedCount = 0;
+
+        foreach ($attendees as $attendee) {
+            try {
+                Mail::to($attendee->email)->send(new \App\Mail\EventSurvey($attendee));
+                $sentCount++;
+            } catch (\Exception $e) {
+                \Log::error("Post-event survey email dispatch failed for {$attendee->email}: " . $e->getMessage());
+                $failedCount++;
+            }
+        }
+
+        $event->update(['survey_sent' => true]);
+
+        $message = "Successfully dispatched survey emails to {$sentCount} attendees.";
+        if ($failedCount > 0) {
+            $message .= " However, {$failedCount} emails failed to send. Check SMTP logs.";
+        }
+
+        return redirect()->back()->with('status', $message);
     }
 }

@@ -39,6 +39,10 @@ Route::get('/events/{event}/check-in', [EventController::class, 'showCheckIn'])-
 Route::post('/events/{event}/check-in', [EventController::class, 'submitCheckIn'])->name('events.submit_check_in');
 Route::get('/events/{event}/check-in/success', [EventController::class, 'checkInSuccess'])->name('events.check_in_success');
 
+// Post-Event Survey Routes (Guest Accessible - Secured via Signed URLs)
+Route::get('/survey/{registration}', [EventController::class, 'showSurvey'])->name('events.survey_show');
+Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])->name('events.survey_submit');
+
 // Authenticated Sessions Group
 Route::middleware(['auth'])->group(function () {
     // Session Logout
@@ -74,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/committees/events', [AdminEventController::class, 'store'])->name('committees.events.store');
         Route::put('/committees/events/{event}', [AdminEventController::class, 'update'])->name('committees.events.update');
         Route::post('/committees/events/{event}/fields', [AdminEventController::class, 'updateFields'])->name('committees.events.update_fields');
+        Route::post('/committees/events/{event}/survey', [AdminEventController::class, 'updateSurvey'])->name('committees.events.update_survey');
+        Route::post('/committees/events/{event}/survey/send', [AdminEventController::class, 'broadcastSurveys'])->name('committees.events.broadcast_surveys');
         Route::delete('/committees/events/{event}', [AdminEventController::class, 'destroy'])->name('committees.events.destroy');
         Route::post('/committees/registrations/{registration}/approve', [AdminEventController::class, 'approveRegistration'])->name('committees.registrations.approve');
         Route::post('/committees/registrations/{registration}/decline', [AdminEventController::class, 'declineRegistration'])->name('committees.registrations.decline');

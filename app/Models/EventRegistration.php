@@ -17,12 +17,14 @@ class EventRegistration extends Model
         'attended_at',
         'ticket_code',
         'custom_fields',
+        'survey_responses',
     ];
 
     protected $casts = [
         'attended_at' => 'datetime',
         'attended' => 'boolean',
         'custom_fields' => 'array',
+        'survey_responses' => 'array',
     ];
 
     /**

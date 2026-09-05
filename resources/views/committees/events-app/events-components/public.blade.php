@@ -158,8 +158,11 @@
                 <!-- Event Details Stack (Optimized & Premium responsive layouts) -->
                 <div class="space-y-4">
                     <!-- Date & Time Horizontal Card -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.05)] hover:border-purple-200/80 dark:hover:border-purple-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative overflow-hidden bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-purple-50/20 dark:hover:to-purple-950/20">
-                        <div class="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.05)] hover:border-purple-200/80 dark:hover:border-purple-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-purple-50/20 dark:hover:to-purple-950/20">
+                        <!-- Nested backdrop-clip container for the absolute blurred hover background decoration -->
+                        <div class="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden pointer-events-none z-0">
+                            <div class="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
                         
                         <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                             <span class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100/80 dark:border-purple-900/30 shrink-0 h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white dark:group-hover:bg-purple-500 dark:group-hover:text-slate-950 transition-all duration-300">

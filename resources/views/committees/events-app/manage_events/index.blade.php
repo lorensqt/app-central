@@ -74,7 +74,7 @@
         color: rgba(255, 255, 255, 0.15) !important;
     }
     .flatpickr-months {
-        padding: 4px 0 !important;
+        padding: 10px 14px 4px 14px !important;
     }
     .flatpickr-months .flatpickr-month {
         color: #0f172a !important;
@@ -121,12 +121,27 @@
         border-color: #c084fc !important; /* purple-400 */
         border-radius: 0.5rem !important;
     }
-    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+    .flatpickr-months .flatpickr-prev-month {
+        left: 14px !important;
+        top: 10px !important;
         fill: #64748b !important;
         padding: 4px !important;
     }
-    .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+    .flatpickr-months .flatpickr-next-month {
+        right: 14px !important;
+        top: 10px !important;
+        fill: #64748b !important;
+        padding: 4px !important;
+    }
+    .dark .flatpickr-months .flatpickr-prev-month {
         fill: #cbd5e1 !important;
+        left: 14px !important;
+        top: 10px !important;
+    }
+    .dark .flatpickr-months .flatpickr-next-month {
+        fill: #cbd5e1 !important;
+        right: 14px !important;
+        top: 10px !important;
     }
     .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
         color: #cbd5e1 !important;
@@ -228,7 +243,7 @@
                 </span>
                 <div class="truncate">
                     <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Actual Event Date</p>
-                    <p class="font-semibold text-slate-850 dark:text-slate-300 truncate" title="{{ $event->event_date->format('l, F j, Y • g:i A') }}">{{ $event->event_date->format('l, M j • g:i A') }}</p>
+                    <p class="font-semibold text-slate-850 dark:text-slate-300 truncate" title="{{ $event->formatted_date_range }}">{{ $event->formatted_date_range }}</p>
                 </div>
             </div>
 
@@ -315,6 +330,14 @@
                 </svg>
                 Manage Questions
             </button>
+
+            <!-- Tab 4 Button: Post-Event Survey -->
+            <button onclick="switchTab('survey')" id="tab-btn-survey" class="tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Post-Event Survey
+            </button>
         </div>
 
         @include('committees.events-app.manage_events.requests')
@@ -322,6 +345,8 @@
         @include('committees.events-app.manage_events.summary')
 
         @include('committees.events-app.manage_events.questions')
+
+        @include('committees.events-app.manage_events.survey')
     </div>
 
     <!-- Floating Bulk Actions Bar -->
@@ -374,15 +399,17 @@
         const tabRequestsBtn = document.getElementById('tab-btn-requests');
         const tabSummaryBtn = document.getElementById('tab-btn-summary');
         const tabQuestionsBtn = document.getElementById('tab-btn-questions');
+        const tabSurveyBtn = document.getElementById('tab-btn-survey');
         
         const panelRequests = document.getElementById('tab-panel-requests');
         const panelSummary = document.getElementById('tab-panel-summary');
         const panelQuestions = document.getElementById('tab-panel-questions');
+        const panelSurvey = document.getElementById('tab-panel-survey');
 
-        if (!tabRequestsBtn || !tabSummaryBtn || !tabQuestionsBtn || !panelRequests || !panelSummary || !panelQuestions) return;
+        if (!tabRequestsBtn || !tabSummaryBtn || !tabQuestionsBtn || !tabSurveyBtn || !panelRequests || !panelSummary || !panelQuestions || !panelSurvey) return;
 
         // Reset Styles
-        const btns = [tabRequestsBtn, tabSummaryBtn, tabQuestionsBtn];
+        const btns = [tabRequestsBtn, tabSummaryBtn, tabQuestionsBtn, tabSurveyBtn];
         btns.forEach(btn => {
             btn.className = "tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
         });
@@ -390,6 +417,7 @@
         panelRequests.classList.add('hidden');
         panelSummary.classList.add('hidden');
         panelQuestions.classList.add('hidden');
+        panelSurvey.classList.add('hidden');
 
         // Apply active Styles
         if (targetTab === 'requests') {
@@ -401,6 +429,9 @@
         } else if (targetTab === 'questions') {
             tabQuestionsBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
             panelQuestions.classList.remove('hidden');
+        } else if (targetTab === 'survey') {
+            tabSurveyBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            panelSurvey.classList.remove('hidden');
         }
 
         currentTab = targetTab;
@@ -427,8 +458,58 @@
             }
         };
 
-        flatpickr("#edit_event_date", flatpickrConfig);
         flatpickr("#edit_registration_deadline", flatpickrConfig);
+
+        // Custom Edit Start Date Picker on Pill Element
+        const editStartPicker = flatpickr("#edit-start-date-pill", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            defaultDate: "{{ $event->event_date->format('Y-m-d H:i') }}",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const date = selectedDates[0];
+                    const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+                    const formattedDate = date.toLocaleDateString('en-US', optionsDate);
+                    
+                    const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+                    let formattedTime = date.toLocaleTimeString('en-US', optionsTime);
+
+                    document.getElementById('edit-start-date-label').innerText = formattedDate;
+                    document.getElementById('edit-start-time-label').innerText = formattedTime;
+                    
+                    // Set the actual hidden input value
+                    document.getElementById('edit_event_date').value = dateStr;
+
+                    // Dynamically update end date minimum
+                    if (editEndPicker) {
+                        editEndPicker.set('minDate', dateStr);
+                    }
+                }
+            }
+        });
+
+        // Custom Edit End Date Picker on Pill Element
+        const editEndPicker = flatpickr("#edit-end-date-pill", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            defaultDate: "{{ $event->end_date ? $event->end_date->format('Y-m-d H:i') : $event->event_date->format('Y-m-d H:i') }}",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const date = selectedDates[0];
+                    const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+                    const formattedDate = date.toLocaleDateString('en-US', optionsDate);
+                    
+                    const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+                    let formattedTime = date.toLocaleTimeString('en-US', optionsTime);
+
+                    document.getElementById('edit-end-date-label').innerText = formattedDate;
+                    document.getElementById('edit-end-time-label').innerText = formattedTime;
+                    
+                    // Set the actual hidden input value
+                    document.getElementById('edit_end_date').value = dateStr;
+                }
+            }
+        });
     });
 
     // Client-side filtering & searching inside registration applicants table

@@ -79,7 +79,7 @@
             color: rgba(255, 255, 255, 0.15) !important;
         }
         .flatpickr-months {
-            padding: 4px 0 !important;
+            padding: 10px 14px 4px 14px !important;
         }
         .flatpickr-months .flatpickr-month {
             color: #0f172a !important;
@@ -126,12 +126,27 @@
             border-color: #c084fc !important; /* purple-400 */
             border-radius: 0.5rem !important;
         }
-        .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+        .flatpickr-months .flatpickr-prev-month {
+            left: 14px !important;
+            top: 10px !important;
             fill: #64748b !important;
             padding: 4px !important;
         }
-        .dark .flatpickr-months .flatpickr-prev-month, .dark .flatpickr-months .flatpickr-next-month {
+        .flatpickr-months .flatpickr-next-month {
+            right: 14px !important;
+            top: 10px !important;
+            fill: #64748b !important;
+            padding: 4px !important;
+        }
+        .dark .flatpickr-months .flatpickr-prev-month {
             fill: #cbd5e1 !important;
+            left: 14px !important;
+            top: 10px !important;
+        }
+        .dark .flatpickr-months .flatpickr-next-month {
+            fill: #cbd5e1 !important;
+            right: 14px !important;
+            top: 10px !important;
         }
         .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
             color: #cbd5e1 !important;
@@ -402,7 +417,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
-                                            <span class="truncate">{{ $event->event_date->format('l, M j • g:i A') }}</span>
+                                            <span class="truncate">{{ $event->short_formatted_date_range }}</span>
                                         </div>
                                         @if($event->location_type === 'virtual')
                                             <a href="{{ $event->location }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" title="Join Zoom/Teams Virtual Assembly">
@@ -797,8 +812,58 @@
                 }
             };
 
-            flatpickr("#event_date", flatpickrConfig);
             flatpickr("#registration_deadline", flatpickrConfig);
+
+            // Custom Start Date Picker on Pill Element
+            const startPicker = flatpickr("#start-date-pill", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        const date = selectedDates[0];
+                        const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+                        const formattedDate = date.toLocaleDateString('en-US', optionsDate);
+                        
+                        const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+                        let formattedTime = date.toLocaleTimeString('en-US', optionsTime);
+
+                        document.getElementById('start-date-label').innerText = formattedDate;
+                        document.getElementById('start-time-label').innerText = formattedTime;
+                        
+                        // Set the actual hidden input value
+                        document.getElementById('event_date').value = dateStr;
+
+                        // Dynamically update end date minimum
+                        if (endPicker) {
+                            endPicker.set('minDate', dateStr);
+                        }
+                    }
+                }
+            });
+
+            // Custom End Date Picker on Pill Element
+            const endPicker = flatpickr("#end-date-pill", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        const date = selectedDates[0];
+                        const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+                        const formattedDate = date.toLocaleDateString('en-US', optionsDate);
+                        
+                        const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+                        let formattedTime = date.toLocaleTimeString('en-US', optionsTime);
+
+                        document.getElementById('end-date-label').innerText = formattedDate;
+                        document.getElementById('end-time-label').innerText = formattedTime;
+                        
+                        // Set the actual hidden input value
+                        document.getElementById('end_date').value = dateStr;
+                    }
+                }
+            });
         });
 
         // Modal Control: Smooth animation transitions

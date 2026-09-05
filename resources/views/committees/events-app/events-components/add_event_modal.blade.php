@@ -130,8 +130,64 @@
                                 </div>
                             </div>
 
-                            <!-- Capacity & Date/Time Grid -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <!-- Capacity & Date/Time Section -->
+                            <div class="space-y-4">
+                                <!-- Start - End Date/Time Picker Component (Dual Light & Dark Mode) -->
+                                <div class="space-y-1.5">
+                                    <label class="block text-[11px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Event Schedule (Start - End)</label>
+                                    
+                                    <div class="bg-slate-100/50 dark:bg-[#1e213a] p-4 rounded-2xl border border-slate-200 dark:border-[#2d3154] flex items-center gap-4 text-left shadow-xs dark:shadow-lg select-none">
+                                        <!-- Left side: Vertical Timeline -->
+                                        <div class="flex flex-col items-center justify-between h-20 relative py-1 shrink-0">
+                                            <!-- Start point: Solid circle -->
+                                            <span class="w-3 h-3 rounded-full bg-purple-500 border-2 border-purple-500 shadow-sm shadow-purple-500/30 z-10 shrink-0"></span>
+                                            <!-- Vertical dashed line -->
+                                            <div class="absolute top-4 bottom-4 w-0.5 border-l-2 border-dashed border-slate-350 dark:border-slate-500/30 z-0"></div>
+                                            <!-- End point: Hollow circle -->
+                                            <span class="w-3 h-3 rounded-full border-2 border-slate-400 dark:border-slate-400 bg-slate-100/50 dark:bg-[#1e213a] z-10 shrink-0"></span>
+                                        </div>
+
+                                        <!-- Right side: Two stacked input rows -->
+                                        <div class="flex-grow space-y-3">
+                                            <!-- Start Row Pill -->
+                                            <div id="start-date-pill" class="flex items-center justify-between bg-white dark:bg-[#272a4a] hover:bg-slate-50 dark:hover:bg-[#2e3158] border border-slate-200 dark:border-[#373b64] rounded-full px-5 py-2 cursor-pointer transition-all duration-200 shadow-xs">
+                                                <!-- Left Side: Date Label -->
+                                                <div class="flex flex-col">
+                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-400 leading-none mb-1">Start Date</span>
+                                                    <span id="start-date-label" class="text-xs font-extrabold text-slate-800 dark:text-white leading-none">Choose...</span>
+                                                </div>
+                                                <!-- Thin Divider -->
+                                                <div class="h-6 w-px bg-slate-200 dark:bg-[#3e446d]"></div>
+                                                <!-- Right Side: Time Label -->
+                                                <div class="flex flex-col text-right">
+                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-400 leading-none mb-1">Start Time</span>
+                                                    <span id="start-time-label" class="text-xs font-extrabold text-slate-800 dark:text-white leading-none">-- : --</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- End Row Pill -->
+                                            <div id="end-date-pill" class="flex items-center justify-between bg-white dark:bg-[#272a4a] hover:bg-slate-50 dark:hover:bg-[#2e3158] border border-slate-200 dark:border-[#373b64] rounded-full px-5 py-2 cursor-pointer transition-all duration-200 shadow-xs">
+                                                <!-- Left Side: Date Label -->
+                                                <div class="flex flex-col">
+                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-400 leading-none mb-1">End Date</span>
+                                                    <span id="end-date-label" class="text-xs font-extrabold text-slate-800 dark:text-white leading-none">Choose...</span>
+                                                </div>
+                                                <!-- Thin Divider -->
+                                                <div class="h-6 w-px bg-slate-200 dark:bg-[#3e446d]"></div>
+                                                <!-- Right Side: Time Label -->
+                                                <div class="flex flex-col text-right">
+                                                    <span class="text-[9px] font-extrabold uppercase tracking-widest text-slate-450 dark:text-slate-400 leading-none mb-1">End Time</span>
+                                                    <span id="end-time-label" class="text-xs font-extrabold text-slate-800 dark:text-white leading-none">-- : --</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Actual Hidden Inputs that submit with the form -->
+                                <input type="hidden" name="event_date" id="event_date" required>
+                                <input type="hidden" name="end_date" id="end_date" required>
+
                                 <!-- Capacity Level -->
                                 <div class="space-y-1.5">
                                     <label for="capacity-select" class="block text-[11px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Capacity Limit</label>
@@ -148,22 +204,6 @@
                                         </span>
                                     </div>
                                 </div>
-
-                                <!-- Event Date -->
-                                <div class="space-y-1.5">
-                                    <label for="event_date"
-                                        class="block text-[11px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Actual Event Date</label>
-                                    <div class="relative rounded-xl shadow-sm">
-                                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                        </span>
-                                        <input type="datetime-local" name="event_date" id="event_date" required
-                                            placeholder="Choose actual event date..."
-                                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- Custom Capacity Limit Input (Revealed Dynamically) -->
@@ -175,7 +215,7 @@
                         </div>
                     </div>
 
-                    <!-- Right Column: Location Engine & interactive Map (7 Cols) -->
+                <!-- Right Column: Location Engine & interactive Map (7 Cols) -->
                     <div class="lg:col-span-7 space-y-5">
                         <div class="flex items-center gap-2 pb-1 border-b border-slate-100 dark:border-slate-800/60">
                             <span class="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[10px]">2</span>

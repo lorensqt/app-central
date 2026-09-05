@@ -343,4 +343,70 @@ class EventController extends Controller
 
         return redirect()->back()->with('success', 'A fresh check-in pass has been dispatched to your email.');
     }
+
+    /**
+     * Display the public feedback survey.
+     */
+    public function showSurvey(Request $request, EventRegistration $registration)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401, 'Unauthorized: Secure survey link has expired or is invalid.');
+        }
+
+        $event = $registration->event->load('committee');
+
+        if (!$event->survey_enabled || empty($event->survey_questions)) {
+            abort(404, 'Not Found: No active post-event survey exists for this event.');
+        }
+
+        // If survey is already answered, show success screen with a flag
+        if (!empty($registration->survey_responses)) {
+            $already_submitted = true;
+            return view('committees.events-app.events-components.survey_success', compact('registration', 'event', 'already_submitted'));
+        }
+
+        return view('committees.events-app.events-components.survey', compact('registration', 'event'));
+    }
+
+    /**
+     * Submit feedback survey answers.
+     */
+    public function submitSurvey(Request $request, EventRegistration $registration)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401, 'Unauthorized: Secure survey link has expired or is invalid.');
+        }
+
+        $event = $registration->event;
+        $questions = $event->survey_questions ?? [];
+
+        // Validate answers based on configuration
+        $rules = [];
+        foreach ($questions as $question) {
+            $fieldId = $question['id'] ?? null;
+            if ($fieldId) {
+                $requirement = (!empty($question['required'])) ? 'required' : 'nullable';
+                $rules["answers.{$fieldId}"] = "{$requirement}|string|max:1000";
+            }
+        }
+
+        $validated = $request->validate($rules);
+
+        // Serialize answers (question label -> answer text)
+        $surveyResponses = [];
+        foreach ($questions as $question) {
+            $fieldId = $question['id'] ?? null;
+            $label = $question['label'] ?? '';
+            if ($fieldId && $label) {
+                $answer = data_get($validated, "answers.{$fieldId}");
+                $surveyResponses[$label] = $answer;
+            }
+        }
+
+        $registration->update([
+            'survey_responses' => $surveyResponses,
+        ]);
+
+        return view('committees.events-app.events-components.survey_success', compact('registration', 'event'));
+    }
 }
