@@ -43,7 +43,6 @@
         document.getElementById('edit_user_name').value = user.name;
         document.getElementById('edit_user_email').value = user.email;
         document.getElementById('edit_user_title').value = user.title_id || '';
-        document.getElementById('edit_user_pin').value = user.pin || '';
 
         const emailInput = document.getElementById('edit_user_email');
         if (user.email === 'castillojohnlaurence0@gmail.com') {
@@ -102,6 +101,39 @@
     function closeWhitelistCreateModal() {
         const modal = document.getElementById('whitelist-create-modal');
         const content = document.getElementById('whitelist-create-modal-content');
+
+        modal.classList.add('opacity-0');
+        if (content) {
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+        }
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    // Modal Control: Register Administrator Create
+    function openAdminCreateModal() {
+        const modal = document.getElementById('admin-create-modal');
+        const content = document.getElementById('admin-create-modal-content');
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            if (content) {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }
+        }, 10);
+    }
+
+    function closeAdminCreateModal() {
+        const modal = document.getElementById('admin-create-modal');
+        const content = document.getElementById('admin-create-modal-content');
 
         modal.classList.add('opacity-0');
         if (content) {
@@ -283,10 +315,12 @@
         const titleModal = document.getElementById('title-edit-modal');
         const createModal = document.getElementById('whitelist-create-modal');
         const committeeModal = document.getElementById('committee-edit-modal');
+        const adminModal = document.getElementById('admin-create-modal');
         if (event.target == userModal) closeUserEditModal();
         if (event.target == titleModal) closeTitleEditModal();
         if (event.target == createModal) closeWhitelistCreateModal();
         if (event.target == committeeModal) closeCommitteeEditModal();
+        if (event.target == adminModal) closeAdminCreateModal();
     }
 
     // Toggle registrations row collapse

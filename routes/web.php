@@ -96,6 +96,7 @@ Route::middleware(['auth'])->group(function () {
 
             // User Access Control Actions
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::post('/users/admin', [UserController::class, 'storeAdmin'])->name('users.store_admin');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
             Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
             Route::post('/users/{user}/reset-pin', [UserController::class, 'resetPin'])->name('users.reset_pin');

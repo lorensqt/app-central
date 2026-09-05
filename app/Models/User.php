@@ -26,6 +26,7 @@ class User extends Authenticatable
         'avatar',
         'title_id',
         'pin',
+        'is_admin',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 
@@ -60,10 +62,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Determine if the user is a super admin fallback.
+     * Determine if the user is a super admin (either the primary fallback email or explicitly marked as an admin).
      */
     public function isSuperAdmin(): bool
     {
-        return $this->email === 'castillojohnlaurence0@gmail.com';
+        return $this->email === 'castillojohnlaurence0@gmail.com' || (bool) $this->is_admin;
     }
 }

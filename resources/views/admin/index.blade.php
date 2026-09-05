@@ -208,7 +208,16 @@
                     </div>
 
                     <!-- Actions Right -->
-                    <div class="shrink-0">
+                    <div class="flex items-center gap-2.5 shrink-0">
+                        <button type="button" onclick="openAdminCreateModal()"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow-md hover:shadow-indigo-500/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:ring-offset-2 whitespace-nowrap active:scale-[0.98]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Add Admin</span>
+                        </button>
+
                         <button type="button" onclick="openWhitelistCreateModal()"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg shadow-sm hover:shadow-md hover:shadow-purple-500/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-2 whitespace-nowrap active:scale-[0.98]">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,9 +291,13 @@
                                                             class="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                                             {{ $user->name }}
                                                             @if ($user->isSuperAdmin())
-                                                                <span
-                                                                    class="px-1.5 py-0.5 bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-[9px] rounded font-bold uppercase tracking-wider">Super
-                                                                    Admin</span>
+                                                                @if ($user->email === 'castillojohnlaurence0@gmail.com')
+                                                                    <span
+                                                                        class="px-1.5 py-0.5 bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-[9px] rounded font-bold uppercase tracking-wider">Super Admin</span>
+                                                                @else
+                                                                    <span
+                                                                        class="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 text-[9px] rounded font-bold uppercase tracking-wider">Admin</span>
+                                                                @endif
                                                             @endif
                                                         </div>
                                                         <div class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ $user->email }}
@@ -334,7 +347,7 @@
                                                     Edit
                                                 </button>
 
-                                                @if (!$user->isSuperAdmin())
+                                                @if ($user->email !== 'castillojohnlaurence0@gmail.com')
                                                     <form action="{{ route('admin.users.destroy', $user) }}"
                                                         method="POST"
                                                         data-confirm="Are you sure you want to revoke system access for this user?"
@@ -757,14 +770,6 @@
                     </div>
                 </div>
 
-                <!-- 6-digit Access PIN -->
-                <div class="space-y-2">
-                    <label for="edit_user_pin"
-                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">6-Digit Access PIN</label>
-                    <input type="text" name="pin" id="edit_user_pin" required placeholder="e.g. 123456" pattern="[0-9]{6}" maxlength="6"
-                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                </div>
-
                 <div class="flex items-center justify-end gap-3 pt-5 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeUserEditModal()"
                         class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
@@ -839,14 +844,6 @@
                     </div>
                 </div>
 
-                <!-- 6-digit Access PIN -->
-                <div class="space-y-2">
-                    <label for="create_user_pin"
-                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">6-Digit Access PIN</label>
-                    <input type="text" name="pin" id="create_user_pin" required placeholder="e.g. 123456" pattern="[0-9]{6}" maxlength="6"
-                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
-                </div>
-
                 <div class="flex items-center justify-end gap-3 pt-5 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeWhitelistCreateModal()"
                         class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
@@ -855,6 +852,63 @@
                     <button type="submit"
                         class="text-xs font-semibold py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white shadow-sm transition duration-150 active:scale-[0.98]">
                         Whitelist & Assign Title
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BACKDROP MODAL: REGISTERING A NEW ADMINISTRATOR -->
+    <div id="admin-create-modal"
+        class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div id="admin-create-modal-content"
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 max-w-md w-full shadow-2xl p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/10">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </span>
+                    <h3 class="font-bold text-slate-900 dark:text-white text-lg">Add Administrator</h3>
+                </div>
+                <button type="button" onclick="closeAdminCreateModal()"
+                    class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.users.store_admin') }}" method="POST" class="space-y-4">
+                @csrf
+                <!-- Full Name -->
+                <div class="space-y-2">
+                    <label for="create_admin_name"
+                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Full Name</label>
+                    <input type="text" name="name" id="create_admin_name" required placeholder="e.g. Jane Doe"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+                </div>
+
+                <!-- Email Address -->
+                <div class="space-y-2">
+                    <label for="create_admin_email"
+                        class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Email Address</label>
+                    <input type="email" name="email" id="create_admin_email" required
+                        placeholder="e.g. admin@domain.com"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 px-4 text-slate-700 dark:text-slate-200 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-5 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeAdminCreateModal()"
+                        class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="text-xs font-semibold py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition duration-150 active:scale-[0.98]">
+                        Register Administrator
                     </button>
                 </div>
             </form>

@@ -32,22 +32,39 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'title_id' => 'nullable|exists:titles,id',
-            'pin' => 'required|string|size:6|regex:/^[0-9]{6}$/',
-        ], [
-            'pin.required' => 'A 6-digit PIN is required.',
-            'pin.size' => 'The PIN must be exactly 6 digits.',
-            'pin.regex' => 'The PIN must consist of numbers only.',
         ]);
 
         User::create([
             'name' => $validated['name'],
             'email' => strtolower($validated['email']),
             'title_id' => $validated['title_id'] ?? null,
-            'pin' => $validated['pin'],
+            'pin' => null,
             'password' => null,
         ]);
 
-        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User registered successfully with PIN code and granted access privileges.');
+        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User registered successfully and granted access privileges. They will be prompted to set up their 6-digit access PIN upon their first login.');
+    }
+
+    /**
+     * Store a newly added administrator in storage.
+     */
+    public function storeAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => strtolower($validated['email']),
+            'title_id' => null,
+            'pin' => null,
+            'is_admin' => true,
+            'password' => null,
+        ]);
+
+        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'Administrator whitelisted successfully! They will be prompted to set up their 6-digit access PIN upon their first login.');
     }
 
     /**
@@ -55,29 +72,23 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if ($user->isSuperAdmin() && strtolower($request->input('email')) !== 'castillojohnlaurence0@gmail.com') {
-            return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The super administrator email address cannot be changed.');
+        if ($user->email === 'castillojohnlaurence0@gmail.com' && strtolower($request->input('email')) !== 'castillojohnlaurence0@gmail.com') {
+            return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The primary super administrator email address cannot be changed.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'title_id' => 'nullable|exists:titles,id',
-            'pin' => 'required|string|size:6|regex:/^[0-9]{6}$/',
-        ], [
-            'pin.required' => 'A 6-digit PIN is required.',
-            'pin.size' => 'The PIN must be exactly 6 digits.',
-            'pin.regex' => 'The PIN must consist of numbers only.',
         ]);
 
         $user->update([
             'name' => $validated['name'],
             'email' => strtolower($validated['email']),
             'title_id' => $validated['title_id'] ?? null,
-            'pin' => $validated['pin'],
         ]);
 
-        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User details and PIN code updated successfully.');
+        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User details updated successfully.');
     }
 
     /**
@@ -85,8 +96,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if ($user->isSuperAdmin()) {
-            return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The super administrator user cannot be deleted.');
+        if ($user->email === 'castillojohnlaurence0@gmail.com') {
+            return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The primary super administrator user cannot be deleted.');
         }
 
         $user->delete();
