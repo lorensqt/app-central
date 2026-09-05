@@ -68,6 +68,15 @@
                             class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 shadow-sm transition-all duration-300 transform hover:scale-[1.002] custom-scrollbar">{{ $event->description }}</textarea>
                     </div>
 
+                    <!-- Event Terms and Policy -->
+                    <div class="space-y-1.5">
+                        <label for="edit_event_terms_and_policy"
+                            class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Terms and Policy</label>
+                        <textarea name="terms_and_policy" id="edit_event_terms_and_policy" required rows="3"
+                            placeholder="State the terms, rules, and privacy policies for attending this event..."
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 shadow-sm transition-all duration-300 transform hover:scale-[1.002] custom-scrollbar">{{ $event->terms_and_policy }}</textarea>
+                    </div>
+
                     <!-- Event Cover Image URL -->
                     <div class="space-y-1.5">
                         <label for="edit_event_image"

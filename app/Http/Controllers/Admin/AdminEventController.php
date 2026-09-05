@@ -19,6 +19,7 @@ class AdminEventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'terms_and_policy' => 'required|string',
             'event_date' => 'required|date',
             'location' => 'required|string|max:255',
             'location_type' => 'required|string|in:physical,virtual',
@@ -58,6 +59,7 @@ class AdminEventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'terms_and_policy' => 'required|string',
             'event_date' => 'required|date',
             'location' => 'required|string|max:255',
             'location_type' => 'required|string|in:physical,virtual',

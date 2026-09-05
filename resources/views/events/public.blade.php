@@ -89,7 +89,7 @@
     </div>
 
     <!-- Premium Toast Notification Container -->
-    <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-4 md:top-20 right-4 md:right-6 left-4 md:left-auto z-50 flex flex-col gap-3 max-w-sm pointer-events-none"></div>
 
     <!-- Header Branding -->
     <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex items-center justify-between z-10 relative">
@@ -175,14 +175,43 @@
                             </div>
                         </div>
 
-                        <!-- Right badge/indicator -->
-                        <div class="sm:text-right shrink-0">
+                        <!-- Right: Time Badge & Calendar Add Button Group -->
+                        <div class="flex flex-wrap items-center gap-2 sm:justify-end shrink-0 z-10">
+                            <!-- Time Badge -->
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-100/40 dark:border-purple-900/30 text-xs font-bold whitespace-nowrap">
                                 <svg class="w-4 h-4 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 {{ $event->event_date->format('g:i A') }} (EST)
                             </span>
+
+                            <!-- Add to Calendar Selector Button -->
+                            <div class="relative inline-block text-left" id="calendar-dropdown-container">
+                                <button type="button" onclick="toggleCalendarDropdown(event)"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white text-[10px] sm:text-xs font-bold transition-all duration-150 shadow-sm whitespace-nowrap">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    Add to Calendar
+                                </button>
+                                <!-- Dropdown Menu -->
+                                <div id="calendar-dropdown-menu" class="hidden absolute right-0 mt-1.5 w-40 rounded-xl bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 shadow-xl z-30 overflow-hidden transform origin-top-right transition-all duration-200">
+                                    <button type="button" onclick="triggerAddToCalendar('google')"
+                                        class="w-full text-left px-4 py-2 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 6h3.5v2.5H12V15H9.5V9H12zm5 5h-1v1h-1.5v-1h-1V12.5h1v-1H15v1h1V14z"/>
+                                        </svg>
+                                        Google
+                                    </button>
+                                    <button type="button" onclick="triggerAddToCalendar('ical')"
+                                        class="w-full text-left px-4 py-2 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        iCal / Apple
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -374,7 +403,7 @@
                         </h2>
                         <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 mb-6">Submit your registration details to receive formal verification and digital seat tickets.</p>
 
-                        <form action="{{ route('events.public_register', $event) }}" method="POST" class="space-y-5">
+                        <form id="registration-form" action="{{ route('events.public_register', $event) }}" method="POST" class="space-y-5">
                             @csrf
                             <!-- Full Name -->
                             <div class="space-y-2">
@@ -464,6 +493,58 @@
                     </svg>
                     <span>Only one registration request is permitted per email address to ensure fair and accurate seating distribution.</span>
                 </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Terms & Conditions Consent Modal -->
+    <div id="terms-consent-modal" 
+        class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-150/80 dark:border-slate-850/80 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
+            id="terms-consent-modal-content">
+            
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-850 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-tight tracking-tight">
+                    Review Event Terms & Policy
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Please read and confirm the following policies before completing your registration.
+                </p>
+            </div>
+
+            <!-- Scrollable Terms Box -->
+            <div class="p-6 overflow-y-auto flex-grow min-h-0 space-y-4 bg-slate-50/20 dark:bg-slate-950/10">
+                <div id="terms-container" class="max-h-60 overflow-y-auto p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed custom-scrollbar whitespace-pre-line select-text">
+                    {{ $event->terms_and_policy ?: "By registering for this event, you agree to abide by the event organizer's code of conduct and standard community guidelines. Please ensure that all information provided is accurate." }}
+                </div>
+
+                <!-- Agreement Checkbox -->
+                <div class="flex items-start gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <div class="relative flex items-center">
+                        <input type="checkbox" id="terms-checkbox" disabled
+                            class="w-4 h-4 rounded text-purple-600 border-slate-300 dark:border-slate-700 focus:ring-purple-500 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150">
+                    </div>
+                    <label for="terms-checkbox" class="text-xs text-slate-600 dark:text-slate-400 font-medium leading-normal cursor-pointer select-none">
+                        I have scrolled to the bottom and agree to the event's terms and privacy policy. <span class="text-purple-500 font-semibold">*</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-850 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
+                <button type="button" onclick="closeTermsModal()"
+                    class="text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 transition duration-155 active:scale-[0.98]">
+                    Cancel
+                </button>
+                <button type="button" id="confirm-submit-btn" disabled onclick="submitRegistration()"
+                    class="inline-flex items-center gap-1.5 text-xs font-bold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 text-white transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-purple-500/20 disabled:shadow-none disabled:cursor-not-allowed active:scale-[0.98]">
+                    <span>Confirm & Register</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                </button>
             </div>
 
         </div>
@@ -592,10 +673,85 @@
             document.getElementById('gender-actual').value = val;
         }
 
+        function openTermsModal() {
+            const modal = document.getElementById('terms-consent-modal');
+            const content = document.getElementById('terms-consent-modal-content');
+            if (modal && content) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95', 'opacity-0');
+                });
+            }
+        }
+
+        function closeTermsModal() {
+            const modal = document.getElementById('terms-consent-modal');
+            const content = document.getElementById('terms-consent-modal-content');
+            if (modal && content) {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        }
+
+        function submitRegistration() {
+            const form = document.getElementById('registration-form');
+            if (form) {
+                form.submit();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const selectEl = document.getElementById('gender-select');
             if (selectEl) {
                 handleGenderChange(selectEl);
+            }
+
+            const form = document.getElementById('registration-form');
+            const termsContainer = document.getElementById('terms-container');
+            const termsCheckbox = document.getElementById('terms-checkbox');
+            const confirmBtn = document.getElementById('confirm-submit-btn');
+
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    if (!termsCheckbox || !termsCheckbox.checked) {
+                        e.preventDefault();
+                        openTermsModal();
+                    }
+                });
+            }
+
+            if (termsContainer && termsCheckbox) {
+                function checkTermsScroll() {
+                    // Give a tolerance of 15px for zoom/sub-pixels
+                    if (termsContainer.scrollHeight - termsContainer.scrollTop <= termsContainer.clientHeight + 15) {
+                        termsCheckbox.removeAttribute('disabled');
+                    }
+                }
+
+                termsContainer.addEventListener('scroll', checkTermsScroll);
+
+                // Initial check in case text is short enough and doesn't need scroll
+                setTimeout(() => {
+                    if (termsContainer.scrollHeight <= termsContainer.clientHeight + 15) {
+                        termsCheckbox.removeAttribute('disabled');
+                    }
+                }, 150);
+            }
+
+            if (termsCheckbox && confirmBtn) {
+                termsCheckbox.addEventListener('change', () => {
+                    if (termsCheckbox.checked) {
+                        confirmBtn.removeAttribute('disabled');
+                    } else {
+                        confirmBtn.setAttribute('disabled', 'disabled');
+                    }
+                });
             }
 
             @if(session('success'))

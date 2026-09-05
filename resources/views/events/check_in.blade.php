@@ -69,7 +69,7 @@
 
             <!-- Check-In verification form card -->
             <div class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-xl">
-                <form action="{{ route('events.submit_check_in', $event) }}" method="POST" class="space-y-4">
+                <form id="check-in-form" action="{{ route('events.submit_check_in', $event) }}" method="POST" class="space-y-4">
                     @csrf
                     
                     <!-- Email Address -->
@@ -141,5 +141,57 @@
     <footer class="w-full max-w-xl mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500 z-10 relative">
         &copy; 2026 App Central. Secure Verification Gateway.
     </footer>
+
+    <!-- Full-screen Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="flex flex-col items-center space-y-4 text-center p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl max-w-xs w-full transform scale-95 transition-transform duration-300" id="loading-box">
+            <!-- Sleek Premium Spinner -->
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 rounded-full border-4 border-purple-100 dark:border-purple-950/50"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-t-purple-600 dark:border-t-purple-400 animate-spin"></div>
+            </div>
+            <div class="space-y-1">
+                <p class="font-extrabold text-slate-800 dark:text-white text-sm">Verifying Ticket Pass</p>
+                <p class="text-xs text-slate-400 dark:text-slate-500 font-medium">Communicating with terminal gateway...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('check-in-form');
+            const overlay = document.getElementById('loading-overlay');
+            const box = document.getElementById('loading-box');
+            
+            if (form && overlay && box) {
+                form.addEventListener('submit', () => {
+                    // Show overlay and fade in
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                    
+                    // Disable submit button inside form to prevent double-submitting
+                    const btn = form.querySelector('button[type="submit"]');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = `
+                            <span class="inline-flex items-center justify-center gap-2">
+                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.062 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                VERIFYING PASS...
+                            </span>
+                        `;
+                        btn.classList.add('opacity-75', 'cursor-not-allowed');
+                    }
+
+                    requestAnimationFrame(() => {
+                        overlay.classList.remove('opacity-0');
+                        box.classList.remove('scale-95');
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
