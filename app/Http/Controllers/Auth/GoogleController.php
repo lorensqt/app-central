@@ -46,7 +46,7 @@ class GoogleController extends Controller
 
                 return redirect()->route('elections.voter.setup', $electionId);
             } else {
-                return redirect()->route('login')->with('error', 'Access Denied: Only @mlhuillier.com email accounts are allowed to vote in corporate elections.');
+                return redirect()->route('login')->with('error', 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
             }
         }
 
@@ -54,16 +54,16 @@ class GoogleController extends Controller
         $user = User::where('email', $email)->first();
 
         if (! $user) {
-            if ($isSuperAdmin || $isMlhuillier) {
-                // If they are super admin or have an @mlhuillier.com email, automatically create them
+            if ($isSuperAdmin) {
+                // Primary Super Admin is allowed to auto-create to bootstrap the system
                 $user = User::create([
-                    'name' => $googleUser->getName() ?? 'Employee',
+                    'name' => $googleUser->getName() ?? 'John Laurence Castillo',
                     'email' => $email,
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
                 ]);
             } else {
-                // Not authorized
+                // Reject anyone who is not pre-whitelisted (manually added) in the database
                 return redirect()->route('login')->with('error', 'Access Denied: Your email is not authorized to access this application. Please contact an administrator.');
             }
         } else {

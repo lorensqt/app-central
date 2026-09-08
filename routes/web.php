@@ -79,7 +79,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'index'])->name('committees.election.index');
         Route::post('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'store'])->name('committees.election.store');
         Route::get('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'manage'])->name('committees.election.manage');
+        Route::get('/committees/election-app/{election}/voters', [\App\Http\Controllers\ElectionController::class, 'getVoters'])->name('committees.election.voters');
         Route::get('/committees/election-app/{election}/export', [\App\Http\Controllers\ElectionController::class, 'exportResults'])->name('committees.election.export');
+        Route::get('/committees/election-app/{election}/export-voters', [\App\Http\Controllers\ElectionController::class, 'exportVoters'])->name('committees.election.export_voters');
+        Route::get('/committees/election-app/{election}/export-pdf', [\App\Http\Controllers\ElectionController::class, 'exportPDF'])->name('committees.election.export_pdf');
         Route::put('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'update'])->name('committees.election.update');
         Route::delete('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'destroy'])->name('committees.election.destroy');
 

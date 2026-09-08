@@ -88,7 +88,7 @@
     <!-- NATIVE-FEEL STICKY BOTTOM SUBMISSION DRAWER (Sticks flat on mobile bottom with zero gaps, floats on tablet/desktop!) -->
     <div class="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:left-6 sm:right-6 md:left-auto md:right-auto md:w-full md:max-w-4xl z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t sm:border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 rounded-none sm:rounded-2xl transition-all duration-300">
         <div class="text-center sm:text-left w-full sm:w-auto">
-            <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-tight">Cast Your Secret Ballot</h4>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white tracking-tight leading-tight">Cast Your Secret Ballot</h4>
             <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 leading-none">
                 Completed <span class="font-bold text-purple-600 dark:text-purple-400" id="progress-indicator">0</span> of <span class="font-bold">{{ $positions->count() }}</span> positions.
             </p>
@@ -101,6 +101,29 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </button>
+    </div>
+
+    <!-- Premium Full-Screen Sealing & Encryption Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 transition-all duration-300">
+        <div class="max-w-xs w-full text-center space-y-6">
+            <!-- Loading Animation Spinner with Sealing Ring -->
+            <div class="relative w-20 h-20 mx-auto">
+                <!-- Sealing Ring Outer -->
+                <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 border-t-purple-600 dark:border-purple-400/20 dark:border-t-purple-400 animate-spin"></div>
+                <!-- Shimmer Inner Lock -->
+                <div class="absolute inset-3 rounded-full bg-purple-500/10 dark:bg-purple-400/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Encryption & Audit Status Messages -->
+            <div class="space-y-2">
+                <h3 class="font-bold text-base text-white tracking-tight">Securing Your Ballot</h3>
+                <p id="loading-status" class="text-xs text-slate-300 dark:text-slate-400 font-medium animate-pulse">Encrypting selection keys...</p>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -194,8 +217,28 @@
             'Once cast, your selections are sealed and cannot be modified or re-submitted. Your vote remains completely secret and anonymous.',
             () => {
                 const btn = document.getElementById('cast-vote-btn');
+                const overlay = document.getElementById('loading-overlay');
+                const statusEl = document.getElementById('loading-status');
+                
+                // Show high-security full-screen loading overlay
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
                 btn.disabled = true;
                 btn.textContent = 'Submitting Ballot...';
+
+                // Status message cycler
+                const statusMessages = [
+                    'Encrypting selection keys...',
+                    'Sealing secret audit trail...',
+                    'Verifying registry consensus...',
+                    'Integrating cryptographic signatures...',
+                    'Writing transaction to ledger...'
+                ];
+                let msgIndex = 0;
+                const statusInterval = setInterval(() => {
+                    msgIndex = (msgIndex + 1) % statusMessages.length;
+                    statusEl.textContent = statusMessages[msgIndex];
+                }, 1000);
 
                 // Format selections payload
                 const votesPayload = {};
@@ -214,15 +257,24 @@
                 })
                 .then(response => response.json())
                 .then(res => {
+                    clearInterval(statusInterval);
                     if (res.success) {
-                        window.location.href = res.redirect;
+                        statusEl.textContent = 'Ballot successfully cast!';
+                        setTimeout(() => {
+                            window.location.href = res.redirect;
+                        }, 500);
                     } else {
+                        overlay.classList.add('hidden');
+                        overlay.classList.remove('flex');
                         window.showToast(res.message || 'Submitting ballot failed.', 'error');
                         btn.disabled = false;
                         btn.textContent = 'Cast Secure Ballot';
                     }
                 })
                 .catch(err => {
+                    clearInterval(statusInterval);
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('flex');
                     console.error(err);
                     window.showToast('Server connection failed.', 'error');
                     btn.disabled = false;

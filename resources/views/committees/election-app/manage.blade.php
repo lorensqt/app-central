@@ -68,7 +68,7 @@
                 </button>
 
                 @if($election->status === 'draft')
-                    <button onclick="changeElectionStatus('active')"
+                    <button onclick="confirmElectionStatusChange('active')"
                         class="inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
@@ -77,20 +77,20 @@
                         Start Election
                     </button>
                 @elseif($election->status === 'active')
-                    <button onclick="changeElectionStatus('closed')"
+                    <button onclick="confirmElectionStatusChange('closed')"
                         class="inline-flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
                         End Election
                     </button>
-                    <button onclick="changeElectionStatus('draft')"
+                    <button onclick="confirmElectionStatusChange('draft')"
                         class="inline-flex items-center justify-center gap-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                         Pause/Revert to Draft
                     </button>
                 @elseif($election->status === 'closed')
-                    <button onclick="changeElectionStatus('draft')"
+                    <button onclick="confirmElectionStatusChange('draft')"
                         class="inline-flex items-center justify-center gap-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.89M9 11l3-3m0 0l3 3m-3-3v12"/></svg>
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                         Revert to Draft
                     </button>
                 @endif
@@ -127,238 +127,9 @@
 
     <!-- Tab Contents Workspace -->
     <div>
-        <!-- PANEL A: STRUCTURE (Positions & Candidates) -->
-        <div id="panel-structure" class="manage-tab-panel space-y-6">
-            <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Ballot Structure</h2>
-                <button onclick="openCreatePositionModal()" class="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
-                    Add Position
-                </button>
-            </div>
-
-            <!-- List of Positions -->
-            <div class="space-y-6" id="positions-container">
-                @forelse($positions as $position)
-                    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/60 dark:border-slate-800/80 p-6 sm:p-8 shadow-sm space-y-6" id="position-block-{{ $position->id }}">
-                        <!-- Position Header -->
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/60">
-                            <div>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    {{ $position->name }}
-                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                        Choose Up To {{ $position->max_votes }}
-                                    </span>
-                                </h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Order Priority: {{ $position->sort_order }}</p>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <button onclick="openCreateCandidateModal({{ $position->id }}, '{{ addslashes($position->name) }}')" class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 font-bold text-xs py-2 px-3 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/20 transition border border-transparent hover:border-purple-100 dark:hover:border-purple-900/40">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                    Add Candidate
-                                </button>
-                                <button onclick="openEditPositionModal({{ json_encode($position) }})" class="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition" title="Edit Position">
-                                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </button>
-                                <button onclick="deletePosition({{ $position->id }})" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition" title="Delete Position">
-                                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Candidate Grid inside Position -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="candidates-grid-{{ $position->id }}">
-                            @forelse($position->candidates as $candidate)
-                                <div class="relative group/card bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition" id="candidate-card-{{ $candidate->id }}">
-                                    <div class="flex items-center gap-3.5 min-w-0">
-                                        <!-- Avatar -->
-                                        @if($candidate->avatar_path)
-                                            <img src="{{ $candidate->avatar_path }}" alt="{{ $candidate->name }}" class="w-11 h-11 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-850">
-                                        @else
-                                            <div class="w-11 h-11 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 font-bold flex items-center justify-center shrink-0 border border-purple-100/30 text-sm uppercase">
-                                                {{ substr($candidate->name, 0, 2) }}
-                                            </div>
-                                        @endif
-                                        
-                                        <div class="min-w-0">
-                                            <h4 class="font-bold text-sm text-slate-900 dark:text-white truncate">
-                                                {{ $candidate->name }}
-                                            </h4>
-                                            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                                {{ $candidate->party_affiliation ?? 'Independent' }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Candidate Controls -->
-                                    <div class="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition">
-                                        <button onclick="openEditCandidateModal({{ json_encode($candidate) }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition" title="Edit Candidate">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        </button>
-                                        <button onclick="deleteCandidate({{ $candidate->id }})" class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition" title="Delete Candidate">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-span-full py-4 text-center text-xs text-slate-400 italic" id="candidates-empty-{{ $position->id }}">
-                                    No candidates added yet. Click "+ Add Candidate" to configure roles.
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                @empty
-                    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/60 dark:border-slate-800/80 p-12 text-center max-w-xl mx-auto" id="no-positions-empty">
-                        <div class="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        </div>
-                        <h4 class="font-bold text-slate-900 dark:text-white">No Positions Defined</h4>
-                        <p class="text-xs text-slate-500 mt-1">Start building the ballot by adding the first position (e.g. Chairman).</p>
-                        <button onclick="openCreatePositionModal()" class="mt-4 text-xs font-semibold bg-purple-600 text-white py-2 px-4 rounded-xl hover:bg-purple-700 transition">
-                            Create First Position
-                        </button>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- PANEL B: RESULTS (Live Results & Analytics) -->
-        <div id="panel-results" class="manage-tab-panel hidden space-y-6">
-            <div class="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        Election Results Overview
-                        @if($election->status === 'active')
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
-                                Live Count
-                            </span>
-                        @endif
-                    </h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time tally of all cast ballots and candidate positions.</p>
-                </div>
-
-                <a href="{{ route('committees.election.export', $election->id) }}" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Export CSV Report
-                </a>
-            </div>
-
-            <!-- List of Results per Position -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @forelse($positions as $position)
-                    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/60 dark:border-slate-800/80 p-6 sm:p-8 shadow-sm space-y-5">
-                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                            <h3 class="font-bold text-slate-900 dark:text-white text-base">
-                                {{ $position->name }}
-                            </h3>
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold">
-                                Total Votes: {{ $position->votes_count }}
-                            </span>
-                        </div>
-
-                        <div class="space-y-4">
-                            @php $totalPositionVotes = $position->votes_count; @endphp
-                            @forelse($position->candidates as $candidate)
-                                @php
-                                    $votes = $candidate->votes_count;
-                                    $percent = $totalPositionVotes > 0 ? round(($votes / $totalPositionVotes) * 100, 1) : 0;
-                                @endphp
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between text-xs">
-                                        <div class="font-semibold text-slate-700 dark:text-slate-300">
-                                            {{ $candidate->name }} 
-                                            <span class="text-[10px] text-slate-400 font-medium">({{ $candidate->party_affiliation ?? 'Independent' }})</span>
-                                        </div>
-                                        <div class="font-bold text-slate-900 dark:text-white">
-                                            {{ $votes }} {{ Str::plural('vote', $votes) }} ({{ $percent }}%)
-                                        </div>
-                                    </div>
-                                    <!-- Beautiful Progress Bar -->
-                                    <div class="w-full bg-slate-100 dark:bg-slate-850 rounded-full h-2.5 overflow-hidden">
-                                        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 h-2.5 rounded-full transition-all duration-1000" style="width: {{ $percent }}%"></div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="text-center text-xs text-slate-400 italic py-2">
-                                    No candidates declared for this position.
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-full bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/60 dark:border-slate-800/80 p-12 text-center">
-                        <p class="text-xs text-slate-400 italic">No ballot positions or candidates have been created yet to measure results.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- PANEL C: VOTERS (Voters & Analytics) -->
-        <div id="panel-voters" class="manage-tab-panel hidden space-y-6">
-            <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Voter Register</h2>
-                <div class="text-xs font-semibold px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                    Total: <span id="voter-count-display">{{ $voters->count() }}</span>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-[2rem] overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                <th class="px-6 py-4.5">Voter Name</th>
-                                <th class="px-6 py-4.5">Email Account</th>
-                                <th class="px-6 py-4.5">Division / Workplace</th>
-                                <th class="px-6 py-4.5">Corporate Position</th>
-                                <th class="px-6 py-4.5">Voted Status</th>
-                                <th class="px-6 py-4.5">Submission Time</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm text-slate-700 dark:text-slate-300">
-                            @forelse($voters as $voter)
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
-                                    <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
-                                        {{ $voter->user->name }}
-                                    </td>
-                                    <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
-                                        {{ $voter->user->email }}
-                                    </td>
-                                    <td class="px-6 py-4.5">
-                                        {{ $voter->division ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4.5">
-                                        {{ $voter->current_position ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4.5">
-                                        @if($voter->voted_at)
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                                Voted
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                                In Queue
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4.5 text-xs text-slate-400">
-                                        {{ $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-' }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-slate-400 italic">
-                                        No voters have entered or cast votes in this election yet.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        @include('committees.election-app.manage-elections.structure')
+        @include('committees.election-app.manage-elections.results')
+        @include('committees.election-app.manage-elections.voters')
     </div>
 </div>
 
@@ -373,6 +144,93 @@
 
 @section('scripts')
 <script>
+    // --- VOTERS AJAX FILTERING ---
+    let fetchVotersTimeout = null;
+
+    function fetchFilteredVoters() {
+        clearTimeout(fetchVotersTimeout);
+        fetchVotersTimeout = setTimeout(() => {
+            const search = document.getElementById('voter-filter-search').value;
+            const division = document.getElementById('voter-filter-division').value;
+            const status = document.getElementById('voter-filter-status').value;
+            const sort = document.getElementById('voter-filter-sort').value;
+
+            const url = new URL(`/committees/election-app/{{ $election->id }}/voters`, window.location.origin);
+            if (search) url.searchParams.append('search', search);
+            if (division) url.searchParams.append('division', division);
+            if (status) url.searchParams.append('status', status);
+            if (sort) url.searchParams.append('sort', sort);
+
+            const tbody = document.getElementById('voters-table-body');
+            const countDisplay = document.getElementById('voter-count-display');
+
+            tbody.classList.add('opacity-40');
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(res => {
+                tbody.classList.remove('opacity-40');
+                if (res.success) {
+                    countDisplay.textContent = res.voters.length;
+                    
+                    if (res.voters.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-slate-400 italic">
+                                    No voters match the specified criteria.
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    tbody.innerHTML = res.voters.map(voter => {
+                        const badgeClass = voter.status === 'Voted' 
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' 
+                            : 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400';
+
+                        return `
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
+                                <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
+                                    ${voter.name}
+                                </td>
+                                <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
+                                    ${voter.email}
+                                </td>
+                                <td class="px-6 py-4.5">
+                                    ${voter.division}
+                                </td>
+                                <td class="px-6 py-4.5">
+                                    ${voter.current_position}
+                                </td>
+                                <td class="px-6 py-4.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+                                        ${voter.status}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4.5 text-xs text-slate-400">
+                                    ${voter.voted_at_formatted}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    window.showToast('Failed to fetch voter list.', 'error');
+                }
+            })
+            .catch(err => {
+                tbody.classList.remove('opacity-40');
+                console.error(err);
+                window.showToast('Connection error while fetching voters.', 'error');
+            });
+        }, 300);
+    }
+
     // --- TAB UTILS ---
     function switchManageTab(tabId) {
         document.querySelectorAll('.manage-tab-panel').forEach(panel => {
@@ -412,6 +270,7 @@
         }, 300);
     }
 
+    // --- POSITION MODALS ---
     function openEditPositionModal(position) {
         const modal = document.getElementById('edit-position-modal');
         const content = document.getElementById('edit-position-modal-content');
@@ -660,6 +519,7 @@
         });
     }
 
+    // --- CANDIDATES AJAX ACTIONS ---
     function submitEditCandidate(event) {
         event.preventDefault();
         const form = event.target;
@@ -729,7 +589,36 @@
     }
 
     // --- ELECTION DIRECT ACTIONS ---
-    function changeElectionStatus(newStatus) {
+    function confirmElectionStatusChange(newStatus) {
+        let title = '';
+        let message = '';
+        let description = '';
+
+        if (newStatus === 'active') {
+            title = 'Start Election';
+            message = 'Are you sure you want to start this election?';
+            description = 'This will open the public voting portal. Eligible voters will be able to cast their ballots in real-time.';
+        } else if (newStatus === 'closed') {
+            title = 'End Election';
+            message = 'Are you sure you want to end this election?';
+            description = 'This will close the public voting portal. No further ballots can be cast, and official winners will be certified.';
+        } else if (newStatus === 'draft') {
+            title = 'Revert to Draft / Pause';
+            message = 'Are you sure you want to revert this election to draft?';
+            description = 'This will pause or suspend the public voting portal. Voters will not be able to access the ballot booth while the election is in draft.';
+        }
+
+        window.showConfirmModal(
+            title,
+            message,
+            description,
+            () => {
+                executeElectionStatusChange(newStatus);
+            }
+        );
+    }
+
+    function executeElectionStatusChange(newStatus) {
         const formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
         formData.append('_method', 'PUT');
@@ -892,6 +781,28 @@
                 console.error('Failed to copy text: ', err);
                 window.showToast('Failed to copy link.', 'error');
             });
+    }
+
+    function confirmCSVDownload() {
+        window.showConfirmModal(
+            'Export CSV Tally Report',
+            'Are you sure you want to download the CSV report?',
+            'This will compile the active election results, vote totals, and share percentages, and download a secure spreadsheet file to your device.',
+            () => {
+                window.location.href = "{{ route('committees.election.export', $election->id) }}";
+            }
+        );
+    }
+
+    function confirmVoterCSVDownload() {
+        window.showConfirmModal(
+            'Export Voter Registry CSV',
+            'Are you sure you want to download the Voter Registry CSV report?',
+            'This will compile the complete register of voters for this election, including names, emails, workplaces, positions, voting statuses, and ballot submission times, and download a secure spreadsheet file.',
+            () => {
+                window.location.href = "{{ route('committees.election.export_voters', $election->id) }}";
+            }
+        );
     }
 </script>
 @endsection

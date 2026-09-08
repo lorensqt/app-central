@@ -84,7 +84,14 @@ class ElectionController extends Controller
             
         $voters = $election->voters()->with('user')->get();
 
-        return view('committees.election-app.manage', compact('election', 'positions', 'voters'));
+        $divisions = $election->voters()
+            ->whereNotNull('division')
+            ->where('division', '!=', '')
+            ->distinct()
+            ->pluck('division')
+            ->toArray();
+
+        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions'));
     }
 
     /**
@@ -277,6 +284,19 @@ class ElectionController extends Controller
             abort(403, 'Access Denied: This election is currently not active.');
         }
 
+        // If the voter has an active session, bypass Google SSO and route them immediately
+        $email = $this->getVoterEmail();
+        if ($email) {
+            $voter = $election->voters()->where('email', $email)->first();
+            if ($voter && $voter->voted_at !== null) {
+                return view('committees.election-app.voter_success', [
+                    'election' => $election,
+                    'message' => 'You have already successfully cast your vote in this election!'
+                ]);
+            }
+            return redirect()->route('elections.voter.setup', $election->id);
+        }
+
         // Save election ID to session before going to Google
         session(['voter_for_election' => $election->id]);
 
@@ -296,7 +316,7 @@ class ElectionController extends Controller
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
         $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
         if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: Only @mlhuillier.com email accounts are authorized to participate in corporate elections.');
+            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
 
         // Check if election is active
@@ -334,7 +354,7 @@ class ElectionController extends Controller
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
         $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
         if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: Only @mlhuillier.com email accounts are authorized to participate in corporate elections.');
+            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
 
         if ($election->status !== 'active') {
@@ -371,7 +391,7 @@ class ElectionController extends Controller
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
         $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
         if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: Only @mlhuillier.com email accounts are authorized to participate in corporate elections.');
+            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
 
         if ($election->status !== 'active') {
@@ -415,7 +435,7 @@ class ElectionController extends Controller
         if (!$isMlhuillier && !$isSuperAdmin) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access Denied: Only @mlhuillier.com email accounts are authorized.'
+                'message' => 'Access Denied: An authorized email domain is required.'
             ], 403);
         }
 
@@ -532,7 +552,7 @@ class ElectionController extends Controller
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
         $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
         if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: Only @mlhuillier.com email accounts are authorized.');
+            abort(403, 'Access Denied: An authorized email domain is required.');
         }
 
         $positions = $election->positions()
@@ -574,6 +594,153 @@ class ElectionController extends Controller
                         $percentage
                     ]);
                 }
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export the election results as a downloadable PDF using DomPDF.
+     */
+    public function exportPDF(Election $election)
+    {
+        $email = $this->getVoterEmail();
+        if (!$email) {
+            abort(401, 'Unauthenticated session.');
+        }
+
+        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
+        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        if (!$isMlhuillier && !$isSuperAdmin) {
+            abort(403, 'Access Denied: An authorized email domain is required.');
+        }
+
+        $positions = $election->positions()
+            ->with(['candidates' => function($q) {
+                $q->withCount('votes')->orderByDesc('votes_count');
+            }])
+            ->withCount('votes')
+            ->get();
+
+        $voterCount = $election->voters()->count();
+
+        // Load premium print-ready PDF template with election data
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('committees.election-app.results_pdf', compact('election', 'positions', 'voterCount'));
+
+        $filename = "election_results_" . str_replace(' ', '_', strtolower($election->title)) . ".pdf";
+
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Get voters for an election with AJAX filtering, searching, and sorting.
+     */
+    public function getVoters(Request $request, Election $election)
+    {
+        $query = $election->voters()->with('user');
+
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('email', 'like', "%{$search}%")
+                  ->orWhere('division', 'like', "%{$search}%")
+                  ->orWhere('current_position', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Division Filter
+        if ($request->filled('division') && $request->input('division') !== 'all') {
+            $query->where('division', $request->input('division'));
+        }
+
+        // Status Filter (All, Voted, In Queue)
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            if ($request->input('status') === 'voted') {
+                $query->whereNotNull('voted_at');
+            } elseif ($request->input('status') === 'queue') {
+                $query->whereNull('voted_at');
+            }
+        }
+
+        // Sorting by Submission Time (voted_at) or created_at (as a backup/default)
+        $sortOrder = $request->input('sort', 'desc');
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+        
+        // Sort by voted_at first, then by created_at or id
+        $query->orderBy('voted_at', $sortOrder)
+              ->orderBy('id', $sortOrder);
+
+        $voters = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'voters' => $voters->map(function($voter) {
+                return [
+                    'id' => $voter->id,
+                    'name' => $voter->user ? $voter->user->name : 'Anonymous Voter',
+                    'email' => $voter->email,
+                    'division' => $voter->division ?? '-',
+                    'current_position' => $voter->current_position ?? '-',
+                    'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
+                    'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
+                    'status' => $voter->voted_at ? 'Voted' : 'In Queue',
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Export the voter registry as a downloadable CSV.
+     */
+    public function exportVoters(Election $election)
+    {
+        $email = $this->getVoterEmail();
+        if (!$email) {
+            abort(401, 'Unauthenticated session.');
+        }
+
+        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
+        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        if (!$isMlhuillier && !$isSuperAdmin) {
+            abort(403, 'Access Denied: An authorized email domain is required.');
+        }
+
+        $voters = $election->voters()->with('user')->orderBy('voted_at', 'desc')->get();
+
+        $filename = "voter_registry_" . str_replace(' ', '_', strtolower($election->title)) . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($voters) {
+            $file = fopen('php://output', 'w');
+            
+            // CSV Header
+            fputcsv($file, ['Voter Name', 'Email Account', 'Division / Workplace', 'Corporate Position', 'Voting Status', 'Submission Time']);
+
+            foreach ($voters as $voter) {
+                fputcsv($file, [
+                    $voter->user ? $voter->user->name : 'Anonymous Voter',
+                    $voter->email,
+                    $voter->division ?? '-',
+                    $voter->current_position ?? '-',
+                    $voter->voted_at ? 'Voted' : 'In Queue',
+                    $voter->voted_at ? $voter->voted_at->format('Y-m-d H:i:s') : '-'
+                ]);
             }
 
             fclose($file);

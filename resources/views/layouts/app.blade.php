@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+<html lang="en" class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-x-hidden">
 
 <head>
     <meta charset="UTF-8">
@@ -26,7 +26,7 @@
     @yield('styles')
 </head>
 
-<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
     <!-- Premium Toast Notification Container -->
     <div id="toast-container" class="fixed top-4 md:top-20 right-4 md:right-6 left-4 md:left-auto z-50 flex flex-col gap-3 max-w-sm pointer-events-none">
     </div>
