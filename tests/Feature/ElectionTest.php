@@ -379,7 +379,7 @@ class ElectionTest extends TestCase
         // 1. Get Setup View
         $response = $this->withSession(['voter_email' => 'john@mlhuillier.com'])->get("/elections/{$election->id}/setup");
         $response->assertStatus(200);
-        $response->assertSee('Voter Verification');
+        $response->assertSee('Voting Policy');
 
         // 2. Submit Profiling
         $response = $this->withSession(['voter_email' => 'john@mlhuillier.com'])->post("/elections/{$election->id}/setup", [

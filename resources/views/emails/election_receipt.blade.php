@@ -168,11 +168,15 @@
             </div>
 
             <div class="receipt">
-                <h4 class="receipt-title">Participation Summary</h4>
-                @foreach($selections as $posName)
-                    <div class="detail-row">
-                        <span class="detail-label" style="text-transform: none; letter-spacing: normal; font-weight: 500; color: #1e293b;">{{ $posName }}</span>
-                        <span class="detail-value" style="color: #059669; font-weight: 600;">✓ Ballot Cast</span>
+                <h4 class="receipt-title">Your Ballot Selections</h4>
+                @foreach($selections as $posName => $candidateNames)
+                    <div class="detail-row" style="margin-bottom: 12px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 8px;">
+                        <span class="detail-label" style="text-transform: none; letter-spacing: normal; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">
+                            {{ $posName }}
+                        </span>
+                        <span class="detail-value" style="color: #581c87; font-weight: 600; font-size: 14px; display: block;">
+                            {{ implode(', ', $candidateNames) }}
+                        </span>
                     </div>
                 @endforeach
             </div>

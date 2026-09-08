@@ -481,15 +481,24 @@ class ElectionController extends Controller
             // 4. Send Official Email Receipt (Isolated & Robust)
             try {
                 $votes = $request->input('votes', []);
-                $positionNames = [];
+                $selectionsPayload = [];
+                
                 foreach ($election->positions as $position) {
-                    if (isset($votes[$position->id]) && count(array_filter((array)$votes[$position->id])) > 0) {
-                        $positionNames[] = $position->name;
+                    $candIds = isset($votes[$position->id]) ? (array)$votes[$position->id] : [];
+                    $candIds = array_filter($candIds);
+
+                    if (count($candIds) > 0) {
+                        $candidateNames = $position->candidates()
+                            ->whereIn('id', $candIds)
+                            ->pluck('name')
+                            ->toArray();
+
+                        $selectionsPayload[$position->name] = $candidateNames;
                     }
                 }
 
                 \Illuminate\Support\Facades\Mail::to($email)->send(
-                    new \App\Mail\ElectionReceipt($election, $voter, $positionNames)
+                    new \App\Mail\ElectionReceipt($election, $voter, $selectionsPayload)
                 );
             } catch (\Exception $mailEx) {
                 // Log the exception but do not block the submission flow if mail servers are unconfigured or down
