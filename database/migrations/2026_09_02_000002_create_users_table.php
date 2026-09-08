@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('google_id')->nullable()->unique();
             $table->string('avatar')->nullable();
             $table->foreignId('title_id')->nullable()->constrained('titles')->onDelete('set null');
+            $table->boolean('is_admin')->default(false);
             $table->string('pin', 6)->nullable(); // 6-digit PIN
             $table->rememberToken();
             $table->timestamps();

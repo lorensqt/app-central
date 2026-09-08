@@ -89,6 +89,24 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Election Application Card -->
+                <div class="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 p-6 shadow-sm hover:shadow-md dark:hover:border-slate-700 transition-all duration-300 flex flex-col justify-between text-left">
+                    <div>
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center font-semibold mb-5 group-hover:bg-purple-600 group-hover:text-white dark:group-hover:text-white transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Internal Election - App</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Create elections, manage positions and candidates, and allow secure public voting with robust domain filtering and real-time voter statistics.</p>
+                    </div>
+                    <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80">
+                        <a href="{{ route('committees.election.index') }}" class="w-full inline-flex items-center justify-center text-sm font-semibold py-2 px-4 rounded-lg bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-200 hover:bg-slate-800 dark:hover:bg-slate-700 transition duration-150">
+                            Launch App
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 

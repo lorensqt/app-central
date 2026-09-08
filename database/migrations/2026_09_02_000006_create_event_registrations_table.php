@@ -18,6 +18,11 @@ return new class extends Migration
             $table->string('email');
             $table->string('gender')->nullable(); // Merged gender column
             $table->string('status')->default('pending'); // 'pending', 'approved', 'declined'
+            $table->boolean('attended')->default(false);
+            $table->dateTime('attended_at')->nullable();
+            $table->string('ticket_code', 8)->nullable();
+            $table->json('custom_fields')->nullable();
+            $table->json('survey_responses')->nullable();
             $table->timestamps();
 
             // Prevent duplicate signups on the database level

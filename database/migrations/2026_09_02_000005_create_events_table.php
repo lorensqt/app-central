@@ -15,10 +15,20 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->text('terms_and_policy')->nullable();
             $table->dateTime('event_date');
+            $table->dateTime('end_date')->nullable();
             $table->string('location');
+            $table->string('location_type')->default('physical');
+            $table->text('arrival_instructions')->nullable();
             $table->string('image')->nullable();
             $table->integer('max_participants')->nullable(); // max capacity limit
+            $table->string('registration_type')->default('admin_approval');
+            $table->dateTime('registration_deadline')->nullable();
+            $table->json('registration_fields')->nullable();
+            $table->boolean('survey_enabled')->default(false);
+            $table->json('survey_questions')->nullable();
+            $table->boolean('survey_sent')->default(false);
             $table->foreignId('committee_id')->nullable()->constrained('committees')->onDelete('set null');
             $table->timestamps();
         });

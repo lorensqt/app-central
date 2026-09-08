@@ -43,6 +43,13 @@ Route::get('/events/{event}/check-in/success', [EventController::class, 'checkIn
 Route::get('/survey/{registration}', [EventController::class, 'showSurvey'])->name('events.survey_show');
 Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])->name('events.survey_submit');
 
+// Isolated Voter Public Portal Routes (Purely session-based, no users accounts created)
+Route::get('/elections/{election}/login', [\App\Http\Controllers\ElectionController::class, 'voterLogin'])->name('elections.voter.login');
+Route::get('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'showVoterSetup'])->name('elections.voter.setup');
+Route::post('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'submitVoterSetup'])->name('elections.voter.setup.submit');
+Route::get('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'showBallot'])->name('elections.ballot');
+Route::post('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'submitBallot'])->name('elections.ballot.submit');
+
 // Authenticated Sessions Group
 Route::middleware(['auth'])->group(function () {
     // Session Logout
@@ -67,6 +74,24 @@ Route::middleware(['auth'])->group(function () {
 
         // Unified Committee Events Application Portal
         Route::get('/committees/events', [EventController::class, 'index'])->name('committees.events.index');
+
+        // Unified Committee Elections Application Portal
+        Route::get('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'index'])->name('committees.election.index');
+        Route::post('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'store'])->name('committees.election.store');
+        Route::get('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'manage'])->name('committees.election.manage');
+        Route::get('/committees/election-app/{election}/export', [\App\Http\Controllers\ElectionController::class, 'exportResults'])->name('committees.election.export');
+        Route::put('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'update'])->name('committees.election.update');
+        Route::delete('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'destroy'])->name('committees.election.destroy');
+
+        // Positions Management
+        Route::post('/committees/election-app/{election}/positions', [\App\Http\Controllers\ElectionController::class, 'storePosition'])->name('committees.election.positions.store');
+        Route::put('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'updatePosition'])->name('committees.election.positions.update');
+        Route::delete('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'destroyPosition'])->name('committees.election.positions.destroy');
+
+        // Candidates Management
+        Route::post('/committees/election-app/positions/{position}/candidates', [\App\Http\Controllers\ElectionController::class, 'storeCandidate'])->name('committees.election.candidates.store');
+        Route::put('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'updateCandidate'])->name('committees.election.candidates.update');
+        Route::delete('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'destroyCandidate'])->name('committees.election.candidates.destroy');
 
         // Dedicated Event Management Page
         Route::get('/committees/events/{event}', [EventController::class, 'manage'])->name('committees.events.manage');

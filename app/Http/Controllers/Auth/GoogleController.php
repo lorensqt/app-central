@@ -31,15 +31,33 @@ class GoogleController extends Controller
 
         $email = $googleUser->getEmail();
         $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $isMlhuillier = str_ends_with(strtolower($email), '@mlhuillier.com');
+
+        // Check if they are a public voter
+        if (session()->has('voter_for_election')) {
+            $electionId = session()->pull('voter_for_election');
+
+            if ($isSuperAdmin || $isMlhuillier) {
+                // ISO-VOTER ACCESS: Completely isolated session, NO users table record created.
+                session([
+                    'voter_email' => $email,
+                    'voter_name' => $googleUser->getName() ?? 'Employee'
+                ]);
+
+                return redirect()->route('elections.voter.setup', $electionId);
+            } else {
+                return redirect()->route('login')->with('error', 'Access Denied: Only @mlhuillier.com email accounts are allowed to vote in corporate elections.');
+            }
+        }
 
         // Check if the user is in the database
         $user = User::where('email', $email)->first();
 
         if (! $user) {
-            if ($isSuperAdmin) {
-                // If they are super admin and don't exist in the database, automatically create them
+            if ($isSuperAdmin || $isMlhuillier) {
+                // If they are super admin or have an @mlhuillier.com email, automatically create them
                 $user = User::create([
-                    'name' => $googleUser->getName() ?? 'Super Admin',
+                    'name' => $googleUser->getName() ?? 'Employee',
                     'email' => $email,
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
