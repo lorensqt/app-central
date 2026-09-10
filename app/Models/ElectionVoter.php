@@ -13,7 +13,8 @@ class ElectionVoter extends Model
         'user_id',
         'email',
         'division',
-        'current_position',
+        'gender',
+        'age',
         'voted_at',
     ];
 

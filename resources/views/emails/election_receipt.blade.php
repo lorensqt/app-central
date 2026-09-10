@@ -150,8 +150,13 @@
                 </div>
                 
                 <div class="detail-row">
-                    <span class="detail-label">Current Position:</span>
-                    <span class="detail-value">{{ $voter->current_position }}</span>
+                    <span class="detail-label">Gender:</span>
+                    <span class="detail-value">{{ $voter->gender }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Age:</span>
+                    <span class="detail-value">{{ $voter->age }}</span>
                 </div>
                 
                 <div class="detail-row">

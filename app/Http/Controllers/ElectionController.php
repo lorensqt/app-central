@@ -91,7 +91,85 @@ class ElectionController extends Controller
             ->pluck('division')
             ->toArray();
 
-        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions'));
+        // Calculate Demographic and Turnout Statistics
+        $genderStats = [
+            'Male' => ['count' => 0, 'voted' => 0],
+            'Female' => ['count' => 0, 'voted' => 0],
+            'LGBTQ' => ['count' => 0, 'voted' => 0],
+            'Others' => ['count' => 0, 'voted' => 0, 'details' => []]
+        ];
+
+        $ageStats = [
+            '18-25' => ['count' => 0, 'voted' => 0],
+            '26-35' => ['count' => 0, 'voted' => 0],
+            '36-45' => ['count' => 0, 'voted' => 0],
+            '46-60' => ['count' => 0, 'voted' => 0],
+            '61+' => ['count' => 0, 'voted' => 0],
+        ];
+
+        foreach ($voters as $voter) {
+            $g = $voter->gender;
+            $hasVoted = $voter->voted_at !== null;
+
+            // Gender Breakdown
+            if (in_array($g, ['Male', 'Female', 'LGBTQ'])) {
+                $genderStats[$g]['count']++;
+                if ($hasVoted) {
+                    $genderStats[$g]['voted']++;
+                }
+            } elseif (!empty($g)) {
+                $genderStats['Others']['count']++;
+                if ($hasVoted) {
+                    $genderStats['Others']['voted']++;
+                }
+                if (!isset($genderStats['Others']['details'][$g])) {
+                    $genderStats['Others']['details'][$g] = 0;
+                }
+                $genderStats['Others']['details'][$g]++;
+            }
+
+            // Age Breakdown
+            $age = (int)$voter->age;
+            if ($age >= 18 && $age <= 25) {
+                $ageStats['18-25']['count']++;
+                if ($hasVoted) $ageStats['18-25']['voted']++;
+            } elseif ($age >= 26 && $age <= 35) {
+                $ageStats['26-35']['count']++;
+                if ($hasVoted) $ageStats['26-35']['voted']++;
+            } elseif ($age >= 36 && $age <= 45) {
+                $ageStats['36-45']['count']++;
+                if ($hasVoted) $ageStats['36-45']['voted']++;
+            } elseif ($age >= 46 && $age <= 60) {
+                $ageStats['46-60']['count']++;
+                if ($hasVoted) $ageStats['46-60']['voted']++;
+            } elseif ($age >= 61) {
+                $ageStats['61+']['count']++;
+                if ($hasVoted) $ageStats['61+']['voted']++;
+            }
+        }
+
+        $allAges = $voters->pluck('age')->filter()->toArray();
+        $avgAgeAll = count($allAges) > 0 ? round(array_sum($allAges) / count($allAges), 1) : 0;
+
+        $votedAges = $voters->whereNotNull('voted_at')->pluck('age')->filter()->toArray();
+        $avgAgeVoted = count($votedAges) > 0 ? round(array_sum($votedAges) / count($votedAges), 1) : 0;
+
+        $queuedAges = $voters->whereNull('voted_at')->pluck('age')->filter()->toArray();
+        $avgAgeQueued = count($queuedAges) > 0 ? round(array_sum($queuedAges) / count($queuedAges), 1) : 0;
+
+        $stats = [
+            'total_voters' => $voters->count(),
+            'voted_voters' => $voters->whereNotNull('voted_at')->count(),
+            'queued_voters' => $voters->whereNull('voted_at')->count(),
+            'turnout_rate' => $voters->count() > 0 ? round(($voters->whereNotNull('voted_at')->count() / $voters->count()) * 100, 1) : 0,
+            'gender' => $genderStats,
+            'age' => $ageStats,
+            'avg_age_all' => $avgAgeAll,
+            'avg_age_voted' => $avgAgeVoted,
+            'avg_age_queued' => $avgAgeQueued,
+        ];
+
+        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions', 'stats'));
     }
 
     /**
@@ -334,7 +412,7 @@ class ElectionController extends Controller
         }
 
         // If profiling is already completed but not yet voted, redirect to ballot
-        if ($voter && $voter->division !== null && $voter->current_position !== null) {
+        if ($voter && $voter->division !== null && $voter->gender !== null && $voter->age !== null) {
             return redirect()->route('elections.ballot', $election->id);
         }
 
@@ -363,15 +441,23 @@ class ElectionController extends Controller
 
         $validated = $request->validate([
             'division' => 'required|string|max:255',
-            'current_position' => 'required|string|max:255',
+            'gender' => 'required|string|max:255',
+            'gender_other' => 'nullable|required_if:gender,Others|string|max:255',
+            'age' => 'required|integer|min:18|max:120',
         ]);
+
+        $genderValue = $validated['gender'];
+        if ($genderValue === 'Others' && !empty($validated['gender_other'])) {
+            $genderValue = $validated['gender_other'];
+        }
 
         $election->voters()->updateOrCreate(
             ['email' => $email],
             [
                 'user_id' => auth()->id(), // keeps it null for isolated guests!
                 'division' => $validated['division'],
-                'current_position' => $validated['current_position'],
+                'gender' => $genderValue,
+                'age' => $validated['age'],
             ]
         );
 
@@ -400,7 +486,7 @@ class ElectionController extends Controller
 
         // Ensure setup has been completed
         $voter = $election->voters()->where('email', $email)->first();
-        if (!$voter || $voter->division === null || $voter->current_position === null) {
+        if (!$voter || $voter->division === null || $voter->gender === null || $voter->age === null) {
             return redirect()->route('elections.voter.setup', $election->id);
         }
 
@@ -447,7 +533,7 @@ class ElectionController extends Controller
         }
 
         $voter = $election->voters()->where('email', $email)->first();
-        if (!$voter || $voter->division === null || $voter->current_position === null) {
+        if (!$voter || $voter->division === null || $voter->gender === null || $voter->age === null) {
             return response()->json([
                 'success' => false,
                 'message' => 'Voter profiling setup is incomplete.'
@@ -648,7 +734,8 @@ class ElectionController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('email', 'like', "%{$search}%")
                   ->orWhere('division', 'like', "%{$search}%")
-                  ->orWhere('current_position', 'like', "%{$search}%")
+                  ->orWhere('gender', 'like', "%{$search}%")
+                  ->orWhere('age', 'like', "%{$search}%")
                   ->orWhereHas('user', function($uq) use ($search) {
                       $uq->where('name', 'like', "%{$search}%");
                   });
@@ -689,7 +776,8 @@ class ElectionController extends Controller
                     'name' => $voter->user ? $voter->user->name : 'Anonymous Voter',
                     'email' => $voter->email,
                     'division' => $voter->division ?? '-',
-                    'current_position' => $voter->current_position ?? '-',
+                    'gender' => $voter->gender ?? '-',
+                    'age' => $voter->age ?? '-',
                     'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
                     'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
                     'status' => $voter->voted_at ? 'Voted' : 'In Queue',
@@ -730,14 +818,15 @@ class ElectionController extends Controller
             $file = fopen('php://output', 'w');
             
             // CSV Header
-            fputcsv($file, ['Voter Name', 'Email Account', 'Division / Workplace', 'Corporate Position', 'Voting Status', 'Submission Time']);
+            fputcsv($file, ['Voter Name', 'Email Account', 'Division / Workplace', 'Gender', 'Age', 'Voting Status', 'Submission Time']);
 
             foreach ($voters as $voter) {
                 fputcsv($file, [
                     $voter->user ? $voter->user->name : 'Anonymous Voter',
                     $voter->email,
                     $voter->division ?? '-',
-                    $voter->current_position ?? '-',
+                    $voter->gender ?? '-',
+                    $voter->age ?? '-',
                     $voter->voted_at ? 'Voted' : 'In Queue',
                     $voter->voted_at ? $voter->voted_at->format('Y-m-d H:i:s') : '-'
                 ]);

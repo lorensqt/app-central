@@ -214,6 +214,7 @@ class ElectionTest extends TestCase
         $response->assertSee('Ballot Structure');
         $response->assertSee('Voter Register');
         $response->assertSee('Election Results');
+        $response->assertSee('Reports &amp; Statistics');
     }
 
     /**
@@ -384,7 +385,8 @@ class ElectionTest extends TestCase
         // 2. Submit Profiling
         $response = $this->withSession(['voter_email' => 'john@mlhuillier.com'])->post("/elections/{$election->id}/setup", [
             'division' => 'OPEC Division',
-            'current_position' => 'Area Manager',
+            'gender' => 'Male',
+            'age' => 30,
         ]);
 
         $response->assertRedirect("/elections/{$election->id}/vote");
@@ -393,7 +395,8 @@ class ElectionTest extends TestCase
             'election_id' => $election->id,
             'email' => 'john@mlhuillier.com',
             'division' => 'OPEC Division',
-            'current_position' => 'Area Manager',
+            'gender' => 'Male',
+            'age' => 30,
             'voted_at' => null,
         ]);
     }
@@ -436,7 +439,8 @@ class ElectionTest extends TestCase
         $voter = $election->voters()->create([
             'email' => 'john@mlhuillier.com',
             'division' => 'IT Department',
-            'current_position' => 'Senior Developer',
+            'gender' => 'Male',
+            'age' => 30,
         ]);
 
         // Cast Vote via AJAX
@@ -486,7 +490,8 @@ class ElectionTest extends TestCase
         $voter = $election->voters()->create([
             'email' => 'john@mlhuillier.com',
             'division' => 'IT',
-            'current_position' => 'Manager',
+            'gender' => 'Male',
+            'age' => 30,
             'voted_at' => now(),
         ]);
 
@@ -530,7 +535,8 @@ class ElectionTest extends TestCase
         $voter = $election->voters()->create([
             'email' => 'john@mlhuillier.com',
             'division' => 'IT',
-            'current_position' => 'Staff',
+            'gender' => 'Male',
+            'age' => 30,
         ]);
 
         // Post votes selecting BOTH candidates (limit is 1)

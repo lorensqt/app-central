@@ -107,7 +107,7 @@
                         Voter Registry
                     </h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                        Please provide your division and current position inside M Lhuillier to enter the ballot box.
+                        Please provide your division, age, and gender inside M Lhuillier to enter the ballot box.
                     </p>
                 </div>
 
@@ -119,7 +119,7 @@
                         </svg>
                     </span>
                     <p class="text-[11px] leading-normal text-slate-500 dark:text-slate-400">
-                        <strong>Privacy Safeguard:</strong> This registry profiling data is used solely to audit turnout representation metrics. Under no circumstances is this data mapped to your confidential ballot selection inside the secure database.
+                        <strong>Privacy Safeguard:</strong> This registry profiling data is used solely to audit turnout representation metrics. Please note that age and gender are required for statistics reports purposes only. Under no circumstances is this data mapped to your confidential ballot selection inside the secure database.
                     </p>
                 </div>
 
@@ -142,17 +142,57 @@
                         </div>
                     </div>
 
-                    <!-- Position Input -->
+                    <!-- Gender Input -->
                     <div class="space-y-1.5">
-                        <label for="current_position" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Current Position / Role Designation</label>
+                        <label for="gender" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gender</label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <select name="gender" id="gender" required onchange="toggleGenderOther()"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 sm:py-3 pl-11 pr-10 text-slate-800 dark:text-slate-200 text-base sm:text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700/85 shadow-sm transition appearance-none">
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="LGBTQ">LGBTQ</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Gender Specification (Initially Hidden) -->
+                    <div id="gender_other_container" class="space-y-1.5 hidden">
+                        <label for="gender_other" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Please Specify Gender</label>
                         <div class="relative rounded-xl shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </div>
-                            <input type="text" name="current_position" id="current_position" required
-                                placeholder="e.g. Area Manager, Software Engineer"
+                            <input type="text" name="gender_other" id="gender_other"
+                                placeholder="e.g. Non-binary, Prefer not to say"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 sm:py-3 pl-11 pr-4 text-slate-800 dark:text-slate-200 text-base sm:text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700/85 shadow-sm transition">
+                        </div>
+                    </div>
+
+                    <!-- Age Input -->
+                    <div class="space-y-1.5">
+                        <label for="age" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Age</label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <input type="number" name="age" id="age" required min="18" max="120"
+                                placeholder="e.g. 25"
                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 sm:py-3 pl-11 pr-4 text-slate-800 dark:text-slate-200 text-base sm:text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700/85 shadow-sm transition">
                         </div>
                     </div>
@@ -203,6 +243,21 @@
             profilingPanel.classList.remove('opacity-0');
             profilingPanel.classList.add('opacity-100');
         });
+    }
+
+    function toggleGenderOther() {
+        const genderSelect = document.getElementById('gender');
+        const otherContainer = document.getElementById('gender_other_container');
+        const otherInput = document.getElementById('gender_other');
+
+        if (genderSelect.value === 'Others') {
+            otherContainer.classList.remove('hidden');
+            otherInput.setAttribute('required', 'true');
+        } else {
+            otherContainer.classList.add('hidden');
+            otherInput.removeAttribute('required');
+            otherInput.value = '';
+        }
     }
 </script>
 @endsection

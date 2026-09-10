@@ -46,7 +46,8 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('email')->nullable();
             $table->string('division')->nullable();
-            $table->string('current_position')->nullable();
+            $table->string('gender')->nullable();
+            $table->integer('age')->nullable();
             $table->dateTime('voted_at')->nullable();
             $table->timestamps();
 
