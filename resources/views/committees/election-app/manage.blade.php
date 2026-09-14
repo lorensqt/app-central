@@ -460,6 +460,12 @@
 
             document.getElementById('add_candidate_position_id').value = positionId;
             document.getElementById('add_candidate_position_name').textContent = positionName;
+            
+            // Set default preview placeholder
+            const preview = document.getElementById('cand_avatar_preview');
+            if (preview) {
+                preview.src = 'https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder';
+            }
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -492,6 +498,12 @@
             document.getElementById('edit_cand_party').value = candidate.party_affiliation || '';
             document.getElementById('edit_cand_avatar').value = candidate.avatar_path || '';
             document.getElementById('edit_cand_sort_order').value = candidate.sort_order;
+
+            // Load candidate portrait preview
+            const preview = document.getElementById('edit_cand_avatar_preview');
+            if (preview) {
+                preview.src = candidate.avatar_path || 'https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder';
+            }
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -649,6 +661,9 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Adding...';
 
+            const loader = document.getElementById('create_avatar_loader');
+            if (loader) loader.classList.remove('hidden');
+
             const positionId = document.getElementById('add_candidate_position_id').value;
             const formData = new FormData(form);
 
@@ -662,17 +677,19 @@
                 })
                 .then(response => response.json())
                 .then(res => {
+                    if (loader) loader.classList.add('hidden');
                     if (res.success) {
                         window.showToast(res.message, 'success');
                         closeCreateCandidateModal();
                         setTimeout(() => window.location.reload(), 800);
                     } else {
                         window.showToast(res.message || 'Error occurred.', 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Add Candidate';
                     }
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Add Candidate';
                 })
                 .catch(err => {
+                    if (loader) loader.classList.add('hidden');
                     console.error(err);
                     window.showToast('Connection error.', 'error');
                     submitBtn.disabled = false;
@@ -688,6 +705,9 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
+            const loader = document.getElementById('edit_avatar_loader');
+            if (loader) loader.classList.remove('hidden');
+
             const id = document.getElementById('edit_candidate_id').value;
             const formData = new FormData(form);
 
@@ -701,17 +721,19 @@
                 })
                 .then(response => response.json())
                 .then(res => {
+                    if (loader) loader.classList.add('hidden');
                     if (res.success) {
                         window.showToast(res.message, 'success');
                         closeEditCandidateModal();
                         setTimeout(() => window.location.reload(), 800);
                     } else {
                         window.showToast(res.message || 'Error occurred.', 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Save Changes';
                     }
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save Changes';
                 })
                 .catch(err => {
+                    if (loader) loader.classList.add('hidden');
                     console.error(err);
                     window.showToast('Connection error.', 'error');
                     submitBtn.disabled = false;

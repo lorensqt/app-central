@@ -9,6 +9,7 @@ use App\Models\ElectionVoter;
 use App\Models\ElectionVote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ElectionController extends Controller
 {
@@ -281,16 +282,29 @@ class ElectionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
+            'avatar_file' => 'nullable|image|max:2048',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'nullable|integer',
         ]);
+
+        $avatarUrl = $validated['avatar_path'] ?? null;
+
+        if ($request->hasFile('avatar_file')) {
+            $path = $request->file('avatar_file')->store('candidates', 's3');
+            $avatarUrl = Storage::disk('s3')->url($path);
+        }
 
         // Default sort order if not set
         if (!isset($validated['sort_order'])) {
             $validated['sort_order'] = $position->candidates()->count() + 1;
         }
 
-        $candidate = $position->candidates()->create($validated);
+        $candidate = $position->candidates()->create([
+            'name' => $validated['name'],
+            'party_affiliation' => $validated['party_affiliation'],
+            'avatar_path' => $avatarUrl,
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return response()->json([
             'success' => true,
@@ -307,11 +321,39 @@ class ElectionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
+            'avatar_file' => 'nullable|image|max:2048',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'required|integer',
         ]);
 
-        $candidate->update($validated);
+        $avatarUrl = $validated['avatar_path'] ?? $candidate->avatar_path;
+
+        if ($request->hasFile('avatar_file')) {
+            // Cleanup the old S3 avatar if it exists in our bucket
+            if ($candidate->avatar_path && str_contains($candidate->avatar_path, env('AWS_BUCKET'))) {
+                $parsedUrl = parse_url($candidate->avatar_path);
+                $oldPath = ltrim($parsedUrl['path'] ?? '', '/');
+                
+                $bucketName = env('AWS_BUCKET');
+                if (str_starts_with($oldPath, $bucketName . '/')) {
+                    $oldPath = substr($oldPath, strlen($bucketName . '/'));
+                }
+
+                if (Storage::disk('s3')->exists($oldPath)) {
+                    Storage::disk('s3')->delete($oldPath);
+                }
+            }
+
+            $path = $request->file('avatar_file')->store('candidates', 's3');
+            $avatarUrl = Storage::disk('s3')->url($path);
+        }
+
+        $candidate->update([
+            'name' => $validated['name'],
+            'party_affiliation' => $validated['party_affiliation'],
+            'avatar_path' => $avatarUrl,
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return response()->json([
             'success' => true,
@@ -325,6 +367,21 @@ class ElectionController extends Controller
      */
     public function destroyCandidate(ElectionCandidate $candidate)
     {
+        // Delete candidate's image from S3 if it exists in our bucket
+        if ($candidate->avatar_path && str_contains($candidate->avatar_path, env('AWS_BUCKET'))) {
+            $parsedUrl = parse_url($candidate->avatar_path);
+            $path = ltrim($parsedUrl['path'] ?? '', '/');
+            
+            $bucketName = env('AWS_BUCKET');
+            if (str_starts_with($path, $bucketName . '/')) {
+                $path = substr($path, strlen($bucketName . '/'));
+            }
+
+            if (Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
+            }
+        }
+
         $candidate->delete();
 
         return response()->json([

@@ -1,7 +1,7 @@
 <!-- PREMIUM BACKDROP MODAL: ADD CANDIDATE -->
 <div id="create-candidate-modal"
     class="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/90 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 max-w-lg w-full shadow-2xl flex flex-col max-h-[92vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 max-w-2xl w-full shadow-2xl flex flex-col max-h-[92vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
         id="create-candidate-modal-content">
         
         <!-- Header -->
@@ -25,48 +25,78 @@
             </div>
         </div>
 
-        <form id="create-candidate-form" onsubmit="submitCreateCandidate(event)" class="flex-grow flex flex-col min-h-0">
+        <form id="create-candidate-form" enctype="multipart/form-data" onsubmit="submitCreateCandidate(event)" class="flex-grow flex flex-col min-h-0">
             @csrf
             
             <input type="hidden" id="add_candidate_position_id" name="position_id">
             
-            <div class="p-6 sm:p-8 space-y-4 bg-slate-50/40 dark:bg-slate-950/20 flex-grow overflow-y-auto custom-scrollbar">
-                <!-- Candidate Name -->
-                <div class="space-y-1.5">
-                    <label for="cand_name" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Candidate Name</label>
-                    <input type="text" name="name" id="cand_name" required
-                        placeholder="e.g. Juan dela Cruz"
-                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
-                </div>
+            <div class="p-6 sm:p-8 bg-slate-50/40 dark:bg-slate-950/20 flex-grow overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- Left Side: Form inputs (7 cols) -->
+                    <div class="md:col-span-7 space-y-4">
+                        <!-- Candidate Name -->
+                        <div class="space-y-1.5">
+                            <label for="cand_name" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Candidate Name</label>
+                            <input type="text" name="name" id="cand_name" required
+                                placeholder="e.g. Juan dela Cruz"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                        </div>
 
-                <!-- Party Affiliation -->
-                <div class="space-y-1.5">
-                    <label for="cand_party" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Party / Alliance (Optional)</label>
-                    <input type="text" name="party_affiliation" id="cand_party"
-                        placeholder="e.g. Reform Alliance, Independent"
-                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
-                </div>
+                        <!-- Party Affiliation -->
+                        <div class="space-y-1.5">
+                            <label for="cand_party" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Party / Alliance (Optional)</label>
+                            <input type="text" name="party_affiliation" id="cand_party"
+                                placeholder="e.g. Reform Alliance, Independent"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                        </div>
 
-                <!-- Avatar URL -->
-                <div class="space-y-1.5">
-                    <label for="cand_avatar" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avatar / Portrait URL (Optional)</label>
-                    <div class="relative rounded-xl shadow-sm">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        </span>
-                        <input type="url" name="avatar_path" id="cand_avatar"
-                            placeholder="e.g. https://images.unsplash.com/photo-..."
-                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                        <!-- Sort Order -->
+                        <div class="space-y-1.5">
+                            <label for="cand_sort_order" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ballot Order (Optional)</label>
+                            <input type="number" name="sort_order" id="cand_sort_order" placeholder="Default sorting"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                        </div>
                     </div>
-                </div>
 
-                <!-- Sort Order -->
-                <div class="space-y-1.5">
-                    <label for="cand_sort_order" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ballot Order (Optional)</label>
-                    <input type="number" name="sort_order" id="cand_sort_order" placeholder="Default sorting"
-                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                    <!-- Right Side: Live Image Preview & Upload Controls (5 cols) -->
+                    <div class="md:col-span-5 flex flex-col items-center justify-start space-y-4 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/60 pt-6 md:pt-0 md:pl-6">
+                        <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider self-start md:self-center">Candidate Portrait</label>
+                        
+                        <!-- Premium Interactive Live Image Previewer -->
+                        <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-purple-100 dark:border-purple-950/40 shadow-md bg-slate-100 dark:bg-slate-950 flex items-center justify-center shrink-0">
+                            <!-- Live Preview Image Element -->
+                            <img id="cand_avatar_preview" src="https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder" class="w-full h-full object-cover" alt="Avatar Preview">
+                            
+                            <!-- Loading Spinner Overlay -->
+                            <div id="create_avatar_loader" class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] hidden flex flex-col items-center justify-center text-white transition-opacity duration-200">
+                                <svg class="animate-spin h-7 w-7 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="text-[9px] font-bold tracking-wider uppercase mt-1.5 text-purple-200">Uploading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Inputs box -->
+                        <div class="w-full space-y-3">
+                            <!-- File Upload Option -->
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Upload Image File</span>
+                                <input type="file" name="avatar_file" id="cand_avatar_file" accept="image/*" onchange="previewCreateAvatarFile(event)"
+                                    class="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-white dark:bg-slate-950 shadow-sm file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-50 file:text-purple-700 dark:file:bg-purple-950/30 dark:file:text-purple-400 hover:file:bg-purple-100 transition">
+                            </div>
+
+                            <!-- URL Option -->
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Or, Enter Image URL</span>
+                                <div class="relative rounded-xl shadow-sm">
+                                    <input type="url" name="avatar_path" id="cand_avatar" oninput="previewCreateAvatarUrl(this.value)"
+                                        placeholder="e.g. https://api.dicebear.com/..."
+                                        class="w-full pr-3 pl-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -84,3 +114,24 @@
         </form>
     </div>
 </div>
+
+<script>
+    function previewCreateAvatarFile(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('cand_avatar_preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewCreateAvatarUrl(url) {
+        if (url && url.trim() !== '') {
+            document.getElementById('cand_avatar_preview').src = url;
+        } else {
+            document.getElementById('cand_avatar_preview').src = 'https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder';
+        }
+    }
+</script>
