@@ -330,16 +330,16 @@ class ElectionController extends Controller
 
         if ($request->hasFile('avatar_file')) {
             // Cleanup the old S3 avatar if it exists in our bucket
-            if ($candidate->avatar_path && str_contains($candidate->avatar_path, env('AWS_BUCKET'))) {
+            $bucketName = env('AWS_BUCKET');
+            if ($candidate->avatar_path && !empty($bucketName) && str_contains($candidate->avatar_path, $bucketName)) {
                 $parsedUrl = parse_url($candidate->avatar_path);
                 $oldPath = ltrim($parsedUrl['path'] ?? '', '/');
                 
-                $bucketName = env('AWS_BUCKET');
                 if (str_starts_with($oldPath, $bucketName . '/')) {
                     $oldPath = substr($oldPath, strlen($bucketName . '/'));
                 }
 
-                if (Storage::disk('s3')->exists($oldPath)) {
+                if (!empty($oldPath) && Storage::disk('s3')->exists($oldPath)) {
                     Storage::disk('s3')->delete($oldPath);
                 }
             }
@@ -368,16 +368,16 @@ class ElectionController extends Controller
     public function destroyCandidate(ElectionCandidate $candidate)
     {
         // Delete candidate's image from S3 if it exists in our bucket
-        if ($candidate->avatar_path && str_contains($candidate->avatar_path, env('AWS_BUCKET'))) {
+        $bucketName = env('AWS_BUCKET');
+        if ($candidate->avatar_path && !empty($bucketName) && str_contains($candidate->avatar_path, $bucketName)) {
             $parsedUrl = parse_url($candidate->avatar_path);
             $path = ltrim($parsedUrl['path'] ?? '', '/');
             
-            $bucketName = env('AWS_BUCKET');
             if (str_starts_with($path, $bucketName . '/')) {
                 $path = substr($path, strlen($bucketName . '/'));
             }
 
-            if (Storage::disk('s3')->exists($path)) {
+            if (!empty($path) && Storage::disk('s3')->exists($path)) {
                 Storage::disk('s3')->delete($path);
             }
         }

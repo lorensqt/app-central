@@ -675,7 +675,18 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    return response.json().then(res => {
+                        if (!response.ok) {
+                            let errMsg = res.message || 'Validation failed.';
+                            if (res.errors) {
+                                errMsg = Object.values(res.errors).flat().join(' | ');
+                            }
+                            return { success: false, message: errMsg };
+                        }
+                        return res;
+                    });
+                })
                 .then(res => {
                     if (loader) loader.classList.add('hidden');
                     if (res.success) {
@@ -683,7 +694,7 @@
                         closeCreateCandidateModal();
                         setTimeout(() => window.location.reload(), 800);
                     } else {
-                        window.showToast(res.message || 'Error occurred.', 'error');
+                        window.showToast(res.message, 'error');
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Add Candidate';
                     }
@@ -719,7 +730,18 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    return response.json().then(res => {
+                        if (!response.ok) {
+                            let errMsg = res.message || 'Validation failed.';
+                            if (res.errors) {
+                                errMsg = Object.values(res.errors).flat().join(' | ');
+                            }
+                            return { success: false, message: errMsg };
+                        }
+                        return res;
+                    });
+                })
                 .then(res => {
                     if (loader) loader.classList.add('hidden');
                     if (res.success) {
@@ -727,7 +749,7 @@
                         closeEditCandidateModal();
                         setTimeout(() => window.location.reload(), 800);
                     } else {
-                        window.showToast(res.message || 'Error occurred.', 'error');
+                        window.showToast(res.message, 'error');
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Save Changes';
                     }

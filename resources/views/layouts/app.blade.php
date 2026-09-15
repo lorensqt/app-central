@@ -18,6 +18,7 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -28,12 +29,12 @@
 
 <body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
     <!-- Premium Toast Notification Container -->
-    <div id="toast-container" class="fixed top-4 md:top-20 right-4 md:right-6 left-4 md:left-auto z-50 flex flex-col gap-3 max-w-sm pointer-events-none">
+    <div id="toast-container" class="fixed top-4 md:top-20 right-4 md:right-6 left-4 md:left-auto z-[100] flex flex-col gap-3 max-w-sm pointer-events-none">
     </div>
 
     <!-- Premium Custom Confirm Modal Backdrop -->
     <div id="confirm-modal"
-        class="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4 transition-all duration-300">
+        class="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-[2px] z-[90] hidden items-center justify-center p-4 transition-all duration-300">
         <div id="confirm-modal-card"
             class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/85 max-w-sm w-full shadow-xl p-6 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
             <!-- Icon & Header -->
@@ -81,53 +82,106 @@
                         </a>
                     </div>
 
-                    <!-- Right: Theme Switcher, User Info & Logout -->
-                    <div class="flex items-center gap-4">
-                        <!-- Theme Toggle Button -->
-                        <button id="theme-toggle" type="button"
-                            class="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-500/20 shrink-0">
-                            <!-- Moon Icon (Visible in Light Mode) -->
-                            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                            </svg>
-                            <!-- Sun Icon (Visible in Dark Mode) -->
-                            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </button>
-
+                    <!-- Right: Premium Unified Profile Dropdown -->
+                    <div class="flex items-center">
                         @auth
-                            <div class="flex items-center gap-3 pr-2 border-r border-slate-200 dark:border-slate-800">
-                                @if (Auth::user()->avatar)
-                                    <img class="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700"
-                                        src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}">
-                                @else
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-300 flex items-center justify-center text-xs font-semibold uppercase">
-                                        {{ substr(Auth::user()->name, 0, 2) }}
+                            <div class="relative inline-block text-left" id="profile-dropdown-container">
+                                <!-- Trigger Button -->
+                                <button type="button" id="profile-dropdown-trigger" class="flex items-center gap-2.5 p-1.5 pl-3 pr-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 transition duration-150 focus:outline-none select-none">
+                                    @if (Auth::user()->avatar)
+                                        <img class="w-7 h-7 rounded-lg border border-slate-200/50 dark:border-slate-700/50 object-cover shrink-0"
+                                            src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}">
+                                    @else
+                                        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-bold uppercase shrink-0">
+                                            {{ substr(Auth::user()->name, 0, 2) }}
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="text-left hidden sm:block">
+                                        <p class="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                                            {{ explode(' ', Auth::user()->name)[0] }} {{ explode(' ', Auth::user()->name)[1] ?? '' }}
+                                        </p>
                                     </div>
-                                @endif
-                                <div class="hidden sm:block text-left">
-                                    <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-none">
-                                        {{ Auth::user()->name }}
-                                        @if (Auth::user()->isSuperAdmin())
-                                            <span
-                                                class="ml-1 px-1.5 py-0.5 bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-[10px] rounded font-bold uppercase tracking-wider">Super
-                                                Admin</span>
-                                        @endif
+
+                                    <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" id="profile-dropdown-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown Menu Card -->
+                                <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2.5 w-64 origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl z-50 transform scale-95 opacity-0 transition-all duration-200 ease-out focus:outline-none">
+                                    <!-- User Summary -->
+                                    <div class="p-4 border-b border-slate-100 dark:border-slate-800/60">
+                                        <div class="flex items-start gap-3">
+                                            @if (Auth::user()->avatar)
+                                                <img class="w-10 h-10 rounded-xl border border-slate-200/50 dark:border-slate-700/50 object-cover shrink-0"
+                                                    src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}">
+                                            @else
+                                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                                                    {{ substr(Auth::user()->name, 0, 2) }}
+                                                </div>
+                                            @endif
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                                                    {{ Auth::user()->name }}
+                                                </p>
+                                                <p class="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5 font-medium">
+                                                    {{ Auth::user()->email }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Designations -->
+                                        <div class="mt-4 space-y-1.5">
+                                            <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Title & Roles</div>
+                                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/15 max-w-full truncate">
+                                                    {{ Auth::user()->title ? (Auth::user()->title->title ?? Auth::user()->title->name) : (Auth::user()->isSuperAdmin() ? 'Platform Administrator' : 'Guest') }}
+                                                </span>
+                                                @if (Auth::user()->isSuperAdmin())
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/15 uppercase tracking-wide">
+                                                        Super Admin
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-                                        {{ Auth::user()->title ? Auth::user()->title->title : (Auth::user()->isSuperAdmin() ? 'Platform Administrator' : 'Guest') }}
+
+                                    <!-- Actions Group -->
+                                    <div class="p-1.5 space-y-0.5">
+                                        <!-- Integrated Theme Toggle Menu Item -->
+                                        <button type="button" id="theme-toggle-dropdown" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white transition duration-150">
+                                            <span class="flex items-center gap-2.5">
+                                                <span id="theme-icon-container" class="text-slate-400 dark:text-slate-500">
+                                                    <!-- Moon Icon (visible in light mode) -->
+                                                    <svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                                    </svg>
+                                                    <!-- Sun Icon (visible in dark mode) -->
+                                                    <svg class="w-4 h-4 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                </span>
+                                                <span id="theme-toggle-text-dropdown">Switch Theme</span>
+                                            </span>
+                                            <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 py-0.5 px-1.5 rounded-md uppercase tracking-wider font-bold">Theme</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Logout / Danger Section -->
+                                    <div class="border-t border-slate-100 dark:border-slate-800/60 p-1.5">
+                                        <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                            @csrf
+                                            <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition duration-150 text-left">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                </svg>
+                                                <span>Logout Account</span>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
-                            <form action="{{ route('logout') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit"
-                                    class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-500 transition-colors py-1.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                                    Logout
-                                </button>
-                            </form>
                         @endauth
                     </div>
                 </div>
@@ -349,7 +403,7 @@
             }
         });
 
-        // Automate flash toasts on load and initialize theme toggle buttons
+        // Automate flash toasts on load and initialize theme toggle buttons & dropdowns
         document.addEventListener('DOMContentLoaded', () => {
             @if (session('status') || session('success'))
                 window.showToast("{{ session('status') ?? session('success') }}", 'success');
@@ -359,33 +413,72 @@
                 window.showToast("{{ session('error') }}", 'error');
             @endif
 
-            // Theme Toggle Logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            if (themeToggleBtn) {
-                const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-                const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            // Unified Profile Dropdown Trigger & Click-Away Logic
+            const dropdownTrigger = document.getElementById('profile-dropdown-trigger');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            const dropdownChevron = document.getElementById('profile-dropdown-chevron');
+            const dropdownContainer = document.getElementById('profile-dropdown-container');
 
-                // Toggle visibility of sun/moon icon based on active theme
-                if (document.documentElement.classList.contains('dark')) {
-                    themeToggleLightIcon.classList.remove('hidden');
-                    themeToggleDarkIcon.classList.add('hidden');
-                } else {
-                    themeToggleDarkIcon.classList.remove('hidden');
-                    themeToggleLightIcon.classList.add('hidden');
+            if (dropdownTrigger && dropdownMenu) {
+                const toggleDropdown = () => {
+                    const isClosed = dropdownMenu.classList.contains('hidden');
+                    if (isClosed) {
+                        // Open Dropdown
+                        dropdownMenu.classList.remove('hidden');
+                        requestAnimationFrame(() => {
+                            dropdownMenu.classList.remove('scale-95', 'opacity-0');
+                            dropdownMenu.classList.add('scale-100', 'opacity-100');
+                            if (dropdownChevron) dropdownChevron.classList.add('rotate-180');
+                        });
+                    } else {
+                        // Close Dropdown
+                        dropdownMenu.classList.remove('scale-100', 'opacity-100');
+                        dropdownMenu.classList.add('scale-95', 'opacity-0');
+                        if (dropdownChevron) dropdownChevron.classList.remove('rotate-180');
+                        setTimeout(() => dropdownMenu.classList.add('hidden'), 200);
+                    }
+                };
+
+                dropdownTrigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (dropdownContainer && !dropdownContainer.contains(e.target)) {
+                        if (!dropdownMenu.classList.contains('hidden')) {
+                            dropdownMenu.classList.remove('scale-100', 'opacity-100');
+                            dropdownMenu.classList.add('scale-95', 'opacity-0');
+                            if (dropdownChevron) dropdownChevron.classList.remove('rotate-180');
+                            setTimeout(() => dropdownMenu.classList.add('hidden'), 200);
+                        }
+                    }
+                });
+            }
+
+            // Dropdown Integrated Theme Toggle Logic
+            const themeToggleBtnDropdown = document.getElementById('theme-toggle-dropdown');
+            const themeToggleTextDropdown = document.getElementById('theme-toggle-text-dropdown');
+
+            const updateThemeText = () => {
+                if (themeToggleTextDropdown) {
+                    themeToggleTextDropdown.textContent = document.documentElement.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
                 }
+            };
 
-                themeToggleBtn.addEventListener('click', function() {
+            // Initialize dropdown theme label
+            updateThemeText();
+
+            if (themeToggleBtnDropdown) {
+                themeToggleBtnDropdown.addEventListener('click', function() {
                     if (document.documentElement.classList.contains('dark')) {
                         document.documentElement.classList.remove('dark');
                         localStorage.setItem('theme', 'light');
-                        themeToggleDarkIcon.classList.remove('hidden');
-                        themeToggleLightIcon.classList.add('hidden');
                     } else {
                         document.documentElement.classList.add('dark');
                         localStorage.setItem('theme', 'dark');
-                        themeToggleLightIcon.classList.remove('hidden');
-                        themeToggleDarkIcon.classList.add('hidden');
                     }
+                    updateThemeText();
                 });
             }
         });
