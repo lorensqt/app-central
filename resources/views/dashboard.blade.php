@@ -14,7 +14,7 @@
         $greeting = 'Good evening';
     }
 
-    $imagePath = storage_path('app/imgs/header.png');
+    $imagePath = resource_path('views/imgs/header.png');
     $base64Image = '';
     if (file_exists($imagePath)) {
         $imageData = base64_encode(file_get_contents($imagePath));

@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class AdminEventController extends Controller
 {
@@ -26,6 +27,7 @@ class AdminEventController extends Controller
             'location_type' => 'required|string|in:physical,virtual',
             'arrival_instructions' => 'nullable|string',
             'image' => 'nullable|url|max:2048',
+            'cover_file' => 'nullable|image|max:4096',
             'max_participants' => 'nullable|integer|min:1',
             'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
@@ -35,6 +37,11 @@ class AdminEventController extends Controller
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
+
+        if ($request->hasFile('cover_file')) {
+            $path = $request->file('cover_file')->store('events', 's3');
+            $validated['image'] = Storage::disk('s3')->url($path);
+        }
 
         Event::create($validated);
 
@@ -46,6 +53,16 @@ class AdminEventController extends Controller
      */
     public function destroy(Event $event)
     {
+        // Delete cover image from S3 if it exists in our bucket
+        $bucketName = config('filesystems.disks.s3.bucket');
+        if ($event->image && !empty($bucketName) && str_contains($event->image, $bucketName)) {
+            $parsedUrl = parse_url($event->image);
+            $path = ltrim($parsedUrl['path'] ?? '', '/');
+            if (!empty($path) && Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
+            }
+        }
+
         $event->delete();
 
         // Redirect back to committee events index instead of dynamic back if deleting from manage screen
@@ -67,6 +84,7 @@ class AdminEventController extends Controller
             'location_type' => 'required|string|in:physical,virtual',
             'arrival_instructions' => 'nullable|string',
             'image' => 'nullable|url|max:2048',
+            'cover_file' => 'nullable|image|max:4096',
             'max_participants' => 'nullable|integer|min:1',
             'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
@@ -75,6 +93,25 @@ class AdminEventController extends Controller
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
+
+        $imageUrl = $validated['image'] ?? $event->image;
+
+        if ($request->hasFile('cover_file')) {
+            // Delete old S3 cover if it exists in S3
+            $bucketName = config('filesystems.disks.s3.bucket');
+            if ($event->image && !empty($bucketName) && str_contains($event->image, $bucketName)) {
+                $parsedUrl = parse_url($event->image);
+                $oldPath = ltrim($parsedUrl['path'] ?? '', '/');
+                if (!empty($oldPath) && Storage::disk('s3')->exists($oldPath)) {
+                    Storage::disk('s3')->delete($oldPath);
+                }
+            }
+            
+            $path = $request->file('cover_file')->store('events', 's3');
+            $imageUrl = Storage::disk('s3')->url($path);
+        }
+
+        $validated['image'] = $imageUrl;
 
         $event->update($validated);
 

@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <form action="{{ route('committees.events.store') }}" method="POST" class="flex-grow flex flex-col min-h-0">
+        <form action="{{ route('committees.events.store') }}" method="POST" enctype="multipart/form-data" class="flex-grow flex flex-col min-h-0">
             @csrf
             
             <!-- Scrollable Premium Form Console -->
@@ -80,19 +80,33 @@
                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 shadow-sm transition-all duration-300 transform hover:scale-[1.002] custom-scrollbar"></textarea>
                         </div>
 
-                        <!-- Event Cover Image URL -->
-                        <div class="space-y-1.5">
-                            <label for="event_image"
-                                class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cover Image URL (Optional)</label>
-                            <div class="relative rounded-xl shadow-sm">
-                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </span>
-                                <input type="url" name="image" id="event_image"
-                                    placeholder="e.g. https://images.unsplash.com/photo-..."
-                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 hover:scale-[1.002]">
+                        <!-- Event Cover Image Upload & URL (Combined block) -->
+                        <div class="space-y-4">
+                            <!-- File Upload Field -->
+                            <div class="space-y-1.5">
+                                <label for="cover_file"
+                                    class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cover Image File (Optional)</label>
+                                <div class="relative rounded-xl shadow-sm">
+                                    <input type="file" name="cover_file" id="cover_file" accept="image/*"
+                                        class="w-full text-xs text-slate-550 dark:text-slate-400 border border-slate-200 dark:border-slate-800/80 rounded-xl py-2.5 px-4 focus:outline-none file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-purple-50 file:text-purple-600 dark:file:bg-purple-950/40 dark:file:text-purple-400 hover:file:bg-purple-100 dark:hover:file:bg-purple-900/40 file:cursor-pointer transition-all">
+                                </div>
+                                <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Upload a high-resolution PNG, JPG or WEBP image directly to the cloud bucket.</p>
+                            </div>
+
+                            <!-- Image URL Field -->
+                            <div class="space-y-1.5">
+                                <label for="event_image"
+                                    class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Or Cover Image URL</label>
+                                <div class="relative rounded-xl shadow-sm">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <input type="url" name="image" id="event_image"
+                                        placeholder="e.g. https://images.unsplash.com/photo-..."
+                                        class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 hover:scale-[1.002]">
+                                </div>
                             </div>
                         </div>
 
