@@ -107,21 +107,31 @@
             </div>
         </div>
 
-        <!-- Inline Validation Errors -->
-        @if ($errors->any())
-            <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm flex flex-col gap-1 shadow-sm">
-                @foreach ($errors->all() as $error)
-                    <div class="flex items-start gap-2">
-                        <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <span>{{ $error }}</span>
-                    </div>
-                @endforeach
-            </div>
+        <!-- Session Flash Messages for AJAX Extraction -->
+        @if (session('status') || session('success'))
+            <div id="admin-status-message" class="hidden" data-message="{{ session('status') ?? session('success') }}"></div>
         @endif
+        @if (session('error'))
+            <div id="admin-error-message" class="hidden" data-message="{{ session('error') }}"></div>
+        @endif
+
+        <!-- Inline Validation Errors -->
+        <div id="admin-error-container">
+            @if ($errors->any())
+                <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm flex flex-col gap-1 shadow-sm">
+                    @foreach ($errors->all() as $error)
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span>{{ $error }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
 
         <!-- Sub-tabs Segmented Controls -->
         <div class="border-b border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
@@ -230,7 +240,7 @@
                 </div>
 
                 <!-- Whitelisted Users Directory -->
-                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden shadow-sm">
+                <div id="whitelist-directory-card" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden shadow-sm">
                     <div class="p-6 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                         <h3 class="font-bold text-slate-900 dark:text-white text-lg">Whitelisted Access Directory</h3>
                         <span class="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 rounded-lg text-xs font-bold border border-purple-100/50 dark:border-purple-900/30">Authorized:
@@ -374,7 +384,7 @@
             <!-- SUB-PANEL 2: DESIGNATIONS & COMMITTEES -->
             <div id="panel-titles" class="admin-tab-panel hidden space-y-8">
                 <!-- Interactive Stats Row -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div id="admin-stats-row" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Stat Card 1: Total Designations -->
                     <div class="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 p-6 flex items-center justify-between shadow-sm transition duration-300 hover:shadow-md">
                         <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full bg-blue-500/5 blur-xl"></div>
@@ -451,7 +461,7 @@
                         </div>
 
                         <!-- Custom Committees Dashboard -->
-                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 p-6 shadow-sm space-y-4">
+                        <div id="committees-dashboard-card" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 p-6 shadow-sm space-y-4">
                             <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
                                 <div>
                                     <h3 class="font-bold text-slate-900 dark:text-white text-lg">Custom Committees Dashboard</h3>
@@ -611,7 +621,7 @@
                         </div>
 
                         <!-- Active Titles Directory Card -->
-                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden shadow-sm">
+                        <div id="titles-directory-card" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden shadow-sm">
                             <div class="p-6 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
                                 <div>
                                     <h3 class="font-bold text-slate-900 dark:text-white text-lg">Active Titles Directory</h3>

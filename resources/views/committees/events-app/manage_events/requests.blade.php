@@ -9,21 +9,21 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </span>
-            <input type="text" id="applicant-search" onkeyup="filterApplicants()" placeholder="Search applicants by name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
+            <input type="text" id="applicant-search" oninput="filterApplicants()" placeholder="Search applicants by name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
         </div>
 
         <!-- Right Side: Filter Buttons for Quick Toggle (All, Pending, Approved, Declined) -->
-        <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80 shrink-0">
-            <button type="button" onclick="setStatusFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm transition duration-150">
+        <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80 shrink-0 select-none">
+            <button type="button" onclick="setStatusFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-xs transition duration-150">
                 All ({{ $event->registrations->count() }})
             </button>
-            <button type="button" onclick="setStatusFilter('pending')" id="filter-btn-pending" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
+            <button type="button" onclick="setStatusFilter('pending')" id="filter-btn-pending" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-amber-500/5 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent transition duration-150">
                 Pending ({{ $event->registrations->where('status', 'pending')->count() }})
             </button>
-            <button type="button" onclick="setStatusFilter('approved')" id="filter-btn-approved" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
+            <button type="button" onclick="setStatusFilter('approved')" id="filter-btn-approved" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-emerald-500/5 dark:hover:bg-emerald-950/20 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent transition duration-150">
                 Approved ({{ $event->registrations->where('status', 'approved')->count() }})
             </button>
-            <button type="button" onclick="setStatusFilter('declined')" id="filter-btn-declined" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150">
+            <button type="button" onclick="setStatusFilter('declined')" id="filter-btn-declined" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-rose-500/5 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-450 border border-transparent transition duration-150">
                 Declined ({{ $event->registrations->where('status', 'declined')->count() }})
             </button>
         </div>
@@ -40,13 +40,13 @@
                 <p class="text-xs text-slate-450 dark:text-slate-500 not-italic">Copy the public RSVP link above and share it with potential attendees!</p>
             </div>
         @else
-            <div class="overflow-x-auto custom-scrollbar">
+            <!-- Desktop Layout: Table View (Hidden on Mobile) -->
+            <div class="hidden sm:block overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm border-collapse">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             <th class="py-3.5 px-6 w-12 text-center select-none text-[10px] tracking-wider text-slate-400">Sel</th>
                             <th class="py-3.5 px-6">Attendee Profile</th>
-                            <th class="py-3.5 px-6">Email Address</th>
                             <th class="py-3.5 px-6">Ticket Code</th>
                             <th class="py-3.5 px-6">Gender</th>
                             <th class="py-3.5 px-6">Submission Time</th>
@@ -58,7 +58,7 @@
                         @foreach($event->registrations->sortByDesc('created_at') as $reg)
                             <tr class="applicant-row hover:bg-slate-50/50 dark:hover:bg-slate-800/35 transition duration-150" 
                                 data-id="{{ $reg->id }}"
-                                data-name="{{ strtolower($reg->name) }}" 
+                                data-name="{{ $reg->name }}" 
                                 data-email="{{ strtolower($reg->email) }}" 
                                 data-code="{{ strtolower($reg->ticket_code) }}"
                                 data-status="{{ $reg->status }}">
@@ -68,16 +68,17 @@
                                     <input type="checkbox" class="applicant-checkbox w-4 h-4 rounded border-slate-300 dark:border-slate-700/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-900 transition duration-150" data-id="{{ $reg->id }}">
                                 </td>
                                 
-                                <!-- Profile / Avatar Initials -->
+                                <!-- Profile / Avatar Initials with Merged Name & Email (Pro-Level Layout) -->
                                 <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">
                                     <div class="flex items-center gap-3">
-                                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
+                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
                                             {{ substr($reg->name, 0, 2) }}
                                         </span>
-                                        <div>
-                                            <span class="truncate text-slate-800 dark:text-slate-200 font-semibold">{{ $reg->name }}</span>
+                                        <div class="text-left">
+                                            <span class="block text-slate-900 dark:text-slate-100 font-bold text-sm leading-none">{{ $reg->name }}</span>
+                                            <span class="block text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-1 leading-none select-all" title="Click to select email">{{ $reg->email }}</span>
                                             @if(!empty($reg->custom_fields))
-                                                <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1 space-x-1.5 flex items-center flex-wrap gap-y-1">
+                                                <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-2.5 space-x-1.5 flex items-center flex-wrap gap-y-1">
                                                     @php $first = true; @endphp
                                                     @foreach($reg->custom_fields as $key => $value)
                                                         @if(!empty($value))
@@ -104,9 +105,6 @@
                                     </div>
                                 </td>
                                 
-                                <!-- Email Address -->
-                                <td class="py-4 px-6 text-slate-500 dark:text-slate-400 font-mono text-xs">{{ $reg->email }}</td>
-                                
                                 <!-- Ticket Code Column -->
                                 <td class="py-4 px-6 font-mono text-xs text-purple-650 dark:text-purple-400 font-bold">
                                     {{ $reg->ticket_code ?? 'N/A' }}
@@ -124,8 +122,8 @@
                                     {{ $reg->created_at ? $reg->created_at->format('M j, Y • g:i A') : 'N/A' }}
                                 </td>
                                 
-                                <!-- Status Badge -->
-                                <td class="py-4 px-6">
+                                <!-- Status Badge (Desktop status-cell target) -->
+                                <td class="status-cell py-4 px-6">
                                     @if($reg->status === 'approved')
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -145,7 +143,7 @@
                                             @endif
                                         </div>
                                     @elseif($reg->status === 'declined')
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
                                             <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                                             Declined
                                         </span>
@@ -157,8 +155,8 @@
                                     @endif
                                 </td>
                                 
-                                <!-- Actions Column -->
-                                <td class="py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
+                                <!-- Actions Column (Desktop actions-cell target) -->
+                                <td class="actions-cell py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
                                     @if($reg->status === 'pending')
                                         <!-- Approve Form -->
                                         <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="inline">
@@ -200,6 +198,140 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Layout: Card View (Visible only on Mobile) -->
+            <div id="applicants-mobile-cards" class="sm:hidden divide-y divide-slate-100 dark:divide-slate-800/60">
+                @foreach($event->registrations->sortByDesc('created_at') as $reg)
+                    <div class="applicant-row p-4 space-y-3 bg-white dark:bg-slate-900 transition duration-150"
+                        data-id="{{ $reg->id }}"
+                        data-name="{{ strtolower($reg->name) }}" 
+                        data-email="{{ strtolower($reg->email) }}" 
+                        data-code="{{ strtolower($reg->ticket_code) }}"
+                        data-status="{{ $reg->status }}">
+                        
+                        <!-- Top Header Row: Profile Avatar, Name, and Status Badge -->
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <!-- Selection Checkbox & Profile Avatar -->
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="applicant-checkbox w-4.5 h-4.5 rounded border-slate-300 dark:border-slate-700/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-900 transition duration-150" data-id="{{ $reg->id }}">
+                                    
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
+                                        {{ substr($reg->name, 0, 2) }}
+                                    </span>
+                                </div>
+                                <div class="text-left">
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm leading-snug">{{ $reg->name }}</h4>
+                                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $reg->created_at ? $reg->created_at->format('M j, Y • g:i A') : 'N/A' }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Status Badge (Mobile status-cell target) -->
+                            <div class="status-cell shrink-0 text-right">
+                                @if($reg->status === 'approved')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Approved
+                                    </span>
+                                    <div class="attendance-badge-wrapper mt-1">
+                                        @if($reg->attended)
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Attended
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                                Absent
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif($reg->status === 'declined')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Declined
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider animate-pulse">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        Pending
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Applicant Contact Info / Metadata -->
+                        <div class="text-xs space-y-1.5 bg-slate-50/50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-slate-100/60 dark:border-slate-800/50 text-left">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-slate-400 font-medium">Email Address:</span>
+                                <span class="font-mono text-slate-600 dark:text-slate-300 select-all truncate max-w-[190px]" title="{{ $reg->email }}">{{ $reg->email }}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-slate-400 font-medium">Ticket Code:</span>
+                                <span class="font-mono font-bold text-purple-650 dark:text-purple-400">{{ $reg->ticket_code ?? 'N/A' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-slate-400 font-medium">Gender:</span>
+                                <span class="font-semibold text-slate-650 dark:text-slate-300">{{ $reg->gender ?? 'Unspecified' }}</span>
+                            </div>
+                            
+                            <!-- Custom Fields -->
+                            @if(!empty($reg->custom_fields))
+                                <div class="border-t border-slate-100 dark:border-slate-800/50 pt-1.5 mt-1.5 space-y-1 text-[11px]">
+                                    @foreach($reg->custom_fields as $key => $value)
+                                        @if(!empty($value))
+                                            <div class="flex items-start justify-between gap-2">
+                                                <span class="text-slate-400 font-medium truncate max-w-[110px]">{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
+                                                <span class="text-slate-700 dark:text-slate-300 font-bold truncate max-w-[180px] text-right" title="{{ $value }}">{{ $value }}</span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Mobile Moderation Actions (Mobile actions-cell target) -->
+                        <div class="actions-cell mobile-actions-container flex items-center justify-end gap-2 pt-1 border-t border-slate-50 dark:border-slate-800/40">
+                            @if($reg->status === 'pending')
+                                <!-- Approve Form -->
+                                <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="flex-grow">
+                                    @csrf
+                                    <button type="submit" class="w-full text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-500 dark:bg-emerald-950/20 dark:hover:bg-emerald-400 hover:text-white dark:hover:text-slate-900 border border-emerald-100 dark:border-emerald-900/30 py-2 rounded-xl transition duration-150">
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <!-- Decline Form -->
+                                <form action="{{ route('committees.registrations.decline', $reg) }}" method="POST" class="flex-grow">
+                                    @csrf
+                                    <button type="submit" class="w-full text-center text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 hover:bg-red-500 dark:bg-red-950/20 dark:hover:bg-red-400 hover:text-white dark:hover:text-slate-900 border border-red-100/30 dark:border-red-900/30 py-2 rounded-xl transition duration-150">
+                                        Decline
+                                    </button>
+                                </form>
+                            @elseif($reg->status === 'approved')
+                                <!-- Attendance Toggle -->
+                                <form action="{{ route('committees.registrations.toggle_attendance', $reg) }}" method="POST" class="flex-grow toggle-attendance-form">
+                                    @csrf
+                                    <button type="submit" class="w-full text-center text-xs font-bold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-500 hover:text-white' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-500 hover:text-white' }} py-2 rounded-xl transition duration-150">
+                                        {{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}
+                                    </button>
+                                </form>
+                            @endif
+
+                            <!-- Delete Button -->
+                            <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="delete-registration-form" data-name="{{ $reg->name }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-xs font-semibold text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-600 hover:text-white border border-red-100 dark:border-red-900/30 p-2 rounded-xl transition duration-150" title="Delete Registrant">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
             </div>
 
             <!-- Client-side No Results State inside table -->

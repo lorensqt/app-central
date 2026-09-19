@@ -170,109 +170,181 @@
         <span class="text-slate-900 dark:text-slate-300 font-medium">Event Control Room</span>
     </div>
 
-    <!-- Header / Cover Card (Rich Aesthetics) -->
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-6 sm:p-8 relative overflow-hidden">
-        <!-- Floating Ambient Glow background element -->
-        <div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-purple-500/5 blur-3xl pointer-events-none"></div>
+        <!-- Header / Cover Card (Rich Aesthetics - The Modern "Hero Banner Split" Option A) -->
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 shadow-[0_4px_25px_rgba(15,23,42,0.02)] p-6 sm:p-8 relative overflow-visible">
+        <!-- Ambient Glow container (perfectly clipped to rounded card boundaries using overflow-hidden wrapper, while parent card stays overflow-visible) -->
+        <div class="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none z-0">
+            <div class="absolute -left-16 -top-16 w-52 h-52 rounded-full bg-purple-500/5 blur-3xl"></div>
+            <div class="absolute -right-16 -bottom-16 w-52 h-52 rounded-full bg-indigo-500/5 blur-3xl"></div>
+        </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-800/80">
-            <div class="space-y-2 max-w-3xl">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 text-xs font-semibold rounded-md border border-purple-100 dark:border-purple-900/30">
-                        {{ $event->committee->name }}
-                    </span>
-                    <span class="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-md border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active RSVP
-                    </span>
+        <!-- Top Section: 2-Column Responsive Split (Image on Left, Title & Description on Right) -->
+        <div class="relative z-10 flex flex-col md:flex-row gap-8 items-start mb-6">
+            @if($event->image)
+                <!-- Left Column: Premium Cover Media -->
+                <div onclick="openImageLightbox('{{ $event->image }}')" class="w-full md:w-64 lg:w-72 aspect-[16/10] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] cursor-pointer hover:opacity-95 hover:scale-[1.01] active:scale-95 transition-all duration-300 shrink-0 relative group">
+                    <img src="{{ $event->image }}" alt="{{ $event->title }}" class="w-full h-full object-cover">
+                    <!-- Glassmorphic hover overlay indicator -->
+                    <div class="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/15 flex items-center justify-center transition duration-300 backdrop-blur-0 group-hover:backdrop-blur-[2px]">
+                        <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">{{ $event->title }}</h1>
-                <div class="text-slate-550 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-line max-h-32 overflow-y-auto custom-scrollbar pr-2">{{ $event->description }}</div>
-            </div>
+            @endif
+                
+            <!-- Right Column: Info & Control Panel -->
+            <div class="flex-grow w-full space-y-5">
+                <!-- Row 1: Header Row (Title & Action Button same horizontal line) -->
+                <div class="flex flex-col sm:flex-row justify-between items-start gap-4 w-full">
+                    <div class="space-y-2 flex-grow text-left">
+                        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                            {{ $event->title }}
+                        </h1>
+                        
+                        <!-- Row 2: Badges Sitting Elegantly below Title -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-purple-100/60 dark:border-purple-900/30">
+                                {{ $event->committee->name }}
+                            </span>
+                            <span class="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-emerald-100/60 dark:border-emerald-900/30 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active RSVP
+                            </span>
+                        </div>
+                    </div>
 
-            <!-- Header Quick Actions -->
-            <div class="flex flex-wrap gap-2.5 w-full md:w-auto shrink-0">
-                <!-- Generate Poster Button -->
-                @if($event->registration_type === 'venue_confirmation')
-                    <button onclick="openCheckInPosterModal()" class="w-full sm:w-auto text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/30 transition duration-150 inline-flex items-center justify-center gap-2 shadow-sm focus:outline-none">
-                        <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m-3 3h6M5 12h14M3 7h6v6H3V7zm0 10h6v6H3v-6zm12 0h6v6h-6v-6zm0-10h6v6h-6V7z" />
-                        </svg>
-                        Get Check-In Poster
-                    </button>
-                @endif
+                    <!-- Dropdown Trigger aligned next to title on the same row with premium spacious padding -->
+                    <div class="relative select-none shrink-0 w-full sm:w-auto self-start flex justify-end">
+                        <div class="relative w-full sm:w-auto">
+                            <button onclick="toggleActionDropdown()" id="action-dropdown-btn" type="button" 
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md hover:shadow-lg focus:outline-none transition duration-150 group">
+                                <svg class="w-4 h-4 text-purple-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Manage Assembly</span>
+                                <svg class="w-3.5 h-3.5 text-purple-200 group-hover:text-white transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            <!-- Action Dropdown Menu -->
+                            <div id="action-dropdown-menu" 
+                                class="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-[0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-black/5 divide-y divide-slate-100 dark:divide-slate-800/60 hidden z-50 animate-fade-in-up">
+                                <div class="py-1.5">
+                                    <!-- View Public Page -->
+                                    <a href="{{ route('events.public_show', $event) }}" target="_blank" rel="noopener noreferrer" 
+                                        onclick="toggleActionDropdown()"
+                                        class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
+                                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        View Landing Page
+                                    </a>
+                                    <!-- Copy Shareable Link -->
+                                    <button onclick="copyEventLink('{{ route('events.public_show', $event) }}'); toggleActionDropdown();" 
+                                        class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
+                                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10M10 9l3-3m-3 3l3 3" />
+                                        </svg>
+                                        Copy Share Link
+                                    </button>
+                                </div>
+                                <div class="py-1.5">
+                                    <!-- Edit Event -->
+                                    <button onclick="openEditEventModal(); toggleActionDropdown();" 
+                                        class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
+                                        <svg class="w-4 h-4 text-purple-500 group-hover:text-purple-650 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        Edit Event Details
+                                    </button>
+                                    <!-- Get Check-In Poster -->
+                                    @if($event->registration_type === 'venue_confirmation')
+                                        <button onclick="openCheckInPosterModal(); toggleActionDropdown();" 
+                                            class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
+                                            <svg class="w-4 h-4 text-emerald-500 group-hover:text-emerald-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m-3 3h6M5 12h14M3 7h6v6H3V7zm0 10h6v6H3v-6zm12 0h6v6h-6v-6zm0-10h6v6h-6V7z" />
+                                            </svg>
+                                            Get Check-In Poster
+                                        </button>
+                                    @endif
+                                </div>
+                                <div class="py-1.5">
+                                    <!-- Delete Event -->
+                                    <form action="{{ route('committees.events.destroy', $event) }}" method="POST" data-confirm="Are you sure you want to delete this event?" data-confirm-sub="All guest registrations for this assembly will be permanently deleted." data-confirm-title="Delete Scheduled Assembly" class="block w-full">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-red-650 dark:text-red-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center gap-2.5 transition">
+                                            <svg class="w-4 h-4 text-red-500 group-hover:text-red-650 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Delete Event
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- Edit Event Button -->
-                <button onclick="openEditEventModal()" class="w-full sm:w-auto text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-950/20 px-4 py-2.5 rounded-xl border border-purple-200 dark:border-purple-900/30 transition duration-150 inline-flex items-center justify-center gap-2 shadow-sm focus:outline-none">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit Event
-                </button>
-
-                <!-- Copy Public Link -->
-                <button onclick="copyEventLink('{{ route('events.public_show', $event) }}')" class="w-full sm:w-auto text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-4 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700 transition duration-150 inline-flex items-center justify-center gap-2 shadow-sm focus:outline-none">
-                    <svg class="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    Copy Event Link
-                </button>
-
-                <!-- View Public Page -->
-                <a href="{{ route('events.public_show', $event) }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto text-center inline-flex items-center justify-center text-xs font-semibold py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-slate-800 text-white dark:text-slate-200 hover:bg-slate-800 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition duration-150 shadow-sm">
-                    View Event Landing Page
-                </a>
-
-                <!-- Delete Event Form -->
-                <form action="{{ route('committees.events.destroy', $event) }}" method="POST" data-confirm="Are you sure you want to delete this event?" data-confirm-sub="All guest registrations for this assembly will be permanently deleted." data-confirm-title="Delete Scheduled Assembly" class="w-full sm:w-auto inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="w-full sm:w-auto text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 bg-red-50 dark:bg-red-950/20 hover:border-transparent px-4 py-2.5 rounded-xl border border-red-200 dark:border-red-900/30 transition duration-150 inline-flex items-center justify-center shadow-sm focus:outline-none">
-                        Delete Event
-                    </button>
-                </form>
+                <!-- Row 3: Event Description (Compact, Scrollable & Fade-Out Effect) -->
+                <div class="relative group">
+                    <div class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed whitespace-pre-line max-h-24 overflow-y-auto custom-scrollbar pr-2 max-w-3xl text-left">
+                        {{ $event->description }}
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Event Details Mini-Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 text-sm">
-            <div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-950/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 font-bold shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Bottom Section: Full-Width Glassmorphic Core Metrics Grid (Spanning across both sides) -->
+        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-xs w-full">
+            <!-- Date Card -->
+            <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
+                <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                 </span>
-                <div class="truncate">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Actual Event Date</p>
-                    <p class="font-semibold text-slate-850 dark:text-slate-300 truncate" title="{{ $event->formatted_date_range }}">{{ $event->formatted_date_range }}</p>
+                <div class="truncate text-left">
+                    <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Assembly Date</p>
+                    <p class="font-bold text-slate-800 dark:text-slate-300 truncate" title="{{ $event->formatted_date_range }}">{{ $event->formatted_date_range }}</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-950/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 font-bold shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Location Card -->
+            <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
+                <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                 </span>
-                <div class="truncate">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Venue Location</p>
-                    <p class="font-semibold text-slate-850 dark:text-slate-300 truncate" title="{{ $event->location }}">{{ $event->location }}</p>
+                <div class="truncate text-left">
+                    <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Location</p>
+                    <p class="font-bold text-slate-800 dark:text-slate-300 truncate" title="{{ $event->location }}">{{ $event->location }}</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-950/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 sm:col-span-2 lg:col-span-1">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 font-bold shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Registrants Card -->
+            <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
+                <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                 </span>
-                <div class="truncate">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider leading-none mb-1">Total Registrants</p>
-                    <p class="font-semibold text-slate-850 dark:text-slate-300 truncate"><span class="text-slate-900 dark:text-white font-bold">{{ $event->registrations->count() }}</span> applications received</p>
+                <div class="truncate text-left">
+                    <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Total Registrants</p>
+                    <p class="font-bold text-slate-800 dark:text-slate-300 truncate"><span class="text-slate-900 dark:text-white font-extrabold">{{ $event->registrations->count() }}</span> registrations</p>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Feedback messages -->
     @if ($errors->any())
@@ -380,6 +452,58 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+    // Toggle action dropdown menu
+    function toggleActionDropdown() {
+        const menu = document.getElementById('action-dropdown-menu');
+        if (menu) {
+            menu.classList.toggle('hidden');
+        }
+    }
+
+    // Close dropdown menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('action-dropdown-menu');
+        const btn = document.getElementById('action-dropdown-btn');
+        if (menu && btn && !btn.contains(event.target) && !menu.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    // Lightbox Modal Controls
+    function openImageLightbox(imageUrl) {
+        const modal = document.getElementById('image-lightbox-modal');
+        const content = document.getElementById('image-lightbox-content');
+        const img = document.getElementById('lightbox-preview-img');
+        if (!modal || !content || !img) return;
+
+        img.src = imageUrl;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    // Close Lightbox Modal
+    function closeImageLightbox() {
+        const modal = document.getElementById('image-lightbox-modal');
+        const content = document.getElementById('image-lightbox-content');
+        if (!modal || !content) return;
+
+        modal.classList.add('opacity-0');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('lightbox-preview-img').src = '';
+        }, 200);
+    }
+
     // Copy event shareable link to clipboard
     function copyEventLink(url) {
         navigator.clipboard.writeText(url).then(() => {
@@ -1289,6 +1413,25 @@
                 Print Poster
             </button>
         </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX MODAL: FULL EVENT IMAGE PREVIEW -->
+<div id="image-lightbox-modal"
+    class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[60] hidden items-center justify-center p-4 transition-all duration-300 opacity-0 cursor-zoom-out"
+    onclick="closeImageLightbox()">
+    <div class="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center transform scale-95 opacity-0 transition-all duration-300"
+        id="image-lightbox-content">
+        <button onclick="closeImageLightbox(); event.stopPropagation();" 
+            class="absolute -top-12 right-0 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition duration-150"
+            title="Close Preview">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <img id="lightbox-preview-img" src="" alt="Lightbox Preview" 
+            class="max-w-full max-h-[80vh] rounded-2xl object-contain border border-white/10 shadow-2xl select-none"
+            onclick="event.stopPropagation();">
     </div>
 </div>
 

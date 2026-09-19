@@ -160,38 +160,77 @@
             color: #94a3b8 !important;
         }
     </style>
-    <div class="space-y-8 max-w-7xl mx-auto">
-        <!-- Breadcrumbs -->
-        <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <a href="{{ route('dashboard') }}?tab=committees" class="hover:text-slate-900 dark:hover:text-white transition-colors">Portal</a>
-            <svg class="w-4 h-4 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-            <span class="text-slate-900 dark:text-slate-300 font-medium">{{ $committee ? $committee->name : 'Events Management' }}</span>
-        </div>
-
-        <!-- Header Section -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/60 dark:border-slate-800/80 pb-6 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
-                    <span
-                        class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 font-bold text-lg">
-                        {{ $committee ? substr($committee->name, 0, 2) : 'EM' }}
-                    </span>
-                    {{ $committee ? $committee->name . ' Workspace' : 'Events Management' }}
-                </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1.5">Official collaboration cockpit and events directory for committee
-                    personnel.</p>
+    @php
+        $initials = 'EM';
+        if ($committee) {
+            $words = explode(' ', $committee->name);
+            if (count($words) >= 2) {
+                $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+            } else {
+                $initials = strtoupper(substr($committee->name, 0, 2));
+            }
+        }
+    @endphp
+    <div class="space-y-6 sm:space-y-8 max-w-7xl mx-auto select-none">
+        <!-- Premium Responsive Breadcrumbs -->
+        <div class="flex items-center justify-between text-xs select-none">
+            <!-- Desktop Full Path Breadcrumbs (Hidden on Mobile) -->
+            <div class="hidden sm:flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                <!-- Portal Link with Icon -->
+                <a href="{{ route('dashboard') }}?tab=committees" class="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition-all font-medium">
+                    <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Portal
+                </a>
+                
+                <!-- Separator -->
+                <svg class="w-3 h-3 text-slate-300 dark:text-slate-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                
+                <!-- Active Page Badge -->
+                <span class="px-2 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold rounded-md border border-purple-500/10">
+                    {{ $committee ? $committee->name : 'Events Management' }} Workspace
+                </span>
             </div>
 
-            <div class="flex flex-wrap items-center gap-4">
+            <!-- Mobile Back-to-Parent Link (Visible only on Mobile) -->
+            <div class="flex sm:hidden w-full">
+                <a href="{{ route('dashboard') }}?tab=committees" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-slate-650 dark:text-slate-400 font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition duration-150 shadow-xs">
+                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>Back to Portal</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Header Section (Compact and Premium Layout) -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between border-b border-slate-200/60 dark:border-slate-800/80 pb-5 gap-4">
+            <div class="flex items-center gap-3 text-left">
+                <!-- Premium Initials Badge with Ambient Border Glow & Gradient Background -->
+                <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-extrabold text-sm shrink-0 shadow-lg shadow-purple-500/20 border border-purple-400/20">
+                    {{ $initials }}
+                </span>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+                        {{ $committee ? $committee->name . ' Workspace' : 'Events Management' }}
+                    </h1>
+                    <p class="hidden sm:block text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 leading-normal font-medium">
+                        Official collaboration cockpit and events directory for committee personnel.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-row items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
                 @if (isset($committees) && $committees->isNotEmpty())
-                    <form id="committee-select-form" action="{{ route('committees.events.index') }}" method="GET" class="relative select-none shrink-0">
+                    <form id="committee-select-form" action="{{ route('committees.events.index') }}" method="GET" class="relative select-none flex-grow sm:flex-grow-0">
                         <input type="hidden" name="committee_id" id="committee-filter" value="{{ $committee ? $committee->id : '' }}">
                         <button type="button" id="committee-dropdown-btn" onclick="toggleDropdown('committee')"
-                            class="w-full sm:w-auto flex items-center justify-between gap-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 px-4 py-2.5 text-slate-600 dark:text-slate-300 text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
-                            <span id="committee-dropdown-label" class="font-medium">{{ $committee ? $committee->name : 'Select Committee' }}</span>
-                            <svg id="committee-dropdown-arrow" class="w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200"
+                            class="w-full sm:w-auto flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800/80 px-3.5 sm:px-4 py-2 sm:py-2.5 text-slate-600 dark:text-slate-300 text-xs sm:text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
+                            <span id="committee-dropdown-label" class="font-medium truncate max-w-[140px] sm:max-w-[200px]">{{ $committee ? $committee->name : 'Select Committee' }}</span>
+                            <svg id="committee-dropdown-arrow" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -209,12 +248,12 @@
                 @endif
 
                 <a href="{{ route('dashboard') }}?tab=committees"
-                    class="inline-flex items-center gap-2 text-sm font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 transition duration-150">
-                    <svg class="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    class="inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold py-2 sm:py-2.5 px-3.5 sm:px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 transition duration-150 shadow-sm shrink-0">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    Portal
+                    <span>Portal</span>
                 </a>
             </div>
         </div>
@@ -251,10 +290,10 @@
         <div
             class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800/80 p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
             <!-- Left Side: Search Filter, Custom Month and Year Filters -->
-            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3.5 flex-grow max-w-4xl">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3.5 flex-grow max-w-4xl w-full">
                 <!-- Search Text Box Wrapper (Floating) -->
                 <div
-                    class="relative flex-grow bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 hover:border-slate-200/80 dark:hover:border-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition-all duration-300">
+                    class="relative flex-grow bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 hover:border-slate-200/80 dark:hover:border-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] transition-all duration-300 w-full md:w-auto">
                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -266,73 +305,76 @@
                         class="w-full pl-10 pr-4 py-2.5 rounded-2xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-300">
                 </div>
 
-                <!-- Custom Styled Month Dropdown (Non-Native, Rich Aesthetics) -->
-                <div class="relative w-full md:w-44 shrink-0 select-none">
-                    <input type="hidden" id="month-filter" value="">
-                    <button type="button" id="month-dropdown-btn" onclick="toggleDropdown('month')"
-                        class="w-full flex items-center justify-between bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 px-4 py-2.5 text-slate-600 dark:text-slate-300 text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
-                        <span id="month-dropdown-label" class="font-medium">All Months</span>
-                        <svg id="month-dropdown-arrow" class="w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div id="month-dropdown-menu"
-                        class="absolute left-0 right-0 mt-2 py-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100/80 dark:border-slate-800/80 shadow-[0_10px_30px_rgba(15,23,42,0.08)] z-30 hidden max-h-60 overflow-y-auto custom-scrollbar transition-all duration-200">
-                        <button type="button" onclick="selectDropdownOption('month', '', 'All Months')"
-                            class="w-full text-left px-4 py-2 text-sm bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 font-semibold hover:bg-purple-50/80 dark:hover:bg-purple-950/60 transition duration-150">All
-                            Months</button>
-                        <button type="button" onclick="selectDropdownOption('month', '01', 'January')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">January</button>
-                        <button type="button" onclick="selectDropdownOption('month', '02', 'February')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">February</button>
-                        <button type="button" onclick="selectDropdownOption('month', '03', 'March')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">March</button>
-                        <button type="button" onclick="selectDropdownOption('month', '04', 'April')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">April</button>
-                        <button type="button" onclick="selectDropdownOption('month', '05', 'May')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">May</button>
-                        <button type="button" onclick="selectDropdownOption('month', '06', 'June')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">June</button>
-                        <button type="button" onclick="selectDropdownOption('month', '07', 'July')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">July</button>
-                        <button type="button" onclick="selectDropdownOption('month', '08', 'August')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">August</button>
-                        <button type="button" onclick="selectDropdownOption('month', '09', 'September')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">September</button>
-                        <button type="button" onclick="selectDropdownOption('month', '10', 'October')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">October</button>
-                        <button type="button" onclick="selectDropdownOption('month', '11', 'November')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">November</button>
-                        <button type="button" onclick="selectDropdownOption('month', '12', 'December')"
-                            class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">December</button>
+                <!-- Side-by-Side Dual Dropdowns for Month & Year on Mobile -->
+                <div class="flex flex-row items-center gap-3 w-full md:w-auto shrink-0">
+                    <!-- Custom Styled Month Dropdown (Non-Native, Rich Aesthetics) -->
+                    <div class="relative w-1/2 md:w-44 select-none">
+                        <input type="hidden" id="month-filter" value="">
+                        <button type="button" id="month-dropdown-btn" onclick="toggleDropdown('month')"
+                            class="w-full flex items-center justify-between bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 px-4 py-2.5 text-slate-600 dark:text-slate-300 text-xs sm:text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
+                            <span id="month-dropdown-label" class="font-medium truncate">All Months</span>
+                            <svg id="month-dropdown-arrow" class="w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="month-dropdown-menu"
+                            class="absolute left-0 right-0 mt-2 py-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100/80 dark:border-slate-800/80 shadow-[0_10px_30px_rgba(15,23,42,0.08)] z-30 hidden max-h-60 overflow-y-auto custom-scrollbar transition-all duration-200">
+                            <button type="button" onclick="selectDropdownOption('month', '', 'All Months')"
+                                class="w-full text-left px-4 py-2 text-sm bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 font-semibold hover:bg-purple-50/80 dark:hover:bg-purple-950/60 transition duration-150">All
+                                Months</button>
+                            <button type="button" onclick="selectDropdownOption('month', '01', 'January')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">January</button>
+                            <button type="button" onclick="selectDropdownOption('month', '02', 'February')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">February</button>
+                            <button type="button" onclick="selectDropdownOption('month', '03', 'March')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">March</button>
+                            <button type="button" onclick="selectDropdownOption('month', '04', 'April')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">April</button>
+                            <button type="button" onclick="selectDropdownOption('month', '05', 'May')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-650 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">May</button>
+                            <button type="button" onclick="selectDropdownOption('month', '06', 'June')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">June</button>
+                            <button type="button" onclick="selectDropdownOption('month', '07', 'July')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">July</button>
+                            <button type="button" onclick="selectDropdownOption('month', '08', 'August')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">August</button>
+                            <button type="button" onclick="selectDropdownOption('month', '09', 'September')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">September</button>
+                            <button type="button" onclick="selectDropdownOption('month', '10', 'October')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">October</button>
+                            <button type="button" onclick="selectDropdownOption('month', '11', 'November')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">November</button>
+                            <button type="button" onclick="selectDropdownOption('month', '12', 'December')"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">December</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Custom Styled Year Dropdown (Non-Native, Rich Aesthetics) -->
-                @php
-                    $years = $events->map(fn($e) => $e->event_date->format('Y'))->unique()->sort();
-                @endphp
-                <div class="relative w-full md:w-36 shrink-0 select-none">
-                    <input type="hidden" id="year-filter" value="">
-                    <button type="button" id="year-dropdown-btn" onclick="toggleDropdown('year')"
-                        class="w-full flex items-center justify-between bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 px-4 py-2.5 text-slate-600 dark:text-slate-300 text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
-                        <span id="year-dropdown-label" class="font-medium">All Years</span>
-                        <svg id="year-dropdown-arrow" class="w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div id="year-dropdown-menu"
-                        class="absolute left-0 right-0 mt-2 py-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100/80 dark:border-slate-800/80 shadow-[0_10px_30px_rgba(15,23,42,0.08)] z-30 hidden max-h-60 overflow-y-auto custom-scrollbar transition-all duration-200">
-                        <button type="button" onclick="selectDropdownOption('year', '', 'All Years')"
-                            class="w-full text-left px-4 py-2 text-sm bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 font-semibold hover:bg-purple-50/80 dark:hover:bg-purple-950/60 transition duration-150">All
-                            Years</button>
-                        @foreach ($years as $year)
-                            <button type="button"
-                                onclick="selectDropdownOption('year', '{{ $year }}', '{{ $year }}')"
-                                class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">{{ $year }}</button>
-                        @endforeach
+                    <!-- Custom Styled Year Dropdown (Non-Native, Rich Aesthetics) -->
+                    @php
+                        $years = $events->map(fn($e) => $e->event_date->format('Y'))->unique()->sort();
+                    @endphp
+                    <div class="relative w-1/2 md:w-36 select-none">
+                        <input type="hidden" id="year-filter" value="">
+                        <button type="button" id="year-dropdown-btn" onclick="toggleDropdown('year')"
+                            class="w-full flex items-center justify-between bg-white dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 px-4 py-2.5 text-slate-600 dark:text-slate-300 text-xs sm:text-sm shadow-[0_4px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.04)] hover:border-slate-200/80 dark:hover:border-slate-700 transition-all duration-300 focus:outline-none">
+                            <span id="year-dropdown-label" class="font-medium truncate">All Years</span>
+                            <svg id="year-dropdown-arrow" class="w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="year-dropdown-menu"
+                            class="absolute left-0 right-0 mt-2 py-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100/80 dark:border-slate-800/80 shadow-[0_10px_30px_rgba(15,23,42,0.08)] z-30 hidden max-h-60 overflow-y-auto custom-scrollbar transition-all duration-200">
+                            <button type="button" onclick="selectDropdownOption('year', '', 'All Years')"
+                                class="w-full text-left px-4 py-2 text-sm bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 font-semibold hover:bg-purple-50/80 dark:hover:bg-purple-950/60 transition duration-150">All
+                                Years</button>
+                            @foreach ($years as $year)
+                                <button type="button"
+                                    onclick="selectDropdownOption('year', '{{ $year }}', '{{ $year }}')"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/20 hover:text-purple-700 dark:hover:text-purple-400 transition duration-150">{{ $year }}</button>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -340,24 +382,40 @@
             <!-- Right Side: Add Event Button with Rolling Cross & Hover Glow / Scale Animations -->
             @if ($committee)
                 <div class="shrink-0 w-full lg:w-auto">
-                    <button onclick="openAddEventModal()"
+                    <a href="{{ route('committees.events.create', ['committee_id' => $committee->id]) }}"
                         class="group w-full lg:w-auto inline-flex items-center justify-center gap-2 text-sm font-semibold py-2.5 px-5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg hover:shadow-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500/20">
                         <svg class="w-4 h-4 transition-transform duration-500 ease-out group-hover:rotate-180"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                         </svg>
-                        Add Event
-                    </button>
+                        Schedule Assembly
+                    </a>
                 </div>
             @endif
         </div>
 
         <!-- Main List/Directory Area -->
         <div class="space-y-6">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Assemblies Directory</h2>
-                <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200/50 dark:border-slate-700/50">Showing: <span
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-1 text-left">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Assemblies Directory</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Browse scheduled assemblies and manage registrations.</p>
+                </div>
+                
+                <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-xs font-semibold border border-slate-200/50 dark:border-slate-700/50 sm:self-start shrink-0">Showing: <span
                         id="visible-count">{{ $events->count() }}</span> of {{ $events->count() }}</span>
+            </div>
+
+            <!-- Active / Completed Event Filter Tab Switcher (Highly Premium SaaS design) -->
+            <div class="flex items-center bg-slate-100/80 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/60 max-w-xs select-none">
+                <button type="button" onclick="setTimelineFilter('active')" id="tab-timeline-active" 
+                    class="flex-1 text-center py-1.5 px-4 text-xs font-bold rounded-lg bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm transition duration-150 focus:outline-none">
+                    Upcoming ({{ $events->filter(fn($e) => !$e->end_date || !$e->end_date->isPast())->count() }})
+                </button>
+                <button type="button" onclick="setTimelineFilter('completed')" id="tab-timeline-completed" 
+                    class="flex-1 text-center py-1.5 px-4 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-900/40 transition duration-150 focus:outline-none">
+                    Completed ({{ $events->filter(fn($e) => $e->end_date && $e->end_date->isPast())->count() }})
+                </button>
             </div>
 
             <!-- Empty State Container for No Events Scheduled -->
@@ -375,14 +433,15 @@
                 </div>
             @else
                 <!-- Responsive Grid for Scheduled Events -->
-                <div id="events-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="events-list-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     @foreach ($events as $event)
                         <!-- Event Card Component -->
                         <div class="event-card bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
                             data-title="{{ strtolower($event->title) }}"
                             data-description="{{ strtolower($event->description) }}"
                             data-month="{{ $event->event_date->format('m') }}"
-                            data-year="{{ $event->event_date->format('Y') }}">
+                            data-year="{{ $event->event_date->format('Y') }}"
+                            data-is-completed="{{ ($event->end_date && $event->end_date->isPast()) ? 'true' : 'false' }}">
                             
                             @if($event->image)
                                 <div class="h-40 w-full overflow-hidden relative shrink-0">
@@ -394,17 +453,22 @@
                             <div class="p-6 flex-grow flex flex-col justify-between space-y-6">
                                 <div>
                                     <div class="flex items-start justify-between gap-4">
-                                        <div class="truncate pr-2">
+                                        <div class="truncate pr-2 text-left">
                                             <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate"
                                                 title="{{ $event->title }}">{{ $event->title }}</h3>
                                             <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Scheduled by Secretariat</p>
                                         </div>
-                                        <span
-                                            class="shrink-0 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded uppercase tracking-wider">Active
-                                            Registration</span>
+                                        @if($event->end_date && $event->end_date->isPast())
+                                            <span
+                                                class="shrink-0 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-450 border border-slate-200 dark:border-slate-700 text-[10px] font-bold rounded uppercase tracking-wider">Completed</span>
+                                        @else
+                                            <span
+                                                class="shrink-0 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded uppercase tracking-wider">Active
+                                                Registration</span>
+                                        @endif
                                     </div>
 
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-3.5 leading-relaxed line-clamp-3">
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-3.5 leading-relaxed line-clamp-3 text-left">
                                         {{ $event->description }}
                                     </p>
 
@@ -454,8 +518,8 @@
 
                                 <!-- Actions Row -->
                                 <div
-                                    class="pt-5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                                    class="pt-5 border-t border-slate-100 dark:border-slate-800/60 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                                    <div class="flex flex-col sm:flex-row items-stretch gap-2.5 w-full lg:w-auto">
                                         <!-- Manage Event Link -->
                                         <a href="{{ route('committees.events.manage', $event) }}"
                                             class="w-full sm:w-auto text-xs font-semibold text-purple-700 dark:text-purple-400 hover:text-purple-900 bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100/80 dark:hover:bg-purple-950/50 px-3.5 py-2.5 rounded-xl border border-purple-100 dark:border-purple-900/30 transition duration-150 inline-flex items-center justify-center gap-1.5 shadow-sm">
@@ -476,11 +540,11 @@
                                         </button>
                                     </div>
 
-                                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                    <div class="flex flex-col sm:flex-row items-stretch gap-2.5 w-full lg:w-auto">
                                         <!-- Invitation Preview -->
                                         <a href="{{ route('events.public_show', $event) }}" target="_blank"
                                             rel="noopener noreferrer"
-                                            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 group">
+                                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 group">
                                             <span>Invitation Preview</span>
                                             <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -864,6 +928,9 @@
                     }
                 }
             });
+
+            // Initialize premium timeline tabs filter
+            setTimelineFilter('active');
         });
 
         // Modal Control: Smooth animation transitions
@@ -901,7 +968,29 @@
             }, 200);
         }
 
-        // Real-Time Client-Side Filtering (Search, Month, and Year)
+        // Active / Completed Event Filtering
+        let activeTimelineFilter = 'active'; // Default is 'active' (Upcoming)
+
+        function setTimelineFilter(type) {
+            activeTimelineFilter = type;
+            
+            const activeTab = document.getElementById('tab-timeline-active');
+            const completedTab = document.getElementById('tab-timeline-completed');
+            
+            if (activeTab && completedTab) {
+                if (type === 'active') {
+                    activeTab.className = "flex-1 text-center py-1.5 px-4 text-xs font-bold rounded-lg bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm transition duration-150 focus:outline-none";
+                    completedTab.className = "flex-1 text-center py-1.5 px-4 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-900/40 transition duration-150 focus:outline-none";
+                } else {
+                    completedTab.className = "flex-1 text-center py-1.5 px-4 text-xs font-bold rounded-lg bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm transition duration-150 focus:outline-none";
+                    activeTab.className = "flex-1 text-center py-1.5 px-4 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-900/40 transition duration-150 focus:outline-none";
+                }
+            }
+            
+            filterEvents();
+        }
+
+        // Real-Time Client-Side Filtering (Search, Month, Year, and Timeline Active/Completed)
         function filterEvents() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const month = document.getElementById('month-filter').value;
@@ -917,12 +1006,14 @@
                 const desc = card.getAttribute('data-description') || '';
                 const cardMonth = card.getAttribute('data-month') || '';
                 const cardYear = card.getAttribute('data-year') || '';
+                const isCompleted = card.getAttribute('data-is-completed') === 'true';
 
                 const matchesSearch = title.includes(query) || desc.includes(query);
                 const matchesMonth = month === '' || cardMonth === month;
                 const matchesYear = year === '' || cardYear === year;
+                const matchesTimeline = (activeTimelineFilter === 'active' && !isCompleted) || (activeTimelineFilter === 'completed' && isCompleted);
 
-                if (matchesSearch && matchesMonth && matchesYear) {
+                if (matchesSearch && matchesMonth && matchesYear && matchesTimeline) {
                     card.classList.remove('hidden');
                     visibleCount++;
                 } else {

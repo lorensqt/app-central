@@ -155,20 +155,22 @@ class AppCentralTest extends TestCase
             'name' => 'Regular Director',
             'email' => 'director@example.com',
             'title_id' => $title->id,
+            'pin' => '123456',
         ]);
 
         // Attempting to access unified admin cockpit route should return 403
-        $response = $this->actingAs($user)->get('/admin');
+        $response = $this->withSession(['pin_verified' => true])->actingAs($user)->get('/admin');
         $response->assertStatus(403);
 
         // Create the Super Admin user
         $superAdmin = User::create([
             'name' => 'John Castillo',
             'email' => 'castillojohnlaurence0@gmail.com',
+            'pin' => '123456',
         ]);
 
         // Super Admin gets access to the admin cockpit index
-        $response = $this->actingAs($superAdmin)->get('/admin');
+        $response = $this->withSession(['pin_verified' => true])->actingAs($superAdmin)->get('/admin');
         $response->assertStatus(200);
     }
 
@@ -182,10 +184,11 @@ class AppCentralTest extends TestCase
         $superAdmin = User::create([
             'name' => 'John Castillo',
             'email' => 'castillojohnlaurence0@gmail.com',
+            'pin' => '123456',
         ]);
 
         // 1. Create a title
-        $response = $this->actingAs($superAdmin)->post('/admin/titles', [
+        $response = $this->withSession(['pin_verified' => true])->actingAs($superAdmin)->post('/admin/titles', [
             'group' => 'Management',
             'title' => 'Chief Technology Officer',
         ]);
@@ -199,7 +202,7 @@ class AppCentralTest extends TestCase
         $title = Title::where('title', 'Chief Technology Officer')->first();
 
         // 2. Whitelist a user under that title
-        $response = $this->actingAs($superAdmin)->post('/admin/users', [
+        $response = $this->withSession(['pin_verified' => true])->actingAs($superAdmin)->post('/admin/users', [
             'name' => 'Jane Smith',
             'email' => 'jane.smith@example.com',
             'title_id' => $title->id,
@@ -223,6 +226,7 @@ class AppCentralTest extends TestCase
         $superAdmin = User::create([
             'name' => 'John Castillo',
             'email' => 'castillojohnlaurence0@gmail.com',
+            'pin' => '123456',
         ]);
 
         $title = Title::create([
@@ -230,7 +234,7 @@ class AppCentralTest extends TestCase
             'title' => 'Audit Head',
         ]);
 
-        $response = $this->actingAs($superAdmin)->put("/admin/titles/{$title->id}", [
+        $response = $this->withSession(['pin_verified' => true])->actingAs($superAdmin)->put("/admin/titles/{$title->id}", [
             'group' => 'Management',
             'title' => 'Global Audit Director',
         ]);

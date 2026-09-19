@@ -222,17 +222,28 @@
     </div>
 
     <!-- Print Actions Banner -->
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="space-y-1 text-left w-full sm:w-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div class="space-y-1 text-left w-full lg:w-auto">
             <h4 class="font-bold text-slate-900 dark:text-white text-base">Print Summary Report</h4>
-            <p class="text-xs text-slate-550 dark:text-slate-400 max-w-xl">Need to share attendee metrics and gender demographics with your divisional leads? Print or save a PDF summary containing all active registrations, pending applicants, and venue locations.</p>
+            <p class="text-xs text-slate-550 dark:text-slate-400 max-w-xl">Need to share attendee metrics and gender demographics with divisional leads? Download an executive-ready PDF report or print the current screen layout directly.</p>
         </div>
 
-        <button onclick="window.print()" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-md hover:shadow-lg focus:outline-none">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-            </svg>
-            Print/Save PDF Report
-        </button>
+        <div class="flex flex-col sm:flex-row items-stretch gap-2.5 w-full lg:w-auto">
+            <!-- Local Print Button -->
+            <button onclick="window.print()" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 focus:outline-none shadow-xs">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Print Screen
+            </button>
+            
+            <!-- Dompdf Download Button -->
+            <a href="{{ route('committees.events.export_summary_pdf', $event) }}" target="_blank" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-md hover:shadow-lg focus:outline-none">
+                <svg class="w-4 h-4 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Executive PDF
+            </a>
+        </div>
     </div>
 </div>

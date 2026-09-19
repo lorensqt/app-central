@@ -67,8 +67,8 @@
                             <label for="event_desc"
                                 class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</label>
                             <textarea name="description" id="event_desc" required rows="3"
-                                placeholder="State the purpose, goal, and requirements of the assembly..."
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 shadow-sm transition-all duration-300 transform hover:scale-[1.002] custom-scrollbar"></textarea>
+                                placeholder="e.g. A close-up, focused photo of a hand carefully repairing a chipped, vintage ceramic teacup using the Japanese Kintsugi method. Fine lines of bright, shimmering gold lacquer are visible, seamlessly joining the cracks and highlighting the beauty of the repair. The teacup is held against a soft, blurred background of a wooden workshop bench."
+                                class="w-full rounded-xl border border-slate-200/80 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-955 focus:bg-white dark:focus:bg-slate-955 shadow-sm transition-all duration-300 transform hover:scale-[1.002] custom-scrollbar"></textarea>
                         </div>
 
                         <!-- Event Terms and Policy -->

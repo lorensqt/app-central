@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Unified Committee Events Application Portal
         Route::get('/committees/events', [EventController::class, 'index'])->name('committees.events.index');
+        Route::get('/committees/events/create', [EventController::class, 'create'])->name('committees.events.create');
 
         // Unified Committee Elections Application Portal
         Route::get('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'index'])->name('committees.election.index');
@@ -98,6 +99,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Dedicated Event Management Page
         Route::get('/committees/events/{event}', [EventController::class, 'manage'])->name('committees.events.manage');
+        Route::get('/committees/events/{event}/summary-pdf', [EventController::class, 'exportSummaryPDF'])->name('committees.events.export_summary_pdf');
 
         // Dynamic Committee Events Application Portal
         Route::get('/committees/{committee}/events', [EventController::class, 'committeeEvents'])->name('committees.events');

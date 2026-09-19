@@ -185,6 +185,22 @@ class EventController extends Controller
     }
 
     /**
+     * Display the create new event page.
+     */
+    public function create(Request $request)
+    {
+        $committees = \App\Models\Committee::all();
+        $selectedCommitteeId = $request->input('committee_id');
+        $committee = $committees->firstWhere('id', $selectedCommitteeId);
+
+        if (!$committee) {
+            return redirect()->route('committees.events.index')->with('error', 'Please select a valid committee before scheduling an event.');
+        }
+
+        return view('committees.events-app.create', compact('committee'));
+    }
+
+    /**
      * Display upcoming events and portals for a specific committee.
      */
     public function committeeEvents(\App\Models\Committee $committee)
@@ -408,5 +424,36 @@ class EventController extends Controller
         ]);
 
         return view('committees.events-app.events-components.survey_success', compact('registration', 'event'));
+    }
+
+    /**
+     * Export the event summary metrics as a print-ready PDF using DomPDF.
+     */
+    public function exportSummaryPDF(Event $event)
+    {
+        $registrations = $event->registrations()->latest()->get();
+        $total = $registrations->count();
+        
+        $approved = $registrations->where('status', 'approved')->count();
+        $pending = $registrations->where('status', 'pending')->count();
+        $declined = $registrations->where('status', 'declined')->count();
+        $attended = $registrations->where('status', 'approved')->where('attended', true)->count();
+        $absent = $registrations->where('status', 'approved')->where('attended', false)->count();
+
+        // Gender demographics
+        $males = $registrations->where('gender', 'Male')->count();
+        $females = $registrations->where('gender', 'Female')->count();
+        $lgbtq = $registrations->where('gender', 'LGBTQ+')->count();
+        $unspecified = $registrations->whereNull('gender')->count();
+        $others = $total - ($males + $females + $lgbtq + $unspecified);
+
+        // Load premium print-ready PDF template with event summary data
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'committees.events-app.manage_events.pdf_formats.summary_pdf', 
+            compact('event', 'registrations', 'total', 'approved', 'pending', 'declined', 'attended', 'absent', 'males', 'females', 'lgbtq', 'others', 'unspecified')
+        );
+
+        $filename = "event_summary_" . str_replace(' ', '_', strtolower($event->title)) . ".pdf";
+        return $pdf->stream($filename);
     }
 }
