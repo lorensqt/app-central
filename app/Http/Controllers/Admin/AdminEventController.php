@@ -123,7 +123,18 @@ class AdminEventController extends Controller
      */
     public function approveRegistration(EventRegistration $registration)
     {
-        $registration->update(['status' => 'approved']);
+        $updateData = ['status' => 'approved'];
+
+        // Generate secure unique ticket code if empty (Requires Secretariat Approval flow)
+        if (empty($registration->ticket_code)) {
+            do {
+                $ticket_code = 'AC-' . substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
+            } while (EventRegistration::where('event_id', $registration->event_id)->where('ticket_code', $ticket_code)->exists());
+            
+            $updateData['ticket_code'] = $ticket_code;
+        }
+
+        $registration->update($updateData);
 
         // Load relations for template rendering in mail
         $registration->load('event.committee');
@@ -164,6 +175,16 @@ class AdminEventController extends Controller
     {
         $registration->update(['status' => 'declined']);
 
+        // Load relations for template rendering in mail
+        $registration->load('event.committee');
+
+        // Dynamically dispatch the premium HTML decline mail
+        try {
+            Mail::to($registration->email)->send(new \App\Mail\EventDeclined($registration));
+        } catch (\Exception $e) {
+            \Log::error('Event declined mail dispatch failed: '.$e->getMessage());
+        }
+
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -192,7 +213,18 @@ class AdminEventController extends Controller
         foreach ($ids as $id) {
             $registration = EventRegistration::find($id);
             if ($registration && $registration->status !== 'approved') {
-                $registration->update(['status' => 'approved']);
+                $updateData = ['status' => 'approved'];
+
+                // Generate secure unique ticket code if empty (Requires Secretariat Approval flow)
+                if (empty($registration->ticket_code)) {
+                    do {
+                        $ticket_code = 'AC-' . substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
+                    } while (EventRegistration::where('event_id', $registration->event_id)->where('ticket_code', $ticket_code)->exists());
+                    
+                    $updateData['ticket_code'] = $ticket_code;
+                }
+
+                $registration->update($updateData);
                 $approvedCount++;
 
                 // Load relations for template rendering in mail
@@ -234,9 +266,31 @@ class AdminEventController extends Controller
         ]);
 
         $ids = $request->input('ids');
-        $declinedCount = EventRegistration::whereIn('id', $ids)->update(['status' => 'declined']);
+        $declinedCount = 0;
+        $failedEmails = 0;
+
+        foreach ($ids as $id) {
+            $registration = EventRegistration::find($id);
+            if ($registration && $registration->status !== 'declined') {
+                $registration->update(['status' => 'declined']);
+                $declinedCount++;
+
+                // Load relations for template rendering in mail
+                $registration->load('event.committee');
+
+                try {
+                    Mail::to($registration->email)->send(new \App\Mail\EventDeclined($registration));
+                } catch (\Exception $e) {
+                    \Log::error('Event declined mail dispatch failed for bulk: '.$e->getMessage());
+                    $failedEmails++;
+                }
+            }
+        }
 
         $message = "Successfully declined {$declinedCount} registration requests.";
+        if ($failedEmails > 0) {
+            $message .= " However, {$failedEmails} decline notification emails failed to dispatch.";
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
