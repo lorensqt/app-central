@@ -130,7 +130,7 @@
                             <span>Verified Guest: Checked-In on {{ $registration->attended_at ? \Carbon\Carbon::parse($registration->attended_at)->format('M j • g:i A') : now()->format('M j • g:i A') }}</span>
                         </div>
                     @else
-                        @if($event->registration_type === 'venue_confirmation')
+                        @if(true)
                             @if($event->isEnded())
                                 <div class="px-5 py-4 bg-rose-50 dark:bg-rose-950/20 rounded-2xl border border-rose-200 dark:border-rose-900/30 text-xs text-rose-800 dark:text-rose-400 font-semibold flex flex-col items-center gap-2 w-full shadow-sm text-center">
                                     <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
