@@ -29,7 +29,7 @@ class AdminEventController extends Controller
             'image' => 'nullable|url|max:2048',
             'cover_file' => 'nullable|image|max:4096',
             'max_participants' => 'nullable|integer|min:1',
-            'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
+            'registration_type' => 'nullable|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
             'registration_fields' => 'nullable|array',
             'committee_id' => 'nullable|exists:committees,id',
@@ -37,6 +37,8 @@ class AdminEventController extends Controller
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
+
+        $validated['registration_type'] = 'admin_approval';
 
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('events', 's3');
@@ -86,13 +88,15 @@ class AdminEventController extends Controller
             'image' => 'nullable|url|max:2048',
             'cover_file' => 'nullable|image|max:4096',
             'max_participants' => 'nullable|integer|min:1',
-            'registration_type' => 'required|string|in:admin_approval,venue_confirmation',
+            'registration_type' => 'nullable|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
             'registration_fields' => 'nullable|array',
         ], [
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
+
+        $validated['registration_type'] = 'admin_approval';
 
         $imageUrl = $validated['image'] ?? $event->image;
 
@@ -174,7 +178,12 @@ class AdminEventController extends Controller
      */
     public function declineRegistration(EventRegistration $registration)
     {
-        $registration->update(['status' => 'declined']);
+        $rejectionReason = request()->input('rejection_reason');
+
+        $registration->update([
+            'status' => 'declined',
+            'rejection_reason' => $rejectionReason
+        ]);
 
         // Load relations for template rendering in mail
         $registration->load('event.committee');
@@ -267,16 +276,21 @@ class AdminEventController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:event_registrations,id',
+            'rejection_reason' => 'nullable|string',
         ]);
 
         $ids = $request->input('ids');
+        $rejectionReason = $request->input('rejection_reason');
         $declinedCount = 0;
         $failedEmails = 0;
 
         foreach ($ids as $id) {
             $registration = EventRegistration::find($id);
             if ($registration && $registration->status !== 'declined') {
-                $registration->update(['status' => 'declined']);
+                $registration->update([
+                    'status' => 'declined',
+                    'rejection_reason' => $rejectionReason,
+                ]);
                 $declinedCount++;
 
                 // Load relations for template rendering in mail

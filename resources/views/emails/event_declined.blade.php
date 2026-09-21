@@ -165,6 +165,13 @@
                         <span class="badge badge-declined">Declined</span>
                     </div>
                 </div>
+
+                @if($registration->rejection_reason)
+                <div class="detail-row" style="margin-top: 14px; background-color: #fff1f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; display: block;">
+                    <div class="detail-label" style="color: #991b1b; display: block; margin-bottom: 4px;">REJECTION REASON:</div>
+                    <div class="detail-value" style="color: #991b1b; font-weight: 600; line-height: 1.4; display: block;">{{ $registration->rejection_reason }}</div>
+                </div>
+                @endif
             </div>
 
             <p class="message" style="margin-bottom: 0;">

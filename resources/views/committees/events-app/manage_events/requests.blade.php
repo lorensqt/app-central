@@ -143,10 +143,17 @@
                                             @endif
                                         </div>
                                     @elseif($reg->status === 'declined')
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                            Declined
-                                        </span>
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                Declined
+                                            </span>
+                                            @if($reg->rejection_reason)
+                                                <span class="text-[10px] text-red-500 dark:text-red-400 max-w-[150px] truncate block font-semibold leading-tight text-left" title="{{ $reg->rejection_reason }}">
+                                                    Reason: {{ $reg->rejection_reason }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider animate-pulse">
                                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
@@ -248,10 +255,17 @@
                                         @endif
                                     </div>
                                 @elseif($reg->status === 'declined')
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                        Declined
-                                    </span>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            Declined
+                                        </span>
+                                        @if($reg->rejection_reason)
+                                            <span class="text-[9px] text-red-500 dark:text-red-400 max-w-[120px] truncate block font-semibold leading-tight text-right" title="{{ $reg->rejection_reason }}">
+                                                Reason: {{ $reg->rejection_reason }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider animate-pulse">
                                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>

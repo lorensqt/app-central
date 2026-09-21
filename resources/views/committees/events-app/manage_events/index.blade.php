@@ -289,16 +289,6 @@
                                         </svg>
                                         Edit Event Details
                                     </button>
-                                    <!-- Get Check-In Poster -->
-                                    @if($event->registration_type === 'venue_confirmation')
-                                        <button onclick="openCheckInPosterModal(); toggleActionDropdown();" 
-                                            class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
-                                            <svg class="w-4 h-4 text-emerald-500 group-hover:text-emerald-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m-3 3h6M5 12h14M3 7h6v6H3V7zm0 10h6v6H3v-6zm12 0h6v6h-6v-6zm0-10h6v6h-6V7z" />
-                                            </svg>
-                                            Get Check-In Poster
-                                        </button>
-                                    @endif
                                 </div>
                                 <div class="py-1.5">
                                     <!-- Delete Event -->
@@ -827,11 +817,21 @@
                 const submitBtn = form.querySelector('button');
                 if (!submitBtn || submitBtn.disabled) return;
 
+                let url = form.action;
+                let rejectionReason = null;
+                if (isSingleDecline) {
+                    rejectionReason = prompt("Please enter the reason for declining this request (Optional):");
+                    if (rejectionReason === null) {
+                        return; // Cancelled
+                    }
+                    url += (url.includes('?') ? '&' : '?') + 'rejection_reason=' + encodeURIComponent(rejectionReason);
+                }
+
                 const originalHTML = submitBtn.innerHTML;
                 submitBtn.disabled = true;
                 submitBtn.innerText = 'Syncing...';
 
-                fetch(form.action, {
+                fetch(url, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -1116,6 +1116,14 @@
             const ids = Array.from(checkedCheckboxes).map(cb => cb.getAttribute('data-id'));
             if (ids.length === 0) return;
 
+            let rejectionReason = null;
+            if (action === 'decline') {
+                rejectionReason = prompt("Please enter the reason for declining these requests (Optional):");
+                if (rejectionReason === null) {
+                    return; // Cancelled
+                }
+            }
+
             let url = '';
             if (action === 'approve') {
                 url = '{{ route('committees.registrations.bulk_approve') }}';
@@ -1129,6 +1137,11 @@
             const bulkButtons = bulkBar.querySelectorAll('button');
             bulkButtons.forEach(btn => btn.disabled = true);
 
+            const requestBody = { ids: ids };
+            if (rejectionReason !== null) {
+                requestBody.rejection_reason = rejectionReason;
+            }
+
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -1137,7 +1150,7 @@
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ ids: ids })
+                body: JSON.stringify(requestBody)
             })
             .then(res => res.json())
             .then(data => {
@@ -1174,67 +1187,6 @@
             });
         };
     });
-
-    // Poster Modal Control
-    let posterQrGenerated = false;
-
-    function openCheckInPosterModal() {
-        const modal = document.getElementById('check-in-poster-modal');
-        const content = document.getElementById('check-in-poster-modal-content');
-        if (!modal || !content) return;
-
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        }, 10);
-
-        // Generate QR code if not already done
-        if (!posterQrGenerated) {
-            const qrTarget = "{{ route('events.check_in', $event) }}";
-            new QRCode(document.getElementById("poster-qrcode"), {
-                text: qrTarget,
-                width: 160,
-                height: 160,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
-            });
-            posterQrGenerated = true;
-        }
-    }
-
-    function closeCheckInPosterModal() {
-        const modal = document.getElementById('check-in-poster-modal');
-        const content = document.getElementById('check-in-poster-modal-content');
-        if (!modal || !content) return;
-
-        modal.classList.add('opacity-0');
-        content.classList.remove('scale-100', 'opacity-100');
-        content.classList.add('scale-95', 'opacity-0');
-
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 200);
-    }
-
-    function printPoster() {
-        const printContent = document.getElementById('print-area').innerHTML;
-        const originalContent = document.body.innerHTML;
-
-        document.body.innerHTML = `
-            <div style="font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; color: black; background: white; padding: 40px; box-sizing: border-box;">
-                \${printContent}
-            </div>
-        `;
-        window.print();
-        document.body.innerHTML = originalContent;
-        window.location.reload(); // Reload to safely restore state
-    }
 
     let questionIndex = parseInt(document.getElementById('custom-questions-container')?.dataset.count || 0);
 
@@ -1415,50 +1367,6 @@
         }
     });
 </script>
-
-<!-- BACKDROP MODAL: VENUE CHECK-IN POSTER -->
-<div id="check-in-poster-modal"
-    class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl p-6 sm:p-8 flex flex-col transition-all duration-300 transform scale-95 opacity-0"
-        id="check-in-poster-modal-content">
-        
-        <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-            <h3 class="font-bold text-slate-900 dark:text-white text-lg">Check-In Poster</h3>
-            <button onclick="closeCheckInPosterModal()" class="text-slate-400 hover:text-slate-650 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Print Preview Container -->
-        <div id="print-area" class="p-6 bg-white text-slate-950 rounded-2xl border border-slate-100 mt-4 space-y-6 text-center">
-            <div class="space-y-1">
-                <span class="text-[9px] font-extrabold uppercase tracking-widest text-purple-650">App Central Venue Entry</span>
-                <h2 class="text-xl font-extrabold tracking-tight leading-snug">{{ $event->title }}</h2>
-                <p class="text-xs text-slate-550">{{ $event->location }}</p>
-            </div>
-
-            <div class="flex justify-center p-2 bg-white rounded-xl inline-block border border-slate-100">
-                <div id="poster-qrcode" class="w-40 h-40 flex items-center justify-center"></div>
-            </div>
-
-            <div class="space-y-1">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Scan QR to Self Check-In</p>
-                <p class="text-[10px] text-slate-550 leading-relaxed max-w-xs mx-auto">Please scan this barcode with your smartphone, enter your registered email address, and verify your pass code to mark yourself attended.</p>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0 mt-6">
-            <button type="button" onclick="closeCheckInPosterModal()" class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition">
-                Close
-            </button>
-            <button type="button" onclick="printPoster()" class="text-xs font-semibold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-sm">
-                Print Poster
-            </button>
-        </div>
-    </div>
-</div>
 
 <!-- LIGHTBOX MODAL: FULL EVENT IMAGE PREVIEW -->
 <div id="image-lightbox-modal"

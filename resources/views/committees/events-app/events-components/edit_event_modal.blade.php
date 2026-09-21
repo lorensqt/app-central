@@ -116,22 +116,7 @@
                         <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Scheduling & Protocols</span>
                     </div>
 
-                    <!-- Registration Type Selection -->
-                    <div class="space-y-1.5">
-                        <label for="edit_registration_type" class="block text-[11px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Registration Approval Protocol</label>
-                        <div class="relative">
-                            <select id="edit_registration_type" name="registration_type" required 
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none cursor-pointer">
-                                <option value="admin_approval" {{ $event->registration_type === 'admin_approval' ? 'selected' : '' }}>Requires Secretariat Approval</option>
-                                <option value="venue_confirmation" {{ $event->registration_type === 'venue_confirmation' ? 'selected' : '' }}>Instantly Confirmed on Venue Check-In</option>
-                            </select>
-                            <span class="absolute inset-y-0 right-3.5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
+                    <input type="hidden" name="registration_type" value="admin_approval">
 
                     <!-- Registration Deadline -->
                     <div class="space-y-1.5">

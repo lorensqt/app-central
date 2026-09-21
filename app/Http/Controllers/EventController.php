@@ -95,13 +95,6 @@ class EventController extends Controller
         $status = 'pending';
         $ticket_code = null;
 
-        if ($event->registration_type === 'venue_confirmation') {
-            $status = 'approved';
-            do {
-                $ticket_code = 'AC-' . substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
-            } while (EventRegistration::where('event_id', $event->id)->where('ticket_code', $ticket_code)->exists());
-        }
-
         // Gather serialized custom fields
         $customFields = [];
         if ($isNewFormat) {
@@ -144,16 +137,6 @@ class EventController extends Controller
             'ticket_code' => $ticket_code,
             'custom_fields' => !empty($customFields) ? $customFields : null,
         ]);
-
-        if ($status === 'approved') {
-            try {
-                \Illuminate\Support\Facades\Mail::to($registration->email)->send(new \App\Mail\EventApproved($registration));
-            } catch (\Exception $e) {
-                \Log::error('Event approved mail dispatch failed: '.$e->getMessage());
-            }
-
-            return redirect()->back()->with('success', 'Registration Completed Successfully! An entry pass and confirmation details have been dispatched to your email.');
-        }
 
         // Send pending review email to attendee
         try {

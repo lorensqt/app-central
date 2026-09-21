@@ -146,7 +146,7 @@ class EventTest extends TestCase
     }
 
     /**
-     * Test admin can decline registrations.
+     * Test admin can decline registrations with a rejection reason.
      */
     public function test_admin_can_decline_rsvps(): void
     {
@@ -172,8 +172,10 @@ class EventTest extends TestCase
             'status' => 'pending',
         ]);
 
-        // Admin declines RSVP
-        $response = $this->actingAs($superAdmin)->post("/committees/registrations/{$registration->id}/decline");
+        // Admin declines RSVP with a reason
+        $response = $this->actingAs($superAdmin)->post("/committees/registrations/{$registration->id}/decline", [
+            'rejection_reason' => 'Already attended the previous session.',
+        ]);
 
         $response->assertRedirect();
         $response->assertSessionHas('status', 'Registration request has been declined.');
@@ -181,13 +183,14 @@ class EventTest extends TestCase
         $this->assertDatabaseHas('event_registrations', [
             'id' => $registration->id,
             'status' => 'declined',
+            'rejection_reason' => 'Already attended the previous session.',
         ]);
     }
 
     /**
-     * Test guest is auto-approved for venue confirmation events.
+     * Test guest is registered as pending always.
      */
-    public function test_guest_is_auto_approved_for_venue_confirmation_event(): void
+    public function test_guest_is_initially_pending_always(): void
     {
         Mail::fake();
         $this->withoutMiddleware(ValidateCsrfToken::class);
@@ -209,20 +212,19 @@ class EventTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('success');
 
-        // Check auto-approved status and ticket code generation
+        // Check pending status and ticket code is null
         $this->assertDatabaseHas('event_registrations', [
             'event_id' => $event->id,
             'name' => 'John Guest',
             'email' => 'john.venue@example.com',
-            'status' => 'approved',
+            'status' => 'pending',
+            'ticket_code' => null,
         ]);
 
         $reg = EventRegistration::where('event_id', $event->id)->where('email', 'john.venue@example.com')->first();
-        $this->assertNotNull($reg->ticket_code);
-        $this->assertStringStartsWith('AC-', $reg->ticket_code);
 
-        // Verify direct email delivery
-        Mail::assertSent(EventApproved::class, function ($mail) use ($reg) {
+        // Verify pending review email delivery
+        Mail::assertSent(\App\Mail\EventPending::class, function ($mail) use ($reg) {
             return $mail->hasTo('john.venue@example.com') && $mail->registration->id === $reg->id;
         });
     }

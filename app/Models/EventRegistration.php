@@ -13,6 +13,7 @@ class EventRegistration extends Model
         'email',
         'gender',
         'status',
+        'rejection_reason',
         'attended',
         'attended_at',
         'ticket_code',
