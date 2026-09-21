@@ -95,9 +95,9 @@
     <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 flex items-center justify-between z-10 relative">
         <a href="#" class="flex items-center gap-2 group">
             <span class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-300">
-                AC
+                SC
             </span>
-            <span class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 tracking-tight text-sm sm:text-base lg:text-lg">App Central</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 tracking-tight text-sm sm:text-base lg:text-lg">SAKO Central</span>
         </a>
         <div class="flex items-center gap-2 sm:gap-3">
             <!-- Theme Toggle Button -->
@@ -121,15 +121,16 @@
             
             <!-- Left Column: Event Showcase Details (7 Columns) -->
             <div class="lg:col-span-7 space-y-6 text-left">
-                <!-- Premium Event Hero Showcase Card -->
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 p-6 sm:p-10 text-white shadow-xl group border border-slate-800"
-                     @if($event->image) style="background-image: url('{{ $event->image }}'); background-size: cover; background-position: center;" @endif>
-                    
-                    @if($event->image)
-                        <!-- Dark overlay to ensure text readability on light images -->
-                        <div class="absolute inset-0 bg-slate-950/70 z-0"></div>
-                    @endif
+                <!-- Event Banner Image Card -->
+                @if($event->image)
+                    <div class="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl group aspect-video">
+                        <img src="{{ $event->image }}" alt="{{ $event->title }}" class="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent"></div>
+                    </div>
+                @endif
 
+                <!-- Premium Event Hero Showcase Card -->
+                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 p-6 sm:p-10 text-white shadow-xl group border border-slate-800">
                     <!-- Mesh background details -->
                     <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] z-0"></div>
                     <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl group-hover:bg-purple-600/30 transition-all duration-700 animate-pulse z-0"></div>
@@ -651,7 +652,7 @@
 
     <!-- Footer -->
     <footer class="py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100/80 dark:border-slate-800/80 z-10 relative">
-        &copy; {{ date('Y') }} App Central. All rights reserved.
+        &copy; {{ date('Y') }} SAKO Central. All rights reserved.
     </footer>
 
     <!-- Toast Notifications script & Gender logic -->
@@ -787,9 +788,9 @@
                 const icsContent = [
                     "BEGIN:VCALENDAR",
                     "VERSION:2.0",
-                    "PRODID:-//App Central//Event Calendar//EN",
+                    "PRODID:-//SAKO Central//Event Calendar//EN",
                     "BEGIN:VEVENT",
-                    `UID:${Date.now()}@app-central`,
+                    `UID:${Date.now()}@sako-central`,
                     `DTSTAMP:${eventData.date}`,
                     `DTSTART:${eventData.date}`,
                     `DTEND:${eventData.endDate}`,

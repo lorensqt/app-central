@@ -221,22 +221,185 @@
         </div>
     </div>
 
+    <!-- Attendee Details & Custom Answers Table -->
+    @php
+        $fieldsConfig = $event->registration_fields ?? [];
+        $isNewFormat = false;
+        if (is_array($fieldsConfig)) {
+            foreach ($fieldsConfig as $k => $v) {
+                if (is_array($v) && isset($v['label'])) {
+                    $isNewFormat = true;
+                    break;
+                }
+            }
+        }
+        
+        $customHeaders = [];
+        if ($isNewFormat) {
+            foreach ($fieldsConfig as $field) {
+                if (!empty($field['label'])) {
+                    $customHeaders[] = $field['label'];
+                }
+            }
+        } else {
+            if (!empty($fieldsConfig['phone']['enabled'])) $customHeaders[] = 'Phone Number';
+            if (!empty($fieldsConfig['job_title']['enabled'])) $customHeaders[] = 'Corporate Title / Position';
+            if (!empty($fieldsConfig['company']['enabled'])) $customHeaders[] = 'Company / Department';
+            if (!empty($fieldsConfig['birthday']['enabled'])) $customHeaders[] = 'Birth Date';
+        }
+
+        // Capture any stored custom fields that aren't in current active configuration
+        foreach ($event->registrations as $reg) {
+            if (!empty($reg->custom_fields) && is_array($reg->custom_fields)) {
+                foreach (array_keys($reg->custom_fields) as $key) {
+                    if (!in_array($key, $customHeaders)) {
+                        $customHeaders[] = $key;
+                    }
+                }
+            }
+        }
+    @endphp
+
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm space-y-6">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+            <div class="text-left">
+                <h4 class="font-bold text-slate-900 dark:text-white text-base">Attendee Directory & Responses</h4>
+                <p class="text-xs text-slate-550 dark:text-slate-400 mt-1">Directory of all registered attendees. Click "View Responses" to see full registration questionnaires.</p>
+            </div>
+            
+            <!-- Search and filters -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <!-- Search Box -->
+                <div class="relative bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_8px_rgba(15,23,42,0.01)] transition duration-200 w-full sm:w-64">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <input type="text" id="analytics-search" oninput="filterAnalytics()" placeholder="Search attendees/responses..." class="w-full pl-9 pr-3 py-2 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
+                </div>
+
+                <!-- Status Buttons -->
+                <div class="flex flex-wrap items-center gap-1 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80 select-none text-[11px] font-semibold shrink-0">
+                    <button type="button" onclick="setAnalyticsStatusFilter('all')" id="analytics-filter-btn-all" class="px-2.5 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 transition duration-150">
+                        All ({{ $event->registrations->count() }})
+                    </button>
+                    <button type="button" onclick="setAnalyticsStatusFilter('approved')" id="analytics-filter-btn-approved" class="px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                        Approved ({{ $event->registrations->where('status', 'approved')->count() }})
+                    </button>
+                    <button type="button" onclick="setAnalyticsStatusFilter('pending')" id="analytics-filter-btn-pending" class="px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                        Pending ({{ $event->registrations->where('status', 'pending')->count() }})
+                    </button>
+                    <button type="button" onclick="setAnalyticsStatusFilter('declined')" id="analytics-filter-btn-declined" class="px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                        Declined ({{ $event->registrations->where('status', 'declined')->count() }})
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable dynamic table -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-[0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
+            @if($event->registrations->isEmpty())
+                <div class="text-center py-12 text-slate-450 dark:text-slate-500 text-sm italic">
+                    No registrations yet.
+                </div>
+            @else
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/80 font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-[10px]">
+                                <th class="py-3 px-4">Attendee Profile</th>
+                                <th class="py-3 px-4">Ticket Code</th>
+                                <th class="py-3 px-4">Gender</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analytics-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            @foreach($event->registrations->sortByDesc('created_at') as $reg)
+                                @php
+                                    $answersText = '';
+                                    if (!empty($reg->custom_fields) && is_array($reg->custom_fields)) {
+                                        $answersText = implode(' ', array_values($reg->custom_fields));
+                                    }
+                                @endphp
+                                <tr class="analytics-row hover:bg-slate-50/50 dark:hover:bg-slate-800/35 transition duration-150"
+                                    data-name="{{ strtolower($reg->name) }}"
+                                    data-email="{{ strtolower($reg->email) }}"
+                                    data-code="{{ strtolower($reg->ticket_code ?? '') }}"
+                                    data-status="{{ $reg->status }}"
+                                    data-answers="{{ strtolower($answersText) }}">
+                                    
+                                    <!-- Profile (Initials Avatar, Name & Email) -->
+                                    <td class="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="inline-flex items-center justify-center w-7.5 h-7.5 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-[10px] uppercase shrink-0">
+                                                {{ substr($reg->name, 0, 2) }}
+                                            </span>
+                                            <div class="text-left">
+                                                <span class="block text-slate-900 dark:text-slate-100 font-bold text-xs leading-none">{{ $reg->name }}</span>
+                                                <span class="block text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1 leading-none select-all">{{ $reg->email }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Ticket Code -->
+                                    <td class="py-3.5 px-4 font-mono font-bold text-purple-650 dark:text-purple-400">
+                                        {{ $reg->ticket_code ?? '—' }}
+                                    </td>
+
+                                    <!-- Gender -->
+                                    <td class="py-3.5 px-4">
+                                        <span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-950 border border-slate-100/80 dark:border-slate-800/80 rounded font-medium text-slate-600 dark:text-slate-400 text-[10px] whitespace-nowrap">
+                                            {{ $reg->gender ?? 'Unspecified' }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Status Badge -->
+                                    <td class="py-3.5 px-4">
+                                        @if($reg->status === 'approved')
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[9px] font-bold rounded uppercase tracking-wider">
+                                                Approved
+                                            </span>
+                                        @elseif($reg->status === 'declined')
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[9px] font-bold rounded uppercase tracking-wider">
+                                                Declined
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[9px] font-bold rounded uppercase tracking-wider animate-pulse">
+                                                Pending
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- View Details Action Button -->
+                                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                        <button type="button" onclick="openAttendeeModal({{ $reg->id }})" class="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-white dark:hover:text-slate-900 hover:bg-purple-600 dark:hover:bg-purple-500 border border-purple-200 dark:border-purple-800/60 hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
+                                            View Responses
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Table empty search state -->
+                <div id="no-analytics-matched" class="hidden text-center py-12 text-slate-440 dark:text-slate-500 italic">
+                    No matching attendees or responses found.
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Print Actions Banner -->
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4">
         <div class="space-y-1 text-left w-full lg:w-auto">
-            <h4 class="font-bold text-slate-900 dark:text-white text-base">Print Summary Report</h4>
-            <p class="text-xs text-slate-550 dark:text-slate-400 max-w-xl">Need to share attendee metrics and gender demographics with divisional leads? Download an executive-ready PDF report or print the current screen layout directly.</p>
+            <h4 class="font-bold text-slate-900 dark:text-white text-base">Export Comprehensive Report</h4>
+            <p class="text-xs text-slate-550 dark:text-slate-400 max-w-xl">Need to share attendee metrics, gender demographics, and dynamic questionnaire responses with divisional leads? Download a comprehensive executive-ready PDF report.</p>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch gap-2.5 w-full lg:w-auto">
-            <!-- Local Print Button -->
-            <button onclick="window.print()" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition duration-150 focus:outline-none shadow-xs">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                </svg>
-                Print Screen
-            </button>
-            
             <!-- Dompdf Download Button -->
             <a href="{{ route('committees.events.export_summary_pdf', $event) }}" target="_blank" class="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 text-xs font-semibold py-3 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition duration-150 shadow-md hover:shadow-lg focus:outline-none">
                 <svg class="w-4 h-4 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,4 +409,224 @@
             </a>
         </div>
     </div>
+
+    <!-- Attendee Details Modal -->
+    <div id="attendee-details-modal" class="hidden fixed inset-0 z-[150] w-full h-full overflow-y-auto items-center justify-center p-4 bg-slate-900/75 dark:bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important;">
+        <div id="attendee-details-modal-content" class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800/80 p-6 sm:p-8 max-w-lg w-full shadow-2xl transition-all duration-300 ease-out transform scale-95 opacity-0 text-left space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white">Registration Details</h3>
+                <button onclick="closeAttendeeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition duration-150">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Content Body (populated dynamically) -->
+            <div id="attendee-modal-body" class="space-y-5">
+                <!-- Javascript will load this dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-Side Search & Filter Scripts for Analytics -->
+    <script>
+        // Inject registrations data securely for fast, interactive response
+        const attendeeData = @json($event->registrations->keyBy('id'));
+        let activeAnalyticsStatusFilter = 'all';
+
+        function openAttendeeModal(id) {
+            const attendee = attendeeData[id];
+            if (!attendee) return;
+
+            const body = document.getElementById('attendee-modal-body');
+            if (!body) return;
+
+            // Generate status badge
+            let statusBadge = '';
+            if (attendee.status === 'approved') {
+                statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Approved</span>`;
+            } else if (attendee.status === 'declined') {
+                statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100/30 dark:border-red-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Declined</span>`;
+            } else {
+                statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider animate-pulse"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending</span>`;
+            }
+
+            // Attendance Status
+            let attendanceBadge = '';
+            if (attendee.status === 'approved') {
+                attendanceBadge = attendee.attended
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Attended</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span> Absent</span>`;
+            }
+
+            // Custom Questionnaire responses html
+            let customFieldsHtml = '';
+            if (attendee.custom_fields && Object.keys(attendee.custom_fields).length > 0) {
+                customFieldsHtml = `
+                    <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Questionnaire Responses</h4>
+                        <div class="space-y-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+                `;
+                
+                for (const [key, value] of Object.entries(attendee.custom_fields)) {
+                    if (value !== null && value !== '') {
+                        customFieldsHtml += `
+                            <div class="flex flex-col gap-0.5 text-left">
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">${key}</span>
+                                <span class="text-xs text-slate-800 dark:text-slate-200 font-semibold mt-0.5 leading-relaxed">${value}</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                customFieldsHtml += `
+                        </div>
+                    </div>
+                `;
+            } else {
+                customFieldsHtml = `
+                    <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider">Questionnaire Responses</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 italic text-left">No custom questionnaire responses supplied for this registration.</p>
+                    </div>
+                `;
+            }
+
+            // Parse Date
+            let regDate = 'N/A';
+            if (attendee.created_at) {
+                const d = new Date(attendee.created_at);
+                regDate = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) + ' • ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            }
+
+            body.innerHTML = `
+                <div class="flex items-center gap-3.5">
+                    <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-extrabold text-sm uppercase shrink-0">
+                        ${attendee.name.substring(0, 2)}
+                    </span>
+                    <div class="text-left">
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-none">${attendee.name}</h4>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-2 leading-none select-all">${attendee.email}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4.5 text-left border-t border-slate-100 dark:border-slate-800/80 pt-4.5">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Ticket Code</span>
+                        <span class="text-xs font-mono font-bold text-purple-650 dark:text-purple-400">${attendee.ticket_code || '—'}</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Gender</span>
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">${attendee.gender || 'Unspecified'}</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Submission Date</span>
+                        <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold">${regDate}</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Status & Attendance</span>
+                        <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                            ${statusBadge}
+                            ${attendanceBadge}
+                        </div>
+                    </div>
+                </div>
+
+                ${customFieldsHtml}
+            `;
+
+            // Open Modal Anim
+            const modal = document.getElementById('attendee-details-modal');
+            const content = document.getElementById('attendee-details-modal-content');
+            if (!modal || !content) return;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeAttendeeModal() {
+            const modal = document.getElementById('attendee-details-modal');
+            const content = document.getElementById('attendee-details-modal-content');
+            if (!modal || !content) return;
+
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 250);
+        }
+
+        // Close on backdrop click
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('attendee-details-modal');
+            if (e.target === modal) {
+                closeAttendeeModal();
+            }
+        });
+
+        function setAnalyticsStatusFilter(status) {
+            activeAnalyticsStatusFilter = status;
+
+            // Reset background & styles of all buttons
+            const statuses = ['all', 'approved', 'pending', 'declined'];
+            statuses.forEach(st => {
+                const btn = document.getElementById('analytics-filter-btn-' + st);
+                if (btn) {
+                    if (st === status) {
+                        btn.className = "px-2.5 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 transition duration-150";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150";
+                    }
+                }
+            });
+
+            // Run matching list update
+            filterAnalytics();
+        }
+
+        function filterAnalytics() {
+            const query = document.getElementById('analytics-search') ? document.getElementById('analytics-search').value.toLowerCase().trim() : '';
+            const rows = document.querySelectorAll('.analytics-row');
+            const noResults = document.getElementById('no-analytics-matched');
+
+            let matchesCount = 0;
+
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name') || '';
+                const email = row.getAttribute('data-email') || '';
+                const code = row.getAttribute('data-code') || '';
+                const status = row.getAttribute('data-status') || '';
+                const answers = row.getAttribute('data-answers') || '';
+
+                const matchesSearch = name.includes(query) || email.includes(query) || code.includes(query) || answers.includes(query);
+                const matchesStatus = activeAnalyticsStatusFilter === 'all' || status === activeAnalyticsStatusFilter;
+
+                if (matchesSearch && matchesStatus) {
+                    row.classList.remove('hidden');
+                    matchesCount++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            if (noResults) {
+                if (matchesCount === 0 && rows.length > 0) {
+                    noResults.classList.remove('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                }
+            }
+        }
+    </script>
 </div>

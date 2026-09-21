@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <title>Event Summary Report - {{ $event->title }}</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            font-family: 'Inter', 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
             color: #1e293b;
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 11px;
+            line-height: 1.55;
             margin: 0;
             padding: 0;
         }
@@ -337,10 +339,10 @@
         <tbody>
             @forelse($registrations as $reg)
                 <tr>
-                    <td style="font-weight: 700; color: #0f172a;">{{ $reg->name }}</td>
-                    <td style="font-family: monospace; font-size: 10px;">{{ $reg->email }}</td>
-                    <td style="font-family: monospace; font-weight: 700; color: #8b5cf6;">{{ $reg->ticket_code ?? 'N/A' }}</td>
-                    <td style="text-align: center;">
+                    <td style="font-weight: 700; color: #0f172a; border-bottom: none; padding-bottom: 2px;">{{ $reg->name }}</td>
+                    <td style="font-family: monospace; font-size: 10px; border-bottom: none; padding-bottom: 2px;">{{ $reg->email }}</td>
+                    <td style="font-family: monospace; font-weight: 700; color: #8b5cf6; border-bottom: none; padding-bottom: 2px;">{{ $reg->ticket_code ?? 'N/A' }}</td>
+                    <td style="text-align: center; border-bottom: none; padding-bottom: 2px;">
                         @if($reg->status === 'approved')
                             <span class="badge badge-approved">Approved</span>
                         @elseif($reg->status === 'declined')
@@ -349,7 +351,7 @@
                             <span class="badge badge-pending">Pending</span>
                         @endif
                     </td>
-                    <td class="text-right" style="font-weight: 600;">
+                    <td class="text-right" style="font-weight: 600; border-bottom: none; padding-bottom: 2px;">
                         @if($reg->status === 'approved')
                             @if($reg->attended)
                                 <span style="color: #10b981;">✓ Attended</span>
@@ -361,6 +363,37 @@
                         @endif
                     </td>
                 </tr>
+                @if(!empty($reg->custom_fields) && is_array($reg->custom_fields))
+                    <tr>
+                        <td colspan="5" style="padding-top: 2px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; background-color: #faf5ff;">
+                            <div style="font-size: 9px; color: #6b21a8; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; padding-left: 12px;">
+                                Questionnaire Responses:
+                            </div>
+                            <table style="width: 100%; margin-left: 12px; border-collapse: collapse;">
+                                @foreach($reg->custom_fields as $key => $val)
+                                    @if($val !== null && $val !== '')
+                                        <tr>
+                                            <td style="width: 30%; font-weight: bold; color: #475569; font-size: 9px; padding: 2px 0; border: none;">{{ $key }}:</td>
+                                            <td style="width: 70%; color: #1e293b; font-size: 9px; padding: 2px 0; border: none;">
+                                                @if(strtolower($key) === 'birthday' || strtolower($key) === 'birth date')
+                                                    {{ \Carbon\Carbon::parse($val)->format('M j, Y') }}
+                                                @else
+                                                    {{ $val }}
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </table>
+                        </td>
+                    </tr>
+                @else
+                    <tr>
+                        <td colspan="5" style="border-bottom: 1px solid #e2e8f0; font-size: 9px; color: #64748b; font-style: italic; padding-top: 2px; padding-bottom: 8px; padding-left: 12px;">
+                            No questionnaire responses supplied.
+                        </td>
+                    </tr>
+                @endif
             @empty
                 <tr>
                     <td colspan="5" style="text-align: center; color: #64748b; font-style: italic; padding: 30px;">
