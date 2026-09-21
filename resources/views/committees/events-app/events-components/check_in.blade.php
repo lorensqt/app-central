@@ -34,9 +34,20 @@
     <!-- Header -->
     <header class="w-full max-w-xl mx-auto px-4 pt-6 flex items-center justify-between z-10 relative">
         <div class="flex items-center gap-2">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs">
-                SC
-            </span>
+            @php
+                $logoPath = resource_path('views/imgs/letter-s.png');
+                $base64Logo = '';
+                if (file_exists($logoPath)) {
+                    $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+                }
+            @endphp
+            @if($base64Logo)
+                <img src="{{ $base64Logo }}" alt="SAKO Central Logo" class="w-8 h-8 rounded-lg object-contain" />
+            @else
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs">
+                    SC
+                </span>
+            @endif
             <span class="font-bold text-slate-800 dark:text-slate-200 text-sm tracking-tight">SAKO Central</span>
         </div>
         <span class="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border border-purple-150 dark:border-purple-900/30 px-2 py-0.5 rounded">

@@ -94,9 +94,20 @@
     <!-- Header Branding -->
     <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 flex items-center justify-between z-10 relative">
         <a href="#" class="flex items-center gap-2 group">
-            <span class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-300">
-                SC
-            </span>
+            @php
+                $logoPath = resource_path('views/imgs/letter-s.png');
+                $base64Logo = '';
+                if (file_exists($logoPath)) {
+                    $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+                }
+            @endphp
+            @if($base64Logo)
+                <img src="{{ $base64Logo }}" alt="SAKO Central Logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-contain shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-300" />
+            @else
+                <span class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-purple-500/20 group-hover:scale-105 transition-transform duration-300">
+                    SC
+                </span>
+            @endif
             <span class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 tracking-tight text-sm sm:text-base lg:text-lg">SAKO Central</span>
         </a>
         <div class="flex items-center gap-2 sm:gap-3">
