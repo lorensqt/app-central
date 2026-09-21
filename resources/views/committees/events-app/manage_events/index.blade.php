@@ -842,7 +842,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        animateRowStatusUpdate(row, action);
+                        animateRowStatusUpdate(row, action, data.ticket_code);
                         window.showToast(data.message, 'success');
                     } else {
                         submitBtn.disabled = false;
@@ -940,12 +940,11 @@
                         submitBtn.disabled = true;
 
                         fetch(form.action, {
-                            method: 'POST', // Rails/Laravel DELETE emulation via _method field in headers or form data
+                            method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json',
-                                'X-HTTP-Method-Override': 'DELETE'
+                                'Accept': 'application/json'
                             }
                         })
                         .then(res => res.json())
@@ -982,7 +981,7 @@
         };
 
         // Smooth status badge and button update with fade-in effect
-        function animateRowStatusUpdate(row, action) {
+        function animateRowStatusUpdate(row, action, ticketCode = null) {
             row.setAttribute('data-status', action);
             
             // Checkbox disable/uncheck
@@ -993,8 +992,22 @@
                 cb.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            // Update Status Badge TD (Index 6 since Ticket Code was added)
-            const statusCell = row.children[6];
+            // Dynamically update the Ticket Code cell (Index 2) if a code is returned
+            if (ticketCode) {
+                row.setAttribute('data-code', ticketCode.toLowerCase());
+                const ticketCell = row.children[2];
+                if (ticketCell) {
+                    ticketCell.style.opacity = '0';
+                    setTimeout(() => {
+                        ticketCell.innerText = ticketCode;
+                        ticketCell.style.transition = 'opacity 300ms ease';
+                        ticketCell.style.opacity = '1';
+                    }, 100);
+                }
+            }
+
+            // Update Status Badge TD (Index 5 since Ticket Code is Index 2)
+            const statusCell = row.children[5];
             statusCell.style.opacity = '0';
             setTimeout(() => {
                 if (action === 'approved') {
@@ -1005,7 +1018,7 @@
                         </span>
                         <div class="attendance-badge-wrapper mt-1">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-455"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
                                 Absent
                             </span>
                         </div>
@@ -1022,8 +1035,8 @@
                 statusCell.style.opacity = '1';
             }, 150);
 
-            // Update Actions Column TD (Index 7 since Ticket Code was added)
-            const actionsCell = row.children[7];
+            // Update Actions Column TD (Index 6 since Ticket Code is Index 2)
+            const actionsCell = row.children[6];
             actionsCell.style.opacity = '0';
             setTimeout(() => {
                 if (action === 'approved') {
@@ -1144,7 +1157,9 @@
                     } else {
                         checkedCheckboxes.forEach(cb => {
                             const row = cb.closest('.applicant-row');
-                            animateRowStatusUpdate(row, action === 'approve' ? 'approved' : 'declined');
+                            const regId = cb.getAttribute('data-id');
+                            const ticketCode = data.ticket_codes ? data.ticket_codes[regId] : null;
+                            animateRowStatusUpdate(row, action === 'approve' ? 'approved' : 'declined', ticketCode);
                         });
                     }
                     clearSelection();

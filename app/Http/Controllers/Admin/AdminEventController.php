@@ -161,7 +161,8 @@ class AdminEventController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Registration Approved successfully! Invitation confirmation email has been dispatched.',
-                'status' => 'approved'
+                'status' => 'approved',
+                'ticket_code' => $registration->ticket_code
             ]);
         }
 
@@ -209,6 +210,7 @@ class AdminEventController extends Controller
         $ids = $request->input('ids');
         $approvedCount = 0;
         $failedEmails = 0;
+        $ticketCodes = [];
 
         foreach ($ids as $id) {
             $registration = EventRegistration::find($id);
@@ -226,6 +228,7 @@ class AdminEventController extends Controller
 
                 $registration->update($updateData);
                 $approvedCount++;
+                $ticketCodes[$id] = $registration->ticket_code;
 
                 // Load relations for template rendering in mail
                 $registration->load('event.committee');
@@ -249,6 +252,7 @@ class AdminEventController extends Controller
                 'success' => true,
                 'message' => $message,
                 'approved_count' => $approvedCount,
+                'ticket_codes' => $ticketCodes
             ]);
         }
 
