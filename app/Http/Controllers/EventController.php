@@ -155,6 +155,13 @@ class EventController extends Controller
             return redirect()->back()->with('success', 'Registration Completed Successfully! An entry pass and confirmation details have been dispatched to your email.');
         }
 
+        // Send pending review email to attendee
+        try {
+            \Illuminate\Support\Facades\Mail::to($registration->email)->send(new \App\Mail\EventPending($registration));
+        } catch (\Exception $e) {
+            \Log::error('Event pending mail dispatch failed: '.$e->getMessage());
+        }
+
         return redirect()->back()->with('success', 'Registration Submitted! The host will review your request and send an email confirmation.');
     }
 
