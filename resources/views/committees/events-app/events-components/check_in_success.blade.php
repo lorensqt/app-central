@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check-In Success! - App Central</title>
+    <title>Check-In Success! - SAKO Central</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -34,9 +34,9 @@
     <header class="w-full max-w-xl mx-auto px-4 pt-6 flex items-center justify-between z-10 relative">
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs">
-                AC
+                SC
             </span>
-            <span class="font-bold text-slate-800 dark:text-slate-200 text-sm tracking-tight">App Central</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 text-sm tracking-tight">SAKO Central</span>
         </div>
     </header>
 
@@ -112,7 +112,7 @@
 
     <!-- Footer -->
     <footer class="w-full max-w-xl mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500 z-10 relative">
-        &copy; 2026 App Central. Secure Verification Gateway.
+        &copy; 2026 SAKO Central. Secure Verification Gateway.
     </footer>
 </body>
 </html>

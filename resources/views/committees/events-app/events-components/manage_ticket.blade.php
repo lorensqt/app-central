@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Assembly Entry Pass - App Central</title>
+    <title>Your Assembly Entry Pass - SAKO Central</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -35,7 +35,7 @@
     <header class="w-full max-w-4xl mx-auto px-4 pt-6 flex items-center justify-between z-10 relative">
         <div class="flex items-center gap-2.5">
             <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-sm shadow-md shadow-purple-500/20">
-                AC
+                SC
             </span>
             <span class="font-bold text-slate-800 dark:text-slate-200 tracking-tight">SAKO Central Pass</span>
         </div>
@@ -240,7 +240,7 @@
 
     <!-- Footer -->
     <footer class="w-full max-w-4xl mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500 z-10 relative">
-        &copy; 2026 App Central Event Management. All rights secured.
+        &copy; 2026 SAKO Central Event Management. All rights secured.
     </footer>
 
     <!-- QRCode script load -->

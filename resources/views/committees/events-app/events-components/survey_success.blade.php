@@ -46,9 +46,9 @@
     <header class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 flex items-center justify-between z-10 relative">
         <div class="flex items-center gap-2 group">
             <span class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-purple-500/20">
-                AC
+                SC
             </span>
-            <span class="font-bold text-slate-800 dark:text-slate-200 tracking-tight text-sm sm:text-base lg:text-lg">App Central</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 tracking-tight text-sm sm:text-base lg:text-lg">SAKO Central</span>
         </div>
         <div class="flex items-center gap-2">
             <!-- Theme Toggle Button -->
@@ -100,7 +100,7 @@
 
     <!-- Footer -->
     <footer class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-slate-200/50 dark:border-slate-850/60 z-10 relative">
-        <p class="text-[10px] sm:text-xs text-slate-450 dark:text-slate-500 font-semibold">&copy; {{ date('Y') }} App Central. All rights reserved.</p>
+        <p class="text-[10px] sm:text-xs text-slate-450 dark:text-slate-500 font-semibold">&copy; {{ date('Y') }} SAKO Central. All rights reserved.</p>
     </footer>
 
     <script>
