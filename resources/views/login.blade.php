@@ -41,12 +41,23 @@
     </div>
 
     <div class="flex-grow flex items-center justify-center p-6">
+        @php
+            $logoPath = resource_path('views/imgs/letter-s.png');
+            $base64Logo = '';
+            if (file_exists($logoPath)) {
+                $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+        @endphp
         <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-slate-950/20 p-8 sm:p-10 transition-all duration-300 hover:shadow-md dark:hover:border-slate-700/80">
             <!-- App Header -->
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-lg mb-4 shadow-sm">
-                    SC
-                </div>
+                @if($base64Logo)
+                    <img src="{{ $base64Logo }}" alt="SAKO Central Logo" class="inline-block w-12 h-12 rounded-xl mb-4 shadow-sm object-contain" />
+                @else
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-lg mb-4 shadow-sm">
+                        SC
+                    </div>
+                @endif
                 <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">SAKO Central</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Secure access for authorized personnel only.</p>
             </div>

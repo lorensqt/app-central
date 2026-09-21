@@ -17,6 +17,17 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
+    @php
+        $faviconPath = resource_path('views/imgs/letter-s.png');
+        $base64Favicon = '';
+        if (file_exists($faviconPath)) {
+            $base64Favicon = 'data:image/png;base64,' . base64_encode(file_get_contents($faviconPath));
+        }
+    @endphp
+    @if($base64Favicon)
+        <link rel="icon" type="image/png" href="{{ $base64Favicon }}">
+    @endif
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
@@ -37,10 +48,14 @@
                     <!-- Left: Brand -->
                     <div class="flex items-center gap-3">
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-                            <span
-                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm">
-                                SC
-                            </span>
+                            @if($base64Favicon)
+                                <img src="{{ $base64Favicon }}" alt="SAKO Central Logo" class="w-9 h-9 rounded-lg object-contain" />
+                            @else
+                                <span
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm">
+                                    SC
+                                </span>
+                            @endif
                             <span class="font-semibold text-slate-900 dark:text-white tracking-tight text-lg">SAKO Central</span>
                         </a>
                     </div>

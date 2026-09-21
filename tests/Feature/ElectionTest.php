@@ -214,7 +214,7 @@ class ElectionTest extends TestCase
         $response->assertSee('Ballot Structure');
         $response->assertSee('Voter Register');
         $response->assertSee('Election Results');
-        $response->assertSee('Reports &amp; Statistics');
+        $response->assertSee('Reports & Statistics', false);
     }
 
     /**

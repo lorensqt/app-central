@@ -338,7 +338,7 @@ class EventTest extends TestCase
         $event = Event::create([
             'title' => 'GAD Venue Check-In Event',
             'description' => 'Discuss Gender Action plans at venue.',
-            'event_date' => now()->addDays(5),
+            'event_date' => now(),
             'location' => 'Main Conference Hall',
             'registration_type' => 'venue_confirmation',
         ]);
@@ -375,7 +375,7 @@ class EventTest extends TestCase
         $event = Event::create([
             'title' => 'GAD Venue Check-In Event',
             'description' => 'Discuss Gender Action plans at venue.',
-            'event_date' => now()->addDays(5),
+            'event_date' => now(),
             'location' => 'Main Conference Hall',
             'registration_type' => 'venue_confirmation',
         ]);
@@ -555,7 +555,7 @@ class EventTest extends TestCase
         $event = Event::create([
             'title' => 'GAD Venue Check-In Event',
             'description' => 'Discuss Gender Action plans at venue.',
-            'event_date' => now()->addDays(5),
+            'event_date' => now(),
             'location' => 'Main Conference Hall',
             'registration_type' => 'venue_confirmation',
         ]);

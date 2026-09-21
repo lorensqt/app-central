@@ -16,12 +16,11 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         /* Smooth fade-in-up animations */
         @keyframes fadeInUp {
             from {
@@ -187,7 +186,7 @@
                 <!-- Event Details Stack (Optimized & Premium responsive layouts) -->
                 <div class="space-y-4">
                     <!-- Date & Time Horizontal Card -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.05)] hover:border-purple-200/80 dark:hover:border-purple-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-purple-50/20 dark:hover:to-purple-950/20">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(168,85,247,0.05)] hover:border-purple-200/80 dark:hover:border-purple-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-purple-50/20 dark:hover:to-purple-950/20">
                         <!-- Nested backdrop-clip container for the absolute blurred hover background decoration -->
                         <div class="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden pointer-events-none z-0">
                             <div class="absolute -top-10 -right-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -227,7 +226,7 @@
                                     Add to Calendar
                                 </button>
                                 <!-- Dropdown Menu -->
-                                <div id="calendar-dropdown-menu" class="hidden absolute right-0 mt-1.5 w-40 rounded-xl bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 shadow-xl z-30 overflow-hidden transform origin-top-right transition-all duration-200">
+                                <div id="calendar-dropdown-menu" class="hidden absolute right-0 mt-1.5 w-40 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-30 overflow-hidden transform origin-top-right transition-all duration-200">
                                     <button type="button" onclick="triggerAddToCalendar('google')"
                                         class="w-full text-left px-4 py-2 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-2">
                                         <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
@@ -249,7 +248,7 @@
 
                     <!-- Location / Venue Horizontal Card -->
                     <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->location) }}" target="_blank" rel="noopener noreferrer" 
-                        class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(99,102,241,0.05)] hover:border-indigo-200/80 dark:hover:border-indigo-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative overflow-hidden bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-indigo-50/20 dark:hover:to-indigo-950/20" title="Click to open in Google Maps">
+                        class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(99,102,241,0.05)] hover:border-indigo-200/80 dark:hover:border-indigo-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group relative overflow-hidden bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-indigo-50/20 dark:hover:to-indigo-950/20" title="Click to open in Google Maps">
                         <div class="absolute -top-10 -right-10 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
                         <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
@@ -310,7 +309,7 @@
                         }
                     @endphp
 
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(var(--hover-shadow-rgb),0.05)] hover:border-{{ $themeColor }}-200/80 dark:hover:border-{{ $themeColor }}-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group min-w-0 relative overflow-hidden bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-{{ $themeColor }}-50/20 dark:hover:to-{{ $themeColor }}-950/20"
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-5 lg:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.015)] hover:shadow-[0_20px_50px_rgba(var(--hover-shadow-rgb),0.05)] hover:border-{{ $themeColor }}-200/80 dark:hover:border-{{ $themeColor }}-800/60 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group min-w-0 relative overflow-hidden bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 hover:to-{{ $themeColor }}-50/20 dark:hover:to-{{ $themeColor }}-950/20"
                          style="--hover-shadow-rgb: @if($themeColor === 'red') 239, 68, 68 @elseif($themeColor === 'amber') 245, 158, 11 @elseif($themeColor === 'emerald') 16, 185, 129 @else 20, 184, 166 @endif">
                         <div class="absolute -top-10 -right-10 w-20 h-20 bg-{{ $themeColor }}-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
@@ -500,24 +499,24 @@
                             <!-- Gender Identity Dropdown -->
                             @if($fieldsConfig['gender']['enabled'] ?? true)
                                 <div class="space-y-2">
-                                    <label for="gender-select" class="block text-[10px] font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">
+                                    <label for="gender-select" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                         Gender Identity @if($fieldsConfig['gender']['required'] ?? false)<span class="text-rose-500">*</span>@endif
                                     </label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-505" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
                                         </span>
                                         <select id="gender-select" onchange="handleGenderChange(this)" {{ ($fieldsConfig['gender']['required'] ?? false) ? 'required' : '' }} 
-                                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-10 text-slate-650 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none cursor-pointer">
+                                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-10 text-slate-600 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none cursor-pointer">
                                             <option value="" disabled {{ old('gender') ? '' : 'selected' }}>Select your gender</option>
                                             <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
                                             <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
                                             <option value="LGBTQ+" {{ old('gender') == 'LGBTQ+' ? 'selected' : '' }}>LGBTQ+</option>
                                             <option value="Others" {{ (old('gender') && !in_array(old('gender'), ['Male', 'Female', 'LGBTQ+'])) ? 'selected' : '' }}>Others (Please Specify)</option>
                                         </select>
-                                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-455 dark:text-slate-505">
+                                        <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                             </svg>
@@ -601,11 +600,11 @@
     <!-- Terms & Conditions Consent Modal -->
     <div id="terms-consent-modal" 
         class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-150/80 dark:border-slate-850/80 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
             id="terms-consent-modal-content">
             
             <!-- Header -->
-            <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-850 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
+            <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
                 <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-tight tracking-tight">
                     Review Event Terms & Policy
                 </h3>
@@ -633,9 +632,9 @@
             </div>
 
             <!-- Footer Buttons -->
-            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-850 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50/50 dark:bg-slate-900/20">
                 <button type="button" onclick="closeTermsModal()"
-                    class="text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 transition duration-155 active:scale-[0.98]">
+                    class="text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 transition duration-155 active:scale-[0.98]">
                     Cancel
                 </button>
                 <button type="button" id="confirm-submit-btn" disabled onclick="submitRegistration()"
@@ -728,7 +727,7 @@
                     <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none mb-1.5">${categoryLabel}</p>
                     <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-tight leading-relaxed">${message}</p>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 transition-colors shrink-0 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-850/60">
+                <button onclick="this.parentElement.remove()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 transition-colors shrink-0 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>

@@ -37,7 +37,7 @@
             <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-extrabold text-sm shadow-md shadow-purple-500/20">
                 AC
             </span>
-            <span class="font-bold text-slate-800 dark:text-slate-200 tracking-tight">App Central Pass</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 tracking-tight">SAKO Central Pass</span>
         </div>
         <div class="flex items-center gap-3">
             <div class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-150 dark:border-emerald-900/30 px-2.5 py-1 rounded-md">
@@ -155,14 +155,17 @@
                                     @endif
                                 </div>
                             @else
-                                <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 leading-relaxed w-full">
-                                    👉 <strong>Self-Check-In Support:</strong> Arrive at the venue and click the direct check-in button below to instantly verify your arrival.
+                                <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 leading-relaxed w-full flex items-start gap-2.5">
+                                    <img src="https://img.icons8.com/ios-filled/50/8b5cf6/info.png" alt="Info" class="w-4 h-4 shrink-0 mt-0.5">
+                                    <div>
+                                        <strong class="text-slate-700 dark:text-slate-300">Self-Check-In Support:</strong> Arrive at the venue and click the direct check-in button below to instantly verify your arrival.
+                                    </div>
                                 </div>
 
                                 @if($event->isUpcoming())
                                     <div class="px-5 py-3.5 bg-indigo-50/60 dark:bg-indigo-950/15 rounded-2xl border border-indigo-200/50 dark:border-indigo-900/30 text-xs text-indigo-800 dark:text-indigo-400 font-semibold flex items-center justify-center gap-2 w-full text-center">
-                                        <svg class="w-4 h-4 text-indigo-500 animate-pulse shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg class="w-3 h-3 text-indigo-500 animate-pulse shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         <span>Starts In {{ $event->event_date->diffForHumans(['parts' => 1]) }} (Today at {{ $event->event_date->format('g:i A') }}). You can check in early now!</span>
                                     </div>
@@ -171,18 +174,16 @@
                                 <!-- Direct 1-Tap Self Check-In Button -->
                                 <div class="w-full">
                                     <a href="{{ URL::signedRoute('events.direct_check_in', ['registration' => $registration->id]) }}"
-                                       class="inline-flex w-full items-center justify-center gap-2.5 py-3.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-extrabold rounded-2xl text-xs tracking-wider transition-all duration-300 shadow-md shadow-emerald-500/10 hover:shadow-indigo-500/25 active:scale-[0.99] border border-white/5">
-                                        <svg class="w-4 h-4 animate-pulse text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                        📍 1-TAP SELF-CHECK-IN NOW
+                                       class="inline-flex w-full items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-extrabold rounded-2xl text-xs tracking-wider transition-all duration-300 shadow-md shadow-emerald-500/10 hover:shadow-indigo-500/25 active:scale-[0.99] border border-white/5">
+                                        <img src="https://img.icons8.com/ios-filled/50/ffffff/marker.png" alt="Pin" class="w-4 h-4 animate-pulse shrink-0">
+                                        <span>1-TAP SELF-CHECK-IN NOW</span>
                                     </a>
                                 </div>
                             @endif
                         @else
-                            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 leading-relaxed w-full">
-                                👋 Show this entry pass on your phone to any division host at the entrance gate to verify your seat reservation.
+                            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-550 dark:text-slate-400 leading-relaxed w-full flex items-start gap-2.5">
+                                <img src="https://img.icons8.com/ios-filled/50/8b5cf6/info.png" alt="Info" class="w-4 h-4 shrink-0 mt-0.5">
+                                <span>Show this entry pass on your phone to any division host at the entrance gate to verify your seat reservation.</span>
                             </div>
                         @endif
                     @endif
@@ -204,8 +205,11 @@
                         <form id="cancel-rsvp-form" action="{{ URL::signedRoute('events.cancel_registration', ['registration' => $registration->id]) }}" method="POST" 
                               class="w-full">
                             @csrf
-                            <button type="submit" class="w-full py-3 px-4 rounded-xl border border-rose-250 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-slate-900 hover:bg-rose-550 dark:hover:bg-rose-400 text-xs font-bold tracking-wide transition duration-150">
-                                Cancel RSVP Entry Pass
+                            <button type="submit" class="w-full py-3.5 px-4 rounded-xl border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-slate-900 hover:bg-rose-600 dark:hover:bg-rose-500 text-xs font-extrabold tracking-wide transition duration-150 shadow-sm flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Cancel RSVP Entry Pass</span>
                             </button>
                         </form>
                     @else
