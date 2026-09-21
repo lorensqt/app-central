@@ -21,6 +21,7 @@
             font-family: 'Inter', sans-serif;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="h-full flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-x-hidden min-h-screen transition-colors duration-300">
     
@@ -49,10 +50,25 @@
     <main class="flex-grow flex items-center justify-center p-4 z-10 relative">
         <div class="max-w-md w-full space-y-6">
             
+            <!-- Validation Errors and Alerts (SweetAlert2 Enabled) -->
             @if(session('error'))
-                <div class="p-4 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 text-red-800 dark:text-red-400 text-sm">
-                    {{ session('error') }}
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const isDark = document.documentElement.classList.contains('dark');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Notification',
+                            text: "{{ session('error') }}",
+                            background: isDark ? '#1e293b' : '#ffffff',
+                            color: isDark ? '#f1f5f9' : '#0f172a',
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                popup: 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl',
+                                confirmButton: 'rounded-xl text-xs font-semibold px-4 py-2.5'
+                            }
+                        });
+                    });
+                </script>
             @endif
 
             <!-- Ticket Card (Luma Style Premium aesthetics) -->
@@ -105,14 +121,71 @@
                         </span>
                     </div>
 
-                    <!-- Scan notice / Instructions -->
-                    <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 leading-relaxed w-full">
+                    <!-- Scan notice / Instructions & Self Check-In Trigger -->
+                    @if($registration->attended)
+                        <div class="px-5 py-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-200 dark:border-emerald-900/30 text-xs text-emerald-800 dark:text-emerald-400 font-semibold flex items-center justify-center gap-2 w-full shadow-sm">
+                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Verified Guest: Checked-In on {{ $registration->attended_at ? \Carbon\Carbon::parse($registration->attended_at)->format('M j • g:i A') : now()->format('M j • g:i A') }}</span>
+                        </div>
+                    @else
                         @if($event->registration_type === 'venue_confirmation')
-                            👉 <strong>Self-Check-In Support:</strong> Arrive at the venue, scan the poster QR, and verify your email, or show this digital pass to a division coordinator.
+                            @if($event->isEnded())
+                                <div class="px-5 py-4 bg-rose-50 dark:bg-rose-950/20 rounded-2xl border border-rose-200 dark:border-rose-900/30 text-xs text-rose-800 dark:text-rose-400 font-semibold flex flex-col items-center gap-2 w-full shadow-sm text-center">
+                                    <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Assembly Ended: This event has already ended. Self-check-in is closed.</span>
+                                </div>
+                            @elseif(!$event->canCheckIn())
+                                @php
+                                    $daysLeft = $event->daysUntilStart();
+                                @endphp
+                                <div class="px-5 py-4 bg-amber-50/60 dark:bg-amber-950/15 rounded-2xl border border-amber-200/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-400 font-semibold flex flex-col items-center gap-2 w-full shadow-sm text-center">
+                                    <svg class="w-6 h-6 text-amber-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    @if($event->startsTomorrow())
+                                        <span>Check-In Opens Tomorrow: This assembly starts tomorrow. Self-check-in will open on the day of the event.</span>
+                                    @elseif($daysLeft == 2)
+                                        <span>Check-In Opens in 2 Days: This assembly starts in 2 days. Please check back on the day of the event to check in.</span>
+                                    @else
+                                        <span>Check-In Opens in {{ $daysLeft }} Days: This assembly starts in {{ $daysLeft }} days. Please check back on the day of the event to check in.</span>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 leading-relaxed w-full">
+                                    👉 <strong>Self-Check-In Support:</strong> Arrive at the venue and click the direct check-in button below to instantly verify your arrival.
+                                </div>
+
+                                @if($event->isUpcoming())
+                                    <div class="px-5 py-3.5 bg-indigo-50/60 dark:bg-indigo-950/15 rounded-2xl border border-indigo-200/50 dark:border-indigo-900/30 text-xs text-indigo-800 dark:text-indigo-400 font-semibold flex items-center justify-center gap-2 w-full text-center">
+                                        <svg class="w-4 h-4 text-indigo-500 animate-pulse shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>Starts In {{ $event->event_date->diffForHumans(['parts' => 1]) }} (Today at {{ $event->event_date->format('g:i A') }}). You can check in early now!</span>
+                                    </div>
+                                @endif
+
+                                <!-- Direct 1-Tap Self Check-In Button -->
+                                <div class="w-full">
+                                    <a href="{{ URL::signedRoute('events.direct_check_in', ['registration' => $registration->id]) }}"
+                                       class="inline-flex w-full items-center justify-center gap-2.5 py-3.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white font-extrabold rounded-2xl text-xs tracking-wider transition-all duration-300 shadow-md shadow-emerald-500/10 hover:shadow-indigo-500/25 active:scale-[0.99] border border-white/5">
+                                        <svg class="w-4 h-4 animate-pulse text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        📍 1-TAP SELF-CHECK-IN NOW
+                                    </a>
+                                </div>
+                            @endif
                         @else
-                            👋 Show this entry pass on your phone to any division host at the entrance gate to verify your seat reservation.
+                            <div class="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800/80 text-xs text-slate-550 dark:text-slate-400 leading-relaxed w-full">
+                                👋 Show this entry pass on your phone to any division host at the entrance gate to verify your seat reservation.
+                            </div>
                         @endif
-                    </div>
+                    @endif
                 </div>
 
                 <!-- Ticket Footer Action Bar (With Luma Cutoff Check) -->
@@ -128,8 +201,7 @@
                             <span class="font-bold text-slate-600 dark:text-slate-300">{{ $cutoff->format('M j, Y \a\t g:i A') }}</span>
                         </div>
                         
-                        <form action="{{ URL::signedRoute('events.cancel_registration', ['registration' => $registration->id]) }}" method="POST" 
-                              onsubmit="return confirm('Are you sure you want to cancel your RSVP? This will immediately release your seat to other potential participants.');" 
+                        <form id="cancel-rsvp-form" action="{{ URL::signedRoute('events.cancel_registration', ['registration' => $registration->id]) }}" method="POST" 
                               class="w-full">
                             @csrf
                             <button type="submit" class="w-full py-3 px-4 rounded-xl border border-rose-250 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 hover:text-white dark:hover:text-slate-900 hover:bg-rose-550 dark:hover:bg-rose-400 text-xs font-bold tracking-wide transition duration-150">
@@ -170,9 +242,9 @@
     <!-- QRCode script load -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-        // Generate QR code targeting the public check-in URL for venue confirmation
+        // Generate QR code targeting the direct, secure signed check-in URL
         window.addEventListener('DOMContentLoaded', () => {
-            const qrText = "{{ route('events.check_in', $event) }}";
+            const qrText = "{{ URL::signedRoute('events.direct_check_in', ['registration' => $registration->id]) }}";
             new QRCode(document.getElementById("qrcode"), {
                 text: qrText,
                 width: 160,
@@ -181,6 +253,40 @@
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.M
             });
+
+            // SweetAlert2 RSVP Cancellation Confirmation
+            const cancelForm = document.getElementById('cancel-rsvp-form');
+            if (cancelForm) {
+                cancelForm.addEventListener('submit', (e) => {
+                    if (cancelForm.dataset.confirmed === 'true') {
+                        return;
+                    }
+                    e.preventDefault();
+                    const isDark = document.documentElement.classList.contains('dark');
+                    Swal.fire({
+                        title: 'Cancel RSVP Entry Pass?',
+                        text: 'Are you sure you want to cancel your RSVP? This will immediately release your seat to other potential participants.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: isDark ? '#334155' : '#e2e8f0',
+                        confirmButtonText: 'Yes, Cancel RSVP',
+                        cancelButtonText: 'Keep My Spot',
+                        background: isDark ? '#1e293b' : '#ffffff',
+                        color: isDark ? '#f1f5f9' : '#0f172a',
+                        customClass: {
+                            popup: 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl',
+                            confirmButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1',
+                            cancelButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            cancelForm.dataset.confirmed = 'true';
+                            cancelForm.submit();
+                        }
+                    });
+                });
+            }
         });
     </script>
 </body>

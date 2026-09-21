@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') - App Central</title>
+    <title>@yield('title', 'Dashboard') - SAKO Central</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,48 +24,11 @@
             font-family: 'Inter', sans-serif;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('styles')
 </head>
 
 <body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-x-hidden">
-    <!-- Premium Toast Notification Container -->
-    <div id="toast-container" class="fixed top-4 md:top-20 right-4 md:right-6 left-4 md:left-auto z-[100] flex flex-col gap-3 max-w-sm pointer-events-none">
-    </div>
-
-    <!-- Premium Custom Confirm Modal Backdrop -->
-    <div id="confirm-modal"
-        class="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-[2px] z-[90] hidden items-center justify-center p-4 transition-all duration-300">
-        <div id="confirm-modal-card"
-            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/85 max-w-sm w-full shadow-xl p-6 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
-            <!-- Icon & Header -->
-            <div class="flex items-start gap-4">
-                <span class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </span>
-                <div class="text-left">
-                    <h3 id="confirm-modal-title" class="font-bold text-slate-900 dark:text-white text-lg">Confirm Action</h3>
-                    <p id="confirm-modal-message" class="text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed"></p>
-                    <p id="confirm-modal-sub" class="text-xs text-slate-400 dark:text-slate-500 mt-2 font-medium hidden"></p>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button id="confirm-modal-cancel" type="button"
-                    class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 transition duration-150">
-                    Cancel
-                </button>
-                <button id="confirm-modal-approve" type="button"
-                    class="text-xs font-semibold py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition duration-150 shadow-sm">
-                    Confirm Action
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div>
         <!-- Top Navbar -->
         <nav class="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-40 transition-colors duration-300">
@@ -76,9 +39,9 @@
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
                             <span
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm">
-                                AC
+                                SC
                             </span>
-                            <span class="font-semibold text-slate-900 dark:text-white tracking-tight text-lg">App Central</span>
+                            <span class="font-semibold text-slate-900 dark:text-white tracking-tight text-lg">SAKO Central</span>
                         </a>
                     </div>
 
@@ -196,190 +159,69 @@
 
     <!-- Footer -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800/80 py-6 text-center text-xs text-slate-400 dark:text-slate-500 mt-12 transition-colors duration-300">
-        &copy; {{ date('Y') }} App Central. All rights reserved.
+        &copy; {{ date('Y') }} SAKO Central. All rights reserved.
     </footer>
 
-    <!-- Toast & Confirm Engines -->
+    <!-- Toast & Confirm Engines (Powered by SweetAlert2) -->
     <script>
-        // --- TOAST NOTIFICATIONS ENGINE ---
+        // --- TOAST NOTIFICATIONS ENGINE (SWEETALERT2) ---
         window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            // Custom config per notification type
-            const config = {
-                success: {
-                    label: 'Success',
-                    badgeBg: 'bg-emerald-50 text-emerald-600 ring-emerald-500/20',
-                    progressBg: 'bg-emerald-500',
-                    glow: 'shadow-emerald-500/5',
-                    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`
+            const isDark = document.documentElement.classList.contains('dark');
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                background: isDark ? '#1e293b' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#0f172a',
+                customClass: {
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xl'
                 },
-                error: {
-                    label: 'System Notice',
-                    badgeBg: 'bg-rose-50 text-rose-600 ring-rose-500/20',
-                    progressBg: 'bg-rose-500',
-                    glow: 'shadow-rose-500/5',
-                    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`
-                },
-                danger: {
-                    label: 'System Notice',
-                    badgeBg: 'bg-rose-50 text-rose-600 ring-rose-500/20',
-                    progressBg: 'bg-rose-500',
-                    glow: 'shadow-rose-500/5',
-                    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`
-                },
-                warning: {
-                    label: 'Warning',
-                    badgeBg: 'bg-amber-50 text-amber-600 ring-amber-500/20',
-                    progressBg: 'bg-amber-500',
-                    glow: 'shadow-amber-500/5',
-                    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>`
-                },
-                info: {
-                    label: 'Notification',
-                    badgeBg: 'bg-sky-50 text-sky-600 ring-sky-500/20',
-                    progressBg: 'bg-sky-500',
-                    glow: 'shadow-sky-500/5',
-                    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
                 }
-            };
-
-            const currentConfig = config[type] || config.info;
-            const duration = 4000;
-
-            // Toast Card Component
-            const toast = document.createElement('div');
-            toast.className =
-                `group pointer-events-auto relative flex items-start gap-3.5 w-full max-w-sm p-4 overflow-hidden rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl ${currentConfig.glow} transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0 translate-x-8 scale-95 hover:border-slate-300 dark:hover:border-slate-700`;
-
-            toast.innerHTML = `
-            <!-- Icon -->
-            <div class="flex items-center justify-center p-2 rounded-xl ring-1 ring-inset ${currentConfig.badgeBg} shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${currentConfig.icon}
-                </svg>
-            </div>
-
-            <!-- Content -->
-            <div class="flex-1 min-w-0 pt-0.5">
-                <div class="flex items-center justify-between gap-2 mb-0.5">
-                    <span class="text-[11px] font-semibold tracking-wider uppercase text-slate-400 dark:text-slate-500">${currentConfig.label}</span>
-                </div>
-                <p class="text-sm font-medium text-slate-700 dark:text-slate-200 leading-snug break-words">${message}</p>
-            </div>
-
-            <!-- Close Button -->
-            <button class="toast-close text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 -mr-1 -mt-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-
-            <!-- Progress Bar -->
-            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100 dark:bg-slate-800">
-                <div class="progress-bar h-full ${currentConfig.progressBg} transition-all ease-linear" style="width: 100%; duration: ${duration}ms;"></div>
-            </div>
-        `;
-
-            // Manual dismiss handling with pause behavior
-            let autoDismissTimer;
-            let startTime = Date.now();
-            let remainingTime = duration;
-
-            const dismissToast = () => {
-                toast.classList.add('opacity-0', 'translate-x-8', 'scale-95');
-                setTimeout(() => toast.remove(), 300);
-            };
-
-            const startTimer = () => {
-                startTime = Date.now();
-                const progressBar = toast.querySelector('.progress-bar');
-                if (progressBar) {
-                    progressBar.style.transition = `width ${remainingTime}ms linear`;
-                    progressBar.style.width = '0%';
-                }
-                autoDismissTimer = setTimeout(dismissToast, remainingTime);
-            };
-
-            const pauseTimer = () => {
-                clearTimeout(autoDismissTimer);
-                remainingTime -= Date.now() - startTime;
-                const progressBar = toast.querySelector('.progress-bar');
-                if (progressBar) {
-                    const computedWidth = getComputedStyle(progressBar).width;
-                    progressBar.style.transition = 'none';
-                    progressBar.style.width = computedWidth;
-                }
-            };
-
-            toast.querySelector('.toast-close').onclick = dismissToast;
-
-            // Hover to pause countdown
-            toast.addEventListener('mouseenter', pauseTimer);
-            toast.addEventListener('mouseleave', () => {
-                if (remainingTime > 0) startTimer();
             });
 
-            container.appendChild(toast);
+            let swalType = 'info';
+            if (type === 'success') swalType = 'success';
+            if (type === 'error' || type === 'danger') swalType = 'error';
+            if (type === 'warning') swalType = 'warning';
 
-            // Entry animation frame
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    toast.classList.remove('opacity-0', 'translate-x-8', 'scale-95');
-                    startTimer();
-                });
+            Toast.fire({
+                icon: swalType,
+                title: message
             });
         };
 
-        // --- PREMIUM CONFIRM MODAL ENGINE ---
+        // --- CONFIRM MODAL ENGINE (SWEETALERT2) ---
         window.showConfirmModal = function(title, message, subtext, onConfirm) {
-            const modal = document.getElementById('confirm-modal');
-            const card = document.getElementById('confirm-modal-card');
-            const titleEl = document.getElementById('confirm-modal-title');
-            const messageEl = document.getElementById('confirm-modal-message');
-            const subEl = document.getElementById('confirm-modal-sub');
-            const cancelBtn = document.getElementById('confirm-modal-cancel');
-            const approveBtn = document.getElementById('confirm-modal-approve');
-
-            if (!modal || !card) return;
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-
-            if (subtext) {
-                subEl.textContent = subtext;
-                subEl.classList.remove('hidden');
-            } else {
-                subEl.classList.add('hidden');
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            requestAnimationFrame(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-                card.classList.add('scale-100', 'opacity-100');
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: title,
+                html: `
+                    <div class="text-sm text-slate-650 dark:text-slate-350 leading-relaxed">${message}</div>
+                    ${subtext ? `<div class="text-xs text-slate-400 dark:text-slate-500 mt-2 font-medium">${subtext}</div>` : ''}
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: isDark ? '#334155' : '#e2e8f0',
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'Cancel',
+                background: isDark ? '#1e293b' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#0f172a',
+                customClass: {
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xl',
+                    confirmButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1',
+                    cancelButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    onConfirm();
+                }
             });
-
-            const closeModal = () => {
-                card.classList.remove('scale-100', 'opacity-100');
-                card.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                }, 200);
-            };
-
-            cancelBtn.onclick = closeModal;
-            approveBtn.onclick = () => {
-                onConfirm();
-                closeModal();
-            };
-
-            modal.onclick = function(e) {
-                if (e.target === modal) closeModal();
-            };
         };
 
         // Declarative submit listener for forms using data-confirm

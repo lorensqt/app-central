@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - App Central</title>
+    <title>Login - SAKO Central</title>
     <!-- Use Tailwind CSS via CDN for reliability, or compiled assets if needed. CDN guarantees immediate styling. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -45,9 +45,9 @@
             <!-- App Header -->
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-lg mb-4 shadow-sm">
-                    AC
+                    SC
                 </div>
-                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">App Central</h1>
+                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">SAKO Central</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Secure access for authorized personnel only.</p>
             </div>
 
@@ -78,7 +78,7 @@
 
     <!-- Footer -->
     <div class="py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
-        &copy; {{ date('Y') }} App Central. All rights reserved.
+        &copy; {{ date('Y') }} SAKO Central. All rights reserved.
     </div>
 
     <!-- Script Block for theme toggling -->

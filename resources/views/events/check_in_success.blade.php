@@ -74,6 +74,11 @@
                 <div class="space-y-1">
                     <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 leading-none">Checked In Successfully</p>
                     <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug mt-1.5">{{ $event->title }}</h2>
+                    @if(session('attendee_name'))
+                        <p class="text-sm font-medium text-slate-600 dark:text-slate-350 mt-1">
+                            Welcome, <span class="font-extrabold text-slate-800 dark:text-slate-100">{{ session('attendee_name') }}</span>!
+                        </p>
+                    @endif
                 </div>
 
                 <div class="py-3 px-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 text-left space-y-2 text-xs">

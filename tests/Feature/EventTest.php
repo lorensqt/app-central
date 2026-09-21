@@ -546,4 +546,111 @@ class EventTest extends TestCase
             'id' => $reg2->id,
         ]);
     }
+
+    /**
+     * Test direct check-in with a valid secure signed URL.
+     */
+    public function test_direct_check_in_with_valid_signed_url(): void
+    {
+        $event = Event::create([
+            'title' => 'GAD Venue Check-In Event',
+            'description' => 'Discuss Gender Action plans at venue.',
+            'event_date' => now()->addDays(5),
+            'location' => 'Main Conference Hall',
+            'registration_type' => 'venue_confirmation',
+        ]);
+
+        $reg = EventRegistration::create([
+            'event_id' => $event->id,
+            'name' => 'Direct Checking Guest',
+            'email' => 'direct@example.com',
+            'gender' => 'Female',
+            'status' => 'pending',
+            'ticket_code' => 'AC-DIRECT',
+        ]);
+
+        // Generate a secure signed URL
+        $signedUrl = \Illuminate\Support\Facades\URL::signedRoute('events.direct_check_in', ['registration' => $reg->id]);
+
+        $response = $this->get($signedUrl);
+
+        $response->assertRedirect(route('events.check_in_success', ['event' => $event->id]));
+        $response->assertSessionHas('attendee_name', 'Direct Checking Guest');
+
+        $this->assertDatabaseHas('event_registrations', [
+            'id' => $reg->id,
+            'status' => 'approved',
+            'attended' => true,
+        ]);
+    }
+
+    /**
+     * Test direct check-in rejects invalid/unsigned url access.
+     */
+    public function test_direct_check_in_rejects_invalid_signature(): void
+    {
+        $event = Event::create([
+            'title' => 'GAD Venue Check-In Event',
+            'description' => 'Discuss Gender Action plans.',
+            'event_date' => now()->addDays(5),
+            'location' => 'Main Conference Hall',
+        ]);
+
+        $reg = EventRegistration::create([
+            'event_id' => $event->id,
+            'name' => 'Direct Checking Guest',
+            'email' => 'direct@example.com',
+            'status' => 'pending',
+        ]);
+
+        // Accessing the url without a valid signature
+        $response = $this->get(route('events.direct_check_in', ['registration' => $reg->id]));
+
+        $response->assertStatus(401);
+
+        $this->assertDatabaseHas('event_registrations', [
+            'id' => $reg->id,
+            'status' => 'pending',
+            'attended' => false,
+        ]);
+    }
+
+    /**
+     * Test scheduling a new event redirects to the event management portal.
+     */
+    public function test_scheduling_event_redirects_to_manage_portal(): void
+    {
+        $this->withoutMiddleware(ValidateCsrfToken::class);
+        $this->withoutMiddleware(\App\Http\Middleware\EnsurePinIsConfigured::class);
+
+        $superAdmin = User::create([
+            'name' => 'John Castillo',
+            'email' => 'castillojohnlaurence0@gmail.com',
+        ]);
+
+        $committee = \App\Models\Committee::create([
+            'name' => 'GAD Committee Test',
+        ]);
+
+        $eventData = [
+            'title' => 'New Premium Event',
+            'description' => 'A beautifully designed premium community event.',
+            'terms_and_policy' => 'Accept all terms.',
+            'event_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
+            'end_date' => now()->addDays(2)->addHours(4)->format('Y-m-d H:i:s'),
+            'location' => 'Main Convention Center',
+            'location_type' => 'physical',
+            'registration_type' => 'venue_confirmation',
+            'committee_id' => $committee->id,
+        ];
+
+        $response = $this->actingAs($superAdmin)->post('/committees/events', $eventData);
+
+        // Retrieve the newly created event to assert route redirection
+        $event = Event::where('title', 'New Premium Event')->first();
+        $this->assertNotNull($event);
+
+        $response->assertRedirect(route('committees.events.manage', $event));
+        $response->assertSessionHas('status', 'Event scheduled successfully and is now open for registrations.');
+    }
 }

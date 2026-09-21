@@ -38,6 +38,7 @@ Route::post('/rsvp/{registration}/cancel', [EventController::class, 'cancelRegis
 Route::get('/events/{event}/check-in', [EventController::class, 'showCheckIn'])->name('events.check_in');
 Route::post('/events/{event}/check-in', [EventController::class, 'submitCheckIn'])->name('events.submit_check_in');
 Route::get('/events/{event}/check-in/success', [EventController::class, 'checkInSuccess'])->name('events.check_in_success');
+Route::get('/rsvp/{registration}/check-in/direct', [EventController::class, 'directCheckIn'])->name('events.direct_check_in');
 
 // Post-Event Survey Routes (Guest Accessible - Secured via Signed URLs)
 Route::get('/survey/{registration}', [EventController::class, 'showSurvey'])->name('events.survey_show');

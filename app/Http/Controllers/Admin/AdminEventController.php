@@ -43,9 +43,9 @@ class AdminEventController extends Controller
             $validated['image'] = Storage::disk('s3')->url($path);
         }
 
-        Event::create($validated);
+        $event = Event::create($validated);
 
-        return redirect()->back()->with('status', 'Event scheduled successfully and is now open for registrations.');
+        return redirect()->route('committees.events.manage', $event)->with('status', 'Event scheduled successfully and is now open for registrations.');
     }
 
     /**

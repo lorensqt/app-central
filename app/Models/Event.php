@@ -85,4 +85,69 @@ class Event extends Model
 
         return $start->format('M j, g:i A') . ' - ' . $end->format('M j, g:i A');
     }
+
+    /**
+     * Check if the event has ended.
+     */
+    public function isEnded(): bool
+    {
+        $end = $this->end_date ?? $this->event_date->copy()->addHours(2);
+        return now()->isAfter($end);
+    }
+
+    /**
+     * Check if the event is currently ongoing.
+     */
+    public function isOngoing(): bool
+    {
+        $start = $this->event_date;
+        $end = $this->end_date ?? $this->event_date->copy()->addHours(2);
+        return now()->between($start, $end);
+    }
+
+    /**
+     * Check if the event is upcoming (has not started yet).
+     */
+    public function isUpcoming(): bool
+    {
+        return now()->isBefore($this->event_date);
+    }
+
+    /**
+     * Check if the event starts today.
+     */
+    public function startsToday(): bool
+    {
+        return $this->event_date->isToday();
+    }
+
+    /**
+     * Check if the event starts tomorrow.
+     */
+    public function startsTomorrow(): bool
+    {
+        return $this->event_date->isTomorrow();
+    }
+
+    /**
+     * Get the number of days until the event starts.
+     */
+    public function daysUntilStart(): int
+    {
+        return (int) now()->startOfDay()->diffInDays($this->event_date->startOfDay(), false);
+    }
+
+    /**
+     * Check if self check-in is allowed for this event.
+     * Check-in is typically allowed on the day of the event until the event ends.
+     */
+    public function canCheckIn(): bool
+    {
+        if ($this->isEnded()) {
+            return false;
+        }
+
+        // Allowed if it's ongoing or starting today (on the same calendar day)
+        return $this->isOngoing() || $this->event_date->isToday();
+    }
 }

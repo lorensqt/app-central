@@ -136,13 +136,41 @@
                     <div class="absolute -left-10 -top-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl z-0"></div>
                     
                     <div class="relative z-10 space-y-6">
-                        <!-- Division Badge -->
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md text-purple-200 text-xs font-bold rounded-lg border border-white/10 uppercase tracking-widest">
-                            <svg class="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            {{ $event->committee ? $event->committee->name : 'Division Assembly' }}
-                        </span>
+                        <!-- Division & Status Badges -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md text-purple-200 text-xs font-bold rounded-lg border border-white/10 uppercase tracking-widest">
+                                <svg class="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                {{ $event->committee ? $event->committee->name : 'Division Assembly' }}
+                            </span>
+
+                            @if($event->isEnded())
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/20 backdrop-blur-md text-rose-200 text-xs font-bold rounded-lg border border-rose-500/30 uppercase tracking-widest">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Ended
+                                </span>
+                            @elseif($event->isOngoing())
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 backdrop-blur-md text-emerald-250 text-xs font-bold rounded-lg border border-emerald-500/30 uppercase tracking-widest animate-pulse">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live / Ongoing
+                                </span>
+                            @else
+                                @php
+                                    $daysLeft = $event->daysUntilStart();
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/20 backdrop-blur-md text-indigo-200 text-xs font-bold rounded-lg border border-indigo-500/30 uppercase tracking-widest">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                                    @if($event->startsToday())
+                                        Today
+                                    @elseif($event->startsTomorrow())
+                                        Tomorrow
+                                    @elseif($daysLeft == 2)
+                                        In 2 Days
+                                    @else
+                                        In {{ $daysLeft }} Days
+                                    @endif
+                                </span>
+                            @endif
+                        </div>
 
                         <!-- Title -->
                         <h1 class="text-3xl sm:text-4.5xl font-extrabold text-white tracking-tight leading-tight">

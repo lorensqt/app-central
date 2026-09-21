@@ -266,6 +266,18 @@ class EventController extends Controller
             return redirect()->route('events.public_show', $event);
         }
 
+        if ($event->isEnded()) {
+            return redirect()->route('events.public_show', $event)
+                ->with('error', 'Check-In Closed: This assembly has already ended.');
+        }
+
+        if (!$event->canCheckIn()) {
+            $daysLeft = $event->daysUntilStart();
+            $timeMsg = $event->startsTomorrow() ? 'tomorrow' : "in {$daysLeft} days";
+            return redirect()->route('events.public_show', $event)
+                ->with('error', "Check-In Closed: This assembly is scheduled {$timeMsg}. Check-in will open on the day of the event.");
+        }
+
         return view('committees.events-app.events-components.check_in', compact('event'));
     }
 
@@ -276,6 +288,11 @@ class EventController extends Controller
     {
         if ($event->registration_type !== 'venue_confirmation') {
             return redirect()->route('events.public_show', $event);
+        }
+
+        if (!$event->canCheckIn()) {
+            return redirect()->back()
+                ->with('error', 'Check-In Closed: Self check-in is not active for this assembly at this time.');
         }
 
         $validated = $request->validate([
@@ -304,7 +321,8 @@ class EventController extends Controller
         }
 
         if ($registration->attended) {
-            return redirect()->route('events.check_in_success', ['event' => $event->id, 'already' => true]);
+            return redirect()->route('events.check_in_success', ['event' => $event->id, 'already' => true])
+                ->with('attendee_name', $registration->name);
         }
 
         $registration->update([
@@ -312,7 +330,46 @@ class EventController extends Controller
             'attended_at' => now(),
         ]);
 
-        return redirect()->route('events.check_in_success', ['event' => $event->id]);
+        return redirect()->route('events.check_in_success', ['event' => $event->id])
+            ->with('attendee_name', $registration->name);
+    }
+
+    /**
+     * Directly check-in an attendee via a secure signed link or scanned QR code.
+     */
+    public function directCheckIn(Request $request, EventRegistration $registration)
+    {
+        if (! $request->hasValidSignature()) {
+            abort(401, 'Unauthorized: Secure check-in link has expired or is invalid.');
+        }
+
+        $event = $registration->event;
+
+        if ($event->isEnded()) {
+            return redirect()->back()->with('error', 'Check-In Closed: This assembly has already ended.');
+        }
+
+        if (!$event->canCheckIn()) {
+            $daysLeft = $event->daysUntilStart();
+            $timeMsg = $event->startsTomorrow() ? 'tomorrow' : "in {$daysLeft} days";
+            return redirect()->back()->with('error', "Check-In Closed: Self check-in is not active yet. This assembly is scheduled {$timeMsg}. Check-in will open on the day of the event.");
+        }
+
+        // If already checked in, redirect with a message
+        if ($registration->attended) {
+            return redirect()->route('events.check_in_success', ['event' => $event->id, 'already' => true])
+                ->with('attendee_name', $registration->name);
+        }
+
+        // Perform direct check-in, auto-approve if they were pending
+        $registration->update([
+            'status' => 'approved',
+            'attended' => true,
+            'attended_at' => now(),
+        ]);
+
+        return redirect()->route('events.check_in_success', ['event' => $event->id])
+            ->with('attendee_name', $registration->name);
     }
 
     /**

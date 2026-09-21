@@ -21,6 +21,7 @@
             font-family: 'Inter', sans-serif;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="h-full flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-x-hidden min-h-screen transition-colors duration-300">
     
@@ -60,11 +61,25 @@
                 </p>
             </div>
 
-            <!-- Validation Errors and Alerts -->
+            <!-- Validation Errors and Alerts (SweetAlert2 Enabled) -->
             @if(session('error'))
-                <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-100/60 dark:border-rose-900/40 text-rose-800 dark:text-rose-400 text-xs font-semibold">
-                    ⚠️ {{ session('error') }}
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const isDark = document.documentElement.classList.contains('dark');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Check-In Blocked',
+                            text: "{{ session('error') }}",
+                            background: isDark ? '#1e293b' : '#ffffff',
+                            color: isDark ? '#f1f5f9' : '#0f172a',
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                popup: 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl',
+                                confirmButton: 'rounded-xl text-xs font-semibold px-4 py-2.5'
+                            }
+                        });
+                    });
+                </script>
             @endif
 
             <!-- Check-In verification form card -->

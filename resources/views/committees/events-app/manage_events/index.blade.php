@@ -179,7 +179,7 @@
         </div>
 
         <!-- Top Section: 2-Column Responsive Split (Image on Left, Title & Description on Right) -->
-        <div class="relative z-10 flex flex-col md:flex-row gap-8 items-start mb-6">
+        <div class="relative z-20 flex flex-col md:flex-row gap-8 items-start mb-6">
             @if($event->image)
                 <!-- Left Column: Premium Cover Media -->
                 <div onclick="openImageLightbox('{{ $event->image }}')" class="w-full md:w-64 lg:w-72 aspect-[16/10] rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] cursor-pointer hover:opacity-95 hover:scale-[1.01] active:scale-95 transition-all duration-300 shrink-0 relative group">
@@ -213,6 +213,32 @@
                             <span class="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-emerald-100/60 dark:border-emerald-900/30 flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active RSVP
                             </span>
+
+                            @if($event->isEnded())
+                                <span class="px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-rose-100/60 dark:border-rose-900/30 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Ended
+                                </span>
+                            @elseif($event->isOngoing())
+                                <span class="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-emerald-100/60 dark:border-emerald-900/30 flex items-center gap-1.5 animate-pulse">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Live / Ongoing
+                                </span>
+                            @else
+                                @php
+                                    $daysLeft = $event->daysUntilStart();
+                                @endphp
+                                <span class="px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-indigo-100/60 dark:border-indigo-900/30 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                    @if($event->startsToday())
+                                        Today
+                                    @elseif($event->startsTomorrow())
+                                        Tomorrow
+                                    @elseif($daysLeft == 2)
+                                        In 2 Days
+                                    @else
+                                        In {{ $daysLeft }} Days
+                                    @endif
+                                </span>
+                            @endif
                         </div>
                     </div>
 
@@ -434,7 +460,7 @@
             <button onclick="executeBulkAction('decline')" class="px-4 py-2 bg-red-650 hover:bg-red-750 text-xs font-bold rounded-xl transition duration-150 shadow-md">
                 Decline Selected
             </button>
-            <button onclick="if(confirm('Are you sure you want to permanently delete all selected registrations?')){ executeBulkAction('delete') }" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-xs font-bold rounded-xl transition duration-150 shadow-md">
+            <button onclick="window.showConfirmModal('Delete Selected Registrations', 'Are you sure you want to permanently delete all selected registrations?', 'All reservation data will be lost.', () => { executeBulkAction('delete') })" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-xs font-bold rounded-xl transition duration-150 shadow-md">
                 Delete Selected
             </button>
         </div>
@@ -902,45 +928,48 @@
                 e.preventDefault();
 
                 const name = form.getAttribute('data-name') || 'this registrant';
-                if (!confirm(`Are you sure you want to permanently delete ${name}? All reservation data will be lost.`)) {
-                    return;
-                }
+                window.showConfirmModal(
+                    'Delete Registration',
+                    `Are you sure you want to permanently delete ${name}?`,
+                    'All reservation data will be lost.',
+                    () => {
+                        const row = form.closest('.applicant-row');
+                        const submitBtn = form.querySelector('button');
+                        if (!submitBtn || submitBtn.disabled) return;
 
-                const row = form.closest('.applicant-row');
-                const submitBtn = form.querySelector('button');
-                if (!submitBtn || submitBtn.disabled) return;
+                        submitBtn.disabled = true;
 
-                submitBtn.disabled = true;
-
-                fetch(form.action, {
-                    method: 'POST', // Rails/Laravel DELETE emulation via _method field in headers or form data
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-HTTP-Method-Override': 'DELETE'
+                        fetch(form.action, {
+                            method: 'POST', // Rails/Laravel DELETE emulation via _method field in headers or form data
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-HTTP-Method-Override': 'DELETE'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                row.style.transition = 'all 300ms ease';
+                                row.style.opacity = '0';
+                                row.style.transform = 'translateX(20px)';
+                                setTimeout(() => {
+                                    row.remove();
+                                    recalculateAnalytics();
+                                    window.showToast(data.message, 'success');
+                                }, 300);
+                            } else {
+                                submitBtn.disabled = false;
+                                window.showToast(data.message || 'Action failed.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            submitBtn.disabled = false;
+                            window.showToast('Server connection failed.', 'error');
+                        });
                     }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        row.style.transition = 'all 300ms ease';
-                        row.style.opacity = '0';
-                        row.style.transform = 'translateX(20px)';
-                        setTimeout(() => {
-                            row.remove();
-                            recalculateAnalytics();
-                            window.showToast(data.message, 'success');
-                        }, 300);
-                    } else {
-                        submitBtn.disabled = false;
-                        window.showToast(data.message || 'Action failed.', 'error');
-                    }
-                })
-                .catch(err => {
-                    submitBtn.disabled = false;
-                    window.showToast('Server connection failed.', 'error');
-                });
+                );
             }
         });
 
