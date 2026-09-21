@@ -114,6 +114,20 @@
                         <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.02)] space-y-4">
                             <input type="hidden" name="registration_type" value="admin_approval">
 
+                            <!-- Allow Group Registration Switch -->
+                            <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800/80">
+                                <div class="flex flex-col text-left">
+                                    <label for="allow_group_registration" class="text-xs font-bold text-slate-700 dark:text-slate-350">Allow Group Registration</label>
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-500">Enable multi-guest companion applications.</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer select-none">
+                                    <input type="hidden" name="allow_group_registration" value="0">
+                                    <input type="checkbox" name="allow_group_registration" id="allow_group_registration" value="1"
+                                        class="sr-only peer">
+                                    <div class="w-9 h-5 bg-slate-200 dark:bg-slate-850 rounded-full peer peer-focus:ring-2 peer-focus:ring-purple-500/20 dark:peer-focus:ring-purple-500/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
                             <!-- Registration Deadline -->
                             <div class="space-y-1.5">
                                 <label for="registration_deadline" class="block text-[11px] font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Registration Deadline (Optional)</label>

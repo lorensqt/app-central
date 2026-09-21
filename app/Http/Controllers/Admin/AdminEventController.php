@@ -33,12 +33,14 @@ class AdminEventController extends Controller
             'registration_deadline' => 'nullable|date',
             'registration_fields' => 'nullable|array',
             'committee_id' => 'nullable|exists:committees,id',
+            'allow_group_registration' => 'nullable|boolean',
         ], [
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
 
         $validated['registration_type'] = 'admin_approval';
+        $validated['allow_group_registration'] = $request->boolean('allow_group_registration');
 
         if ($request->hasFile('cover_file')) {
             $path = $request->file('cover_file')->store('events', 's3');
@@ -91,12 +93,14 @@ class AdminEventController extends Controller
             'registration_type' => 'nullable|string|in:admin_approval,venue_confirmation',
             'registration_deadline' => 'nullable|date',
             'registration_fields' => 'nullable|array',
+            'allow_group_registration' => 'nullable|boolean',
         ], [
             'image.url' => 'Please provide a valid image URL (starting with http/https).',
             'max_participants.min' => 'The capacity limit must be at least 1 seat.',
         ]);
 
         $validated['registration_type'] = 'admin_approval';
+        $validated['allow_group_registration'] = $request->boolean('allow_group_registration');
 
         $imageUrl = $validated['image'] ?? $event->image;
 
@@ -143,9 +147,19 @@ class AdminEventController extends Controller
         // Load relations for template rendering in mail
         $registration->load('event.committee');
 
-        // Dynamically dispatch the premium HTML confirmation mail
+        // Dynamically dispatch the premium HTML confirmation mail: route to primary guardian if virtual email
+        $targetEmail = $registration->email;
+        if (str_contains($targetEmail, '@sako-companion.local')) {
+            $primary = EventRegistration::where('group_code', $registration->group_code)
+                ->where('is_group_primary', true)
+                ->first();
+            if ($primary) {
+                $targetEmail = $primary->email;
+            }
+        }
+
         try {
-            Mail::to($registration->email)->send(new EventApproved($registration));
+            Mail::to($targetEmail)->send(new EventApproved($registration));
         } catch (\Exception $e) {
             // Log mail failure but allow status change to complete, notifying the user
             \Log::error('Event approved mail dispatch failed: '.$e->getMessage());
@@ -188,9 +202,19 @@ class AdminEventController extends Controller
         // Load relations for template rendering in mail
         $registration->load('event.committee');
 
-        // Dynamically dispatch the premium HTML decline mail
+        // Dynamically dispatch the premium HTML decline mail: route to primary guardian if virtual email
+        $targetEmail = $registration->email;
+        if (str_contains($targetEmail, '@sako-companion.local')) {
+            $primary = EventRegistration::where('group_code', $registration->group_code)
+                ->where('is_group_primary', true)
+                ->first();
+            if ($primary) {
+                $targetEmail = $primary->email;
+            }
+        }
+
         try {
-            Mail::to($registration->email)->send(new \App\Mail\EventDeclined($registration));
+            Mail::to($targetEmail)->send(new \App\Mail\EventDeclined($registration));
         } catch (\Exception $e) {
             \Log::error('Event declined mail dispatch failed: '.$e->getMessage());
         }
@@ -242,8 +266,19 @@ class AdminEventController extends Controller
                 // Load relations for template rendering in mail
                 $registration->load('event.committee');
 
+                // Route bulk approval email to primary guardian if companion has virtual email address
+                $targetEmail = $registration->email;
+                if (str_contains($targetEmail, '@sako-companion.local')) {
+                    $primary = EventRegistration::where('group_code', $registration->group_code)
+                        ->where('is_group_primary', true)
+                        ->first();
+                    if ($primary) {
+                        $targetEmail = $primary->email;
+                    }
+                }
+
                 try {
-                    Mail::to($registration->email)->send(new EventApproved($registration));
+                    Mail::to($targetEmail)->send(new EventApproved($registration));
                 } catch (\Exception $e) {
                     \Log::error('Event approved mail dispatch failed for bulk: '.$e->getMessage());
                     $failedEmails++;
@@ -296,8 +331,19 @@ class AdminEventController extends Controller
                 // Load relations for template rendering in mail
                 $registration->load('event.committee');
 
+                // Route bulk decline email to primary guardian if companion has virtual email address
+                $targetEmail = $registration->email;
+                if (str_contains($targetEmail, '@sako-companion.local')) {
+                    $primary = EventRegistration::where('group_code', $registration->group_code)
+                        ->where('is_group_primary', true)
+                        ->first();
+                    if ($primary) {
+                        $targetEmail = $primary->email;
+                    }
+                }
+
                 try {
-                    Mail::to($registration->email)->send(new \App\Mail\EventDeclined($registration));
+                    Mail::to($targetEmail)->send(new \App\Mail\EventDeclined($registration));
                 } catch (\Exception $e) {
                     \Log::error('Event declined mail dispatch failed for bulk: '.$e->getMessage());
                     $failedEmails++;

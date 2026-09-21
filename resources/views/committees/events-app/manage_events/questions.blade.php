@@ -27,6 +27,12 @@
                     <span class="font-semibold text-slate-550 dark:text-slate-450">Gender Identity</span>
                     <span class="text-[10px] uppercase font-bold text-purple-650 dark:text-purple-400">Required & Always Active</span>
                 </div>
+
+                <!-- Birthday / Birthdate (Readonly) -->
+                <div class="py-4 flex items-center justify-between text-slate-400 dark:text-slate-500 font-medium">
+                    <span class="font-semibold text-slate-550 dark:text-slate-450">Birthdate / Birthday</span>
+                    <span class="text-[10px] uppercase font-bold text-purple-650 dark:text-purple-400">Required & Always Active</span>
+                </div>
             </div>
 
             @php

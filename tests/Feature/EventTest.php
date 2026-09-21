@@ -52,6 +52,7 @@ class EventTest extends TestCase
             'name' => 'John Guest',
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
+            'birthday' => '1995-10-24',
         ]);
 
         $response->assertRedirect();
@@ -62,6 +63,7 @@ class EventTest extends TestCase
             'name' => 'John Guest',
             'email' => 'john.guest@example.com',
             'status' => 'pending',
+            'birthday' => '1995-10-24 00:00:00',
         ]);
     }
 
@@ -84,6 +86,7 @@ class EventTest extends TestCase
             'name' => 'John Guest',
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
+            'birthday' => '1995-10-24',
         ]);
 
         // Attempt duplicate registration
@@ -91,10 +94,11 @@ class EventTest extends TestCase
             'name' => 'John Imposter',
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
+            'birthday' => '1995-10-24',
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'You have already registered for this event. Duplicate registrations are not allowed.');
+        $response->assertSessionHas('error', 'Registration Aborted: The following email address(es) are already registered for this event: john.guest@example.com');
 
         // Verify only 1 registration is in DB
         $this->assertEquals(1, EventRegistration::where('event_id', $event->id)->count());
@@ -207,6 +211,7 @@ class EventTest extends TestCase
             'name' => 'John Guest',
             'email' => 'john.venue@example.com',
             'gender' => 'Male',
+            'birthday' => '1995-10-24',
         ]);
 
         $response->assertRedirect();
@@ -219,6 +224,7 @@ class EventTest extends TestCase
             'email' => 'john.venue@example.com',
             'status' => 'pending',
             'ticket_code' => null,
+            'birthday' => '1995-10-24 00:00:00',
         ]);
 
         $reg = EventRegistration::where('event_id', $event->id)->where('email', 'john.venue@example.com')->first();
@@ -226,6 +232,133 @@ class EventTest extends TestCase
         // Verify pending review email delivery
         Mail::assertSent(\App\Mail\EventPending::class, function ($mail) use ($reg) {
             return $mail->hasTo('john.venue@example.com') && $mail->registration->id === $reg->id;
+        });
+    }
+
+    /**
+     * Test guest can register with companions if group registration is enabled.
+     */
+    public function test_guest_can_register_with_companions_if_enabled(): void
+    {
+        Mail::fake();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
+
+        $event = Event::create([
+            'title' => 'Group GAD Assembly',
+            'description' => 'Discuss Gender Action plans together.',
+            'event_date' => now()->addDays(5),
+            'location' => 'Main Conference Hall',
+            'allow_group_registration' => true,
+        ]);
+
+        $response = $this->post("/events/{$event->id}/register", [
+            'name' => 'John Primary',
+            'email' => 'primary@example.com',
+            'gender' => 'Male',
+            'birthday' => '1990-10-12',
+            'companions' => [
+                [
+                    'name' => 'Companion Jane',
+                    'email' => 'jane.comp@example.com',
+                    'gender' => 'Female',
+                    'birthday' => '1993-05-04',
+                ],
+                [
+                    'name' => 'Companion Mike',
+                    'email' => 'mike.comp@example.com',
+                    'gender' => 'Male',
+                    'birthday' => '1994-06-15',
+                ]
+            ]
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        // Check primary registered and has a group code and is_group_primary true
+        $this->assertDatabaseHas('event_registrations', [
+            'event_id' => $event->id,
+            'name' => 'John Primary',
+            'email' => 'primary@example.com',
+            'status' => 'pending',
+            'is_group_primary' => true,
+        ]);
+
+        $primaryReg = EventRegistration::where('event_id', $event->id)->where('email', 'primary@example.com')->first();
+        $this->assertNotNull($primaryReg->group_code);
+
+        // Check companions registered sharing the same group code
+        $this->assertDatabaseHas('event_registrations', [
+            'event_id' => $event->id,
+            'name' => 'Companion Jane',
+            'email' => 'jane.comp@example.com',
+            'status' => 'pending',
+            'group_code' => $primaryReg->group_code,
+            'is_group_primary' => false,
+        ]);
+
+        $this->assertDatabaseHas('event_registrations', [
+            'event_id' => $event->id,
+            'name' => 'Companion Mike',
+            'email' => 'mike.comp@example.com',
+            'status' => 'pending',
+            'group_code' => $primaryReg->group_code,
+            'is_group_primary' => false,
+        ]);
+
+        // Verify emails were dispatched to everyone
+        Mail::assertSent(\App\Mail\EventPending::class, 3);
+    }
+
+    /**
+     * Test guest can register with companions that have blank emails (e.g. children) and routing triggers correctly.
+     */
+    public function test_guest_can_register_companions_with_blank_emails_guardian_routing(): void
+    {
+        Mail::fake();
+        $this->withoutMiddleware(ValidateCsrfToken::class);
+
+        $event = Event::create([
+            'title' => 'Family GAD Assembly',
+            'description' => 'Discuss Gender Action plans together as a family.',
+            'event_date' => now()->addDays(5),
+            'location' => 'Main Conference Hall',
+            'allow_group_registration' => true,
+        ]);
+
+        $response = $this->post("/events/{$event->id}/register", [
+            'name' => 'John Parent',
+            'email' => 'parent@example.com',
+            'gender' => 'Male',
+            'birthday' => '1985-05-10',
+            'companions' => [
+                [
+                    'name' => 'Jane Kid',
+                    'email' => '', // Blank email
+                    'gender' => 'Female',
+                    'birthday' => '2015-08-20',
+                ]
+            ]
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $primaryReg = EventRegistration::where('event_id', $event->id)->where('email', 'parent@example.com')->first();
+        $this->assertNotNull($primaryReg->group_code);
+
+        // Check companion was registered under a virtual email address
+        $companionReg = EventRegistration::where('event_id', $event->id)
+            ->where('group_code', $primaryReg->group_code)
+            ->where('is_group_primary', false)
+            ->first();
+
+        $this->assertNotNull($companionReg);
+        $this->assertStringContainsString('@sako-companion.local', $companionReg->email);
+
+        // Verify emails: both primary pending and companion pending mails should be dispatched to primary guardian
+        Mail::assertSent(\App\Mail\EventPending::class, function ($mail) {
+            return $mail->hasTo('parent@example.com');
         });
     }
 
@@ -248,6 +381,7 @@ class EventTest extends TestCase
             'name' => 'Late Guest',
             'email' => 'late@example.com',
             'gender' => 'Female',
+            'birthday' => '1995-10-24',
         ]);
 
         $response->assertRedirect();

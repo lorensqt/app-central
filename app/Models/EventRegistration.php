@@ -12,8 +12,11 @@ class EventRegistration extends Model
         'name',
         'email',
         'gender',
+        'birthday',
         'status',
         'rejection_reason',
+        'group_code',
+        'is_group_primary',
         'attended',
         'attended_at',
         'ticket_code',
@@ -22,11 +25,21 @@ class EventRegistration extends Model
     ];
 
     protected $casts = [
+        'birthday' => 'date',
         'attended_at' => 'datetime',
         'attended' => 'boolean',
+        'is_group_primary' => 'boolean',
         'custom_fields' => 'array',
         'survey_responses' => 'array',
     ];
+
+    /**
+     * Get the computed age of the registrant based on birthday.
+     */
+    public function getAgeAttribute(): ?int
+    {
+        return $this->birthday ? \Carbon\Carbon::parse($this->birthday)->age : null;
+    }
 
     /**
      * Get the event associated with this registration.

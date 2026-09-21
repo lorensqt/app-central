@@ -535,6 +535,22 @@
                                 </div>
                             @endif
 
+                            <!-- Birthday / Birthdate Input -->
+                            <div class="space-y-2">
+                                <label for="birthday-input" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                    Birthdate / Birthday <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </span>
+                                    <input type="date" id="birthday-input" name="birthday" required max="{{ now()->format('Y-m-d') }}" value="{{ old('birthday') }}"
+                                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-650 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 cursor-pointer">
+                                </div>
+                            </div>
+
                             <!-- Custom / Dynamic Questions -->
                             @foreach($normalizedFields as $field)
                                 @php
@@ -566,6 +582,28 @@
                                     </div>
                                 </div>
                             @endforeach
+
+                            @if($event->allow_group_registration)
+                            <!-- Group Registration Toggle Box -->
+                            <div class="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/80 dark:border-slate-800/80 space-y-4 text-left">
+                                <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                                    <input type="checkbox" id="group-booking-checkbox" onchange="toggleGroupBooking(this.checked)"
+                                        class="w-4.5 h-4.5 rounded text-purple-600 border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-purple-500/20">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Register with companions / group?</span>
+                                </label>
+
+                                <div id="companions-wrapper" class="hidden space-y-4 pt-3 border-t border-slate-200 dark:border-slate-800/80">
+                                    <div id="companions-container" class="space-y-4"></div>
+                                    <button type="button" onclick="addCompanionField()"
+                                        class="inline-flex items-center gap-1.5 text-xs font-bold py-2.5 px-4 rounded-xl border border-purple-200 dark:border-purple-800/80 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/25 transition duration-150 shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Add Companion
+                                    </button>
+                                </div>
+                            </div>
+                            @endif
 
                             <!-- Inclusion Badge with Heart Icon -->
                             <div class="flex items-center gap-3 px-4 py-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-2xl text-xs text-purple-700 dark:text-purple-400 font-medium shadow-sm transition-colors duration-300">
@@ -830,6 +868,132 @@
 
         function updateActualGender(val) {
             document.getElementById('gender-actual').value = val;
+        }
+
+        // Group / Companion Registration Repeater Engine
+        let companionIndex = 0;
+
+        function toggleGroupBooking(checked) {
+            const wrapper = document.getElementById('companions-wrapper');
+            if (!wrapper) return;
+            if (checked) {
+                wrapper.classList.remove('hidden');
+                if (companionIndex === 0) {
+                    addCompanionField();
+                }
+            } else {
+                wrapper.classList.add('hidden');
+                document.getElementById('companions-container').innerHTML = '';
+                companionIndex = 0;
+            }
+        }
+
+        function addCompanionField() {
+            const container = document.getElementById('companions-container');
+            if (!container) return;
+
+            const card = document.createElement('div');
+            card.id = `companion-card-${companionIndex}`;
+            card.className = 'p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 relative text-left';
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-850">
+                    <span class="text-[10px] font-extrabold text-purple-650 dark:text-purple-400 uppercase tracking-widest">Companion #${companionIndex + 1}</span>
+                    <button type="button" onclick="removeCompanionField(${companionIndex})" class="text-rose-500 hover:text-rose-600 p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Name -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Full Name</label>
+                    <input type="text" name="companions[${companionIndex}][name]" required placeholder="Companion's name"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition">
+                </div>
+
+                <!-- Email -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-semibold">Email Address <span class="text-[9px] text-slate-450 dark:text-slate-500 font-normal italic">(Optional)</span></label>
+                    </div>
+                    <input type="email" name="companions[${companionIndex}][email]" placeholder="Leave blank if children or elderly without email"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition">
+                </div>
+
+                <!-- Gender Dropdown -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Gender Identity</label>
+                    <div class="relative">
+                        <select name="companions[${companionIndex}][gender]" required
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 pl-3 pr-8 text-slate-600 dark:text-slate-300 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition appearance-none cursor-pointer">
+                            <option value="" disabled selected>Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="LGBTQ+">LGBTQ+</option>
+                            <option value="Others">Others</option>
+                        </select>
+                        <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Birthday -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Birthdate / Birthday</label>
+                    <input type="date" name="companions[${companionIndex}][birthday]" required max="${new Date().toISOString().split('T')[0]}"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-slate-605 dark:text-slate-300 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition cursor-pointer">
+                </div>
+            `;
+
+            container.appendChild(card);
+            companionIndex++;
+        }
+
+        function removeCompanionField(index) {
+            const card = document.getElementById(`companion-card-${index}`);
+            if (card) {
+                card.remove();
+                reindexCompanions();
+            }
+        }
+
+        function reindexCompanions() {
+            const container = document.getElementById('companions-container');
+            if (!container) return;
+            const cards = container.children;
+            companionIndex = 0;
+            Array.from(cards).forEach((card, idx) => {
+                card.id = `companion-card-${idx}`;
+                const title = card.querySelector('.uppercase.tracking-widest');
+                if (title) title.innerText = `Companion #${idx + 1}`;
+                
+                const deleteBtn = card.querySelector('button');
+                if (deleteBtn) deleteBtn.setAttribute('onclick', `removeCompanionField(${idx})`);
+                
+                // Reindex inputs
+                card.querySelectorAll('input, select').forEach(input => {
+                    const nameAttr = input.getAttribute('name');
+                    if (nameAttr) {
+                        const newName = nameAttr.replace(/companions\[\d+\]/, `companions[${idx}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+                companionIndex++;
+            });
+
+            // If empty, uncheck the group booking box
+            if (companionIndex === 0) {
+                const checkbox = document.getElementById('group-booking-checkbox');
+                if (checkbox) {
+                    checkbox.checked = false;
+                    toggleGroupBooking(false);
+                }
+            }
         }
 
         function openTermsModal() {

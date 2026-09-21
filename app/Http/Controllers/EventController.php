@@ -27,7 +27,16 @@ class EventController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'gender' => 'required|string|max:255',
+            'birthday' => 'required|date|before_or_equal:today',
         ];
+
+        if ($event->allow_group_registration) {
+            $rules['companions'] = 'nullable|array';
+            $rules['companions.*.name'] = 'required|string|max:255';
+            $rules['companions.*.email'] = 'nullable|email|max:255';
+            $rules['companions.*.gender'] = 'required|string|max:255';
+            $rules['companions.*.birthday'] = 'required|date|before_or_equal:today';
+        }
 
         // Support both old and new formats
         $fieldsConfig = $event->registration_fields ?? [];
@@ -63,6 +72,7 @@ class EventController extends Controller
         $validated = $request->validate($rules);
 
         $email = strtolower($validated['email']);
+        $companions = $request->input('companions', []);
 
         // Prevent registration if the deadline has passed
         if ($event->registration_deadline && now()->isAfter($event->registration_deadline)) {
@@ -82,18 +92,25 @@ class EventController extends Controller
         }
 
         // Prevent dual-registration / duplicate spamming
-        $alreadyRegistered = EventRegistration::where('event_id', $event->id)
-            ->where('email', $email)
-            ->exists();
-
-        if ($alreadyRegistered) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'You have already registered for this event. Duplicate registrations are not allowed.');
+        $emailsToValidate = [$email];
+        if ($event->allow_group_registration && !empty($companions)) {
+            foreach ($companions as $companion) {
+                if (isset($companion['email'])) {
+                    $emailsToValidate[] = strtolower($companion['email']);
+                }
+            }
         }
 
-        $status = 'pending';
-        $ticket_code = null;
+        $alreadyRegisteredEmails = EventRegistration::where('event_id', $event->id)
+            ->whereIn('email', $emailsToValidate)
+            ->pluck('email')
+            ->toArray();
+
+        if (!empty($alreadyRegisteredEmails)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Registration Aborted: The following email address(es) are already registered for this event: ' . implode(', ', $alreadyRegisteredEmails));
+        }
 
         // Gather serialized custom fields
         $customFields = [];
@@ -127,23 +144,69 @@ class EventController extends Controller
             }
         }
 
-        // Create registration
-        $registration = EventRegistration::create([
-            'event_id' => $event->id,
-            'name' => $validated['name'],
-            'email' => $email,
-            'gender' => $validated['gender'] ?? null,
-            'status' => $status,
-            'ticket_code' => $ticket_code,
-            'custom_fields' => !empty($customFields) ? $customFields : null,
-        ]);
+        // Save transactions
+        \Illuminate\Support\Facades\DB::transaction(function() use ($event, $validated, $email, $companions, $customFields) {
+            $groupCode = null;
+            $isGroup = $event->allow_group_registration && !empty($companions);
 
-        // Send pending review email to attendee
-        try {
-            \Illuminate\Support\Facades\Mail::to($registration->email)->send(new \App\Mail\EventPending($registration));
-        } catch (\Exception $e) {
-            \Log::error('Event pending mail dispatch failed: '.$e->getMessage());
-        }
+            if ($isGroup) {
+                $groupCode = 'GRP-' . substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
+            }
+
+            // Create primary registration
+            $primary = EventRegistration::create([
+                'event_id' => $event->id,
+                'name' => $validated['name'],
+                'email' => $email,
+                'gender' => $validated['gender'] ?? null,
+                'birthday' => $validated['birthday'] ?? null,
+                'status' => 'pending',
+                'group_code' => $groupCode,
+                'is_group_primary' => $isGroup,
+                'custom_fields' => !empty($customFields) ? $customFields : null,
+            ]);
+
+            // Send pending review email to primary attendee
+            try {
+                \Illuminate\Support\Facades\Mail::to($primary->email)->send(new \App\Mail\EventPending($primary));
+            } catch (\Exception $e) {
+                \Log::error('Event pending mail dispatch failed for primary: '.$e->getMessage());
+            }
+
+            // Create companions if any
+            if ($isGroup) {
+                $loopIndex = 0;
+                foreach ($companions as $companion) {
+                    $companionEmail = !empty($companion['email'])
+                        ? strtolower($companion['email'])
+                        : 'grp-' . strtolower($groupCode) . '-' . $loopIndex++ . '@sako-companion.local';
+
+                    $companionReg = EventRegistration::create([
+                        'event_id' => $event->id,
+                        'name' => $companion['name'],
+                        'email' => $companionEmail,
+                        'gender' => $companion['gender'] ?? null,
+                        'birthday' => $companion['birthday'] ?? null,
+                        'status' => 'pending',
+                        'group_code' => $groupCode,
+                        'is_group_primary' => false,
+                        'custom_fields' => null, // Companions do not fill out separate custom questions
+                    ]);
+
+                    // Send pending review email to companion: route to primary guardian if virtual
+                    $targetEmail = $companionReg->email;
+                    if (str_contains($targetEmail, '@sako-companion.local')) {
+                        $targetEmail = $primary->email;
+                    }
+
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($targetEmail)->send(new \App\Mail\EventPending($companionReg));
+                    } catch (\Exception $e) {
+                        \Log::error('Event pending mail dispatch failed for companion: '.$e->getMessage());
+                    }
+                }
+            }
+        });
 
         return redirect()->back()->with('success', 'Registration Submitted! The host will review your request and send an email confirmation.');
     }

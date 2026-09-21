@@ -26,6 +26,7 @@ class Event extends Model
         'survey_enabled',
         'survey_questions',
         'survey_sent',
+        'allow_group_registration',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Event extends Model
         'survey_enabled' => 'boolean',
         'survey_questions' => 'array',
         'survey_sent' => 'boolean',
+        'allow_group_registration' => 'boolean',
     ];
 
     /**

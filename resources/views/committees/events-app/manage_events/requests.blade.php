@@ -49,6 +49,7 @@
                             <th class="py-3.5 px-6">Attendee Profile</th>
                             <th class="py-3.5 px-6">Ticket Code</th>
                             <th class="py-3.5 px-6">Gender</th>
+                            <th class="py-3.5 px-6">Birthdate & Age</th>
                             <th class="py-3.5 px-6">Submission Time</th>
                             <th class="py-3.5 px-6">Status</th>
                             <th class="py-3.5 px-6 text-right">Moderation Actions</th>
@@ -77,28 +78,12 @@
                                         <div class="text-left">
                                             <span class="block text-slate-900 dark:text-slate-100 font-bold text-sm leading-none">{{ $reg->name }}</span>
                                             <span class="block text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-1 leading-none select-all" title="Click to select email">{{ $reg->email }}</span>
-                                            @if(!empty($reg->custom_fields))
-                                                <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-2.5 space-x-1.5 flex items-center flex-wrap gap-y-1">
-                                                    @php $first = true; @endphp
-                                                    @foreach($reg->custom_fields as $key => $value)
-                                                        @if(!empty($value))
-                                                            @if(!$first) <span>•</span> @endif
-                                                            @php $first = false; @endphp
-                                                            <span class="truncate max-w-[180px]" title="{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}">
-                                                                @if($key === 'company' || strtolower($key) === 'company / department' || strtolower($key) === 'company')
-                                                                    🏢 {{ $value }}
-                                                                @elseif($key === 'job_title' || strtolower($key) === 'corporate title / position' || strtolower($key) === 'corporate title')
-                                                                    💼 {{ $value }}
-                                                                @elseif($key === 'phone' || strtolower($key) === 'phone number' || strtolower($key) === 'tel')
-                                                                    📞 {{ $value }}
-                                                                @elseif($key === 'birthday' || strtolower($key) === 'birth date' || strtolower($key) === 'birthday')
-                                                                    🎂 {{ \Carbon\Carbon::parse($value)->format('M j, Y') }}
-                                                                @else
-                                                                    <strong>{{ ucwords(str_replace('_', ' ', $key)) }}:</strong> {{ $value }}
-                                                                @endif
-                                                            </span>
-                                                        @endif
-                                                    @endforeach
+                                            
+                                            @if($reg->group_code)
+                                                <div class="mt-1">
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 text-[9px] font-extrabold rounded-md uppercase tracking-wider border border-purple-100/40 dark:border-purple-900/30 select-none" title="Group Code: {{ $reg->group_code }}">
+                                                        👥 {{ $reg->group_code }} @if($reg->is_group_primary) <span class="text-[8px] bg-purple-500 text-white px-1 rounded ml-1">PRIMARY</span> @endif
+                                                    </span>
                                                 </div>
                                             @endif
                                         </div>
@@ -115,6 +100,18 @@
                                     <span class="px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-100/80 dark:border-slate-800/80 rounded-lg font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                                         {{ $reg->gender ?? 'Unspecified' }}
                                     </span>
+                                </td>
+
+                                <!-- Birthdate & Age -->
+                                <td class="py-4 px-6 text-slate-650 dark:text-slate-300 font-semibold text-xs whitespace-nowrap">
+                                    @if($reg->birthday)
+                                        <div class="text-left leading-tight">
+                                            <span class="block text-slate-800 dark:text-slate-200 font-bold">🎂 {{ $reg->birthday->format('M d, Y') }}</span>
+                                            <span class="block text-[10px] text-purple-650 dark:text-purple-400 font-extrabold mt-0.5 uppercase tracking-wider">{{ $reg->age }} Years Old</span>
+                                        </div>
+                                    @else
+                                        <span class="text-slate-400 dark:text-slate-500 italic">N/A</span>
+                                    @endif
                                 </td>
                                 
                                 <!-- Time Stamp -->
@@ -281,6 +278,16 @@
                                 <span class="text-slate-400 font-medium">Email Address:</span>
                                 <span class="font-mono text-slate-600 dark:text-slate-300 select-all truncate max-w-[190px]" title="{{ $reg->email }}">{{ $reg->email }}</span>
                             </div>
+
+                            @if($reg->group_code)
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-slate-400 font-medium">Group Code:</span>
+                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 text-[9px] font-extrabold rounded-md uppercase tracking-wider border border-purple-100/30">
+                                    👥 {{ $reg->group_code }} @if($reg->is_group_primary) <span class="text-[8px] bg-purple-500 text-white px-1 rounded ml-1">PRIMARY</span> @endif
+                                </span>
+                            </div>
+                            @endif
+
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-slate-400 font-medium">Ticket Code:</span>
                                 <span class="font-mono font-bold text-purple-650 dark:text-purple-400">{{ $reg->ticket_code ?? 'N/A' }}</span>
@@ -289,20 +296,16 @@
                                 <span class="text-slate-400 font-medium">Gender:</span>
                                 <span class="font-semibold text-slate-650 dark:text-slate-300">{{ $reg->gender ?? 'Unspecified' }}</span>
                             </div>
-                            
-                            <!-- Custom Fields -->
-                            @if(!empty($reg->custom_fields))
-                                <div class="border-t border-slate-100 dark:border-slate-800/50 pt-1.5 mt-1.5 space-y-1 text-[11px]">
-                                    @foreach($reg->custom_fields as $key => $value)
-                                        @if(!empty($value))
-                                            <div class="flex items-start justify-between gap-2">
-                                                <span class="text-slate-400 font-medium truncate max-w-[110px]">{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
-                                                <span class="text-slate-700 dark:text-slate-300 font-bold truncate max-w-[180px] text-right" title="{{ $value }}">{{ $value }}</span>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                </div>
-                            @endif
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-slate-400 font-medium">Birthdate & Age:</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-200">
+                                    @if($reg->birthday)
+                                        🎂 {{ $reg->birthday->format('M d, Y') }} ({{ $reg->age }} yrs)
+                                    @else
+                                        N/A
+                                    @endif
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Mobile Moderation Actions (Mobile actions-cell target) -->
