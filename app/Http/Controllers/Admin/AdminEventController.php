@@ -404,9 +404,111 @@ class AdminEventController extends Controller
             'birthday' => 'nullable|date',
             'division' => 'nullable|string|max:100',
             'custom_fields' => 'nullable|array',
+            'companions' => 'nullable|array',
+            'companions_enabled' => 'nullable|string',
         ]);
 
-        $registration->update($validated);
+        \Illuminate\Support\Facades\DB::transaction(function() use ($registration, $validated, $request) {
+            $registration->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'ticket_code' => $validated['ticket_code'] ?? $registration->ticket_code,
+                'gender' => $validated['gender'] ?? $registration->gender,
+                'birthday' => $validated['birthday'] ?? $registration->birthday,
+                'division' => $validated['division'] ?? $registration->division,
+                'custom_fields' => $validated['custom_fields'] ?? $registration->custom_fields,
+            ]);
+
+            // Companion group logic
+            if ($request->input('companions_enabled') === '1') {
+                $submittedCompanions = $request->input('companions', []);
+                
+                // If it wasn't a group, make it a group!
+                $groupCode = $registration->group_code;
+                if (empty($groupCode)) {
+                    $groupCode = 'GRP-' . substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
+                }
+
+                $registration->update([
+                    'group_code' => $groupCode,
+                    'is_group_primary' => true,
+                ]);
+
+                $keepIds = [];
+                $loopIndex = 0;
+
+                foreach ($submittedCompanions as $companion) {
+                    $companionId = $companion['id'] ?? null;
+                    
+                    $companionEmail = !empty($companion['email'])
+                        ? strtolower($companion['email'])
+                        : 'grp-' . strtolower($groupCode) . '-' . $loopIndex++ . '@sako-companion.local';
+
+                    if ($companionId) {
+                        // Update existing companion
+                        $compReg = EventRegistration::where('id', $companionId)
+                            ->where('group_code', $groupCode)
+                            ->first();
+
+                        if ($compReg) {
+                            $compReg->update([
+                                'name' => $companion['name'],
+                                'email' => $companionEmail,
+                                'gender' => $companion['gender'] ?? null,
+                                'birthday' => $companion['birthday'] ?? null,
+                                'division' => $companion['division'] ?? null,
+                            ]);
+                            $keepIds[] = $compReg->id;
+                        }
+                    } else {
+                        // Create new companion
+                        $compReg = EventRegistration::create([
+                            'event_id' => $registration->event_id,
+                            'name' => $companion['name'],
+                            'email' => $companionEmail,
+                            'gender' => $companion['gender'] ?? null,
+                            'birthday' => $companion['birthday'] ?? null,
+                            'division' => $companion['division'] ?? null,
+                            'status' => $registration->status, // Inherit same status as primary
+                            'group_code' => $groupCode,
+                            'is_group_primary' => false,
+                        ]);
+                        $keepIds[] = $compReg->id;
+                    }
+                }
+
+                // Delete any companions that were removed from the form
+                EventRegistration::where('group_code', $groupCode)
+                    ->where('is_group_primary', false)
+                    ->whereNotIn('id', $keepIds)
+                    ->delete();
+
+            } else {
+                // If companions are disabled or not present, but it was a group:
+                if ($registration->group_code) {
+                    $groupCode = $registration->group_code;
+                    
+                    if ($registration->is_group_primary) {
+                        // Delete all companions of this primary registrant
+                        EventRegistration::where('group_code', $groupCode)
+                            ->where('is_group_primary', false)
+                            ->delete();
+
+                        // Convert primary to individual
+                        $registration->update([
+                            'group_code' => null,
+                            'is_group_primary' => false,
+                        ]);
+                    } else {
+                        // Detach this single companion to be individual registrant
+                        $registration->update([
+                            'group_code' => null,
+                            'is_group_primary' => false,
+                        ]);
+                    }
+                }
+            }
+        });
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

@@ -900,6 +900,69 @@
                 }
             }
 
+            // Handle group & companions
+            const groupToggle = document.getElementById('edit-reg-group-toggle');
+            const toggleWrapper = document.getElementById('edit-reg-companions-wrapper');
+            const companionsContainer = document.getElementById('edit-reg-companions-container');
+            const companionNotice = document.getElementById('edit-reg-companion-notice');
+            const toggleTitle = document.getElementById('edit-reg-group-toggle-title');
+            const toggleDesc = document.getElementById('edit-reg-group-toggle-desc');
+            const enabledHidden = document.getElementById('edit-reg-companions-enabled-hidden');
+
+            if (groupToggle && companionsContainer) {
+                companionsContainer.innerHTML = '';
+                editCompanionIndex = 0;
+
+                if (attendee.group_code) {
+                    if (attendee.is_group_primary) {
+                        // It is a primary group registrant
+                        if (companionNotice) companionNotice.classList.add('hidden');
+                        if (toggleTitle) toggleTitle.innerText = "Register with companions / group?";
+                        if (toggleDesc) toggleDesc.innerText = "Enable this to register multiple people under a single group code.";
+
+                        // Find all companions
+                        const companions = [];
+                        for (const [key, value] of Object.entries(attendeeData)) {
+                            if (value.group_code === attendee.group_code && !value.is_group_primary) {
+                                companions.push(value);
+                            }
+                        }
+
+                        if (companions.length > 0) {
+                            groupToggle.checked = true;
+                            if (enabledHidden) enabledHidden.value = "1";
+                            if (toggleWrapper) toggleWrapper.classList.remove('hidden');
+
+                            companions.forEach(comp => {
+                                addEditCompanionField(comp);
+                            });
+                        } else {
+                            groupToggle.checked = false;
+                            if (enabledHidden) enabledHidden.value = "0";
+                            if (toggleWrapper) toggleWrapper.classList.add('hidden');
+                        }
+                    } else {
+                        // It is a companion registrant
+                        if (companionNotice) companionNotice.classList.remove('hidden');
+                        if (toggleTitle) toggleTitle.innerText = "Detach from Group Registration?";
+                        if (toggleDesc) toggleDesc.innerText = "Enable this to convert this companion into an independent individual attendee.";
+
+                        groupToggle.checked = false; // By default we keep them in the group, unless they toggle to detach
+                        if (enabledHidden) enabledHidden.value = "0";
+                        if (toggleWrapper) toggleWrapper.classList.add('hidden');
+                    }
+                } else {
+                    // It is an individual registrant
+                    if (companionNotice) companionNotice.classList.add('hidden');
+                    if (toggleTitle) toggleTitle.innerText = "Register with companions / group?";
+                    if (toggleDesc) toggleDesc.innerText = "Enable this to register multiple people under a single group code.";
+
+                    groupToggle.checked = false;
+                    if (enabledHidden) enabledHidden.value = "0";
+                    if (toggleWrapper) toggleWrapper.classList.add('hidden');
+                }
+            }
+
             // Open Modal Anim
             const modal = document.getElementById('edit-registration-modal');
             const content = document.getElementById('edit-registration-modal-content');
@@ -928,6 +991,156 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
             }, 250);
+        }
+
+        // Companion Edit Helper Functions
+        let editCompanionIndex = 0;
+
+        function toggleEditRegistrationGroup(checkbox) {
+            const wrapper = document.getElementById('edit-reg-companions-wrapper');
+            const hiddenInput = document.getElementById('edit-reg-companions-enabled-hidden');
+            if (!wrapper || !hiddenInput) return;
+
+            if (checkbox.checked) {
+                wrapper.classList.remove('hidden');
+                hiddenInput.value = "1";
+                const container = document.getElementById('edit-reg-companions-container');
+                if (container && container.children.length === 0) {
+                    addEditCompanionField();
+                }
+            } else {
+                wrapper.classList.add('hidden');
+                hiddenInput.value = "0";
+            }
+        }
+
+        function addEditCompanionField(comp = null) {
+            const container = document.getElementById('edit-reg-companions-container');
+            if (!container) return;
+
+            const card = document.createElement('div');
+            card.className = 'bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm relative animate-fade-in text-left';
+            card.id = `edit-companion-card-${editCompanionIndex}`;
+
+            const compId = comp ? comp.id : '';
+            const compName = comp ? comp.name : '';
+            const compEmail = comp ? comp.email : '';
+            // If companion email is a virtual sako companion email, we show it as empty
+            const displayEmail = (compEmail && compEmail.includes('@sako-companion.local')) ? '' : compEmail;
+            const compGender = comp ? comp.gender : '';
+            const compBirthday = comp ? comp.birthday : '';
+            const compDivision = comp ? comp.division : '';
+
+            let bdayVal = '';
+            if (compBirthday) {
+                const d = new Date(compBirthday);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                bdayVal = `${yyyy}-${mm}-${dd}`;
+            }
+
+            card.innerHTML = `
+                <input type="hidden" name="companions[${editCompanionIndex}][id]" value="${compId}">
+                <div class="flex items-center justify-between border-b border-slate-50 dark:border-slate-850 pb-2.5">
+                    <span class="text-[10px] font-extrabold text-purple-650 dark:text-purple-400 uppercase tracking-widest">Companion #${editCompanionIndex + 1}</span>
+                    <button type="button" onclick="removeEditCompanionField(${editCompanionIndex})" class="text-rose-500 hover:text-rose-650 hover:bg-rose-50 dark:hover:bg-rose-950/25 p-1 rounded-lg transition">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- Companion Name -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Full Name <span class="text-rose-500">*</span></label>
+                        <input type="text" name="companions[${editCompanionIndex}][name]" value="${compName}" required placeholder="Full Name"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-3.5 text-slate-850 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 focus:bg-white transition-all duration-300">
+                    </div>
+
+                    <!-- Companion Email -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Email Address</label>
+                        <input type="email" name="companions[${editCompanionIndex}][email]" value="${displayEmail}" placeholder="Leave blank if children/elderly"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-3.5 text-slate-850 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 focus:bg-white transition-all duration-300">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- Companion Gender -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Gender Identity <span class="text-rose-500">*</span></label>
+                        <select name="companions[${editCompanionIndex}][gender]" required
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-3.5 text-slate-850 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 focus:bg-white transition-all duration-300 cursor-pointer">
+                            <option value="" disabled ${!compGender ? 'selected' : ''}>Select gender...</option>
+                            <option value="Male" ${compGender === 'Male' ? 'selected' : ''}>Male</option>
+                            <option value="Female" ${compGender === 'Female' ? 'selected' : ''}>Female</option>
+                            <option value="LGBTQ+" ${compGender === 'LGBTQ+' ? 'selected' : ''}>LGBTQ+</option>
+                            <option value="Others" ${compGender === 'Others' ? 'selected' : ''}>Others</option>
+                        </select>
+                    </div>
+
+                    <!-- Companion Birthday -->
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Birth Date <span class="text-rose-500">*</span></label>
+                        <input type="date" name="companions[${editCompanionIndex}][birthday]" value="${bdayVal}" required max="${new Date().toISOString().split('T')[0]}"
+                            class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-3.5 text-slate-850 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 focus:bg-white transition-all duration-300 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Companion Division -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Division Placement (Optional)</label>
+                    <input type="text" name="companions[${editCompanionIndex}][division]" value="${compDivision}" placeholder="e.g. Youth Sector / OPEC Visayas (Optional)"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-3.5 text-slate-850 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 focus:bg-white transition-all duration-300">
+                </div>
+            `;
+
+            container.appendChild(card);
+            editCompanionIndex++;
+        }
+
+        function removeEditCompanionField(index) {
+            const card = document.getElementById(`edit-companion-card-${index}`);
+            if (card) {
+                card.remove();
+                reindexEditCompanions();
+            }
+        }
+
+        function reindexEditCompanions() {
+            const container = document.getElementById('edit-reg-companions-container');
+            if (!container) return;
+
+            const cards = container.children;
+            editCompanionIndex = 0;
+
+            Array.from(cards).forEach((card, idx) => {
+                card.id = `edit-companion-card-${idx}`;
+                
+                const title = card.querySelector('span');
+                if (title) title.innerText = `Companion #${idx + 1}`;
+
+                const deleteBtn = card.querySelector('button[onclick^="removeEditCompanionField"]');
+                if (deleteBtn) deleteBtn.setAttribute('onclick', `removeEditCompanionField(${idx})`);
+
+                // Update input names for correct indexing on array submit
+                const inputs = card.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const nameAttr = input.getAttribute('name');
+                    if (nameAttr) {
+                        const newName = nameAttr.replace(/companions\[\d+\]/, `companions[${idx}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+
+                editCompanionIndex++;
+            });
+
+            if (editCompanionIndex === 0) {
+                const toggle = document.getElementById('edit-reg-group-toggle');
+                if (toggle) toggle.checked = false;
+                toggleEditRegistrationGroup(toggle);
+            }
         }
 
         function handleDivisionInputSwitch() {
@@ -1094,12 +1307,16 @@
                             closeEditRegistrationModal();
                             filterAnalytics();
 
-                            // Trigger global status toast
+                            // Trigger global status toast and reload the page to perfectly sync companion lists
                             if (window.showToast) {
                                 window.showToast(data.message, 'success');
                             } else {
                                 alert(data.message);
                             }
+
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
                         } else {
                             alert(data.message || 'Error occurred while saving changes.');
                         }

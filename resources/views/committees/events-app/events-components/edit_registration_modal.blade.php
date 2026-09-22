@@ -148,6 +148,48 @@
                         <!-- JS populated fields -->
                     </div>
                 </div>
+
+                <!-- Section 4: Group & Companions Registration (Edit Modal) -->
+                @if($event->allow_group_registration)
+                    <div class="space-y-4 pt-2">
+                        <div class="flex items-center gap-2 pb-1 border-b border-slate-100 dark:border-slate-800/60">
+                            <span class="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[10px]">4</span>
+                            <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Group Settings</span>
+                        </div>
+
+                        <!-- Info message if editing a companion instead of primary -->
+                        <div id="edit-reg-companion-notice" class="hidden p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-[11px] text-amber-800 dark:text-amber-400 leading-normal mb-2 text-left">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                            <strong>Note:</strong> You are editing a companion registration directly. You can edit their individual details, or toggle below to detach them from their group and make them an independent registration.
+                        </div>
+
+                        <!-- Toggle option to enable companions -->
+                        <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                            <div class="space-y-0.5 text-left">
+                                <span id="edit-reg-group-toggle-title" class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Register with companions / group?</span>
+                                <p id="edit-reg-group-toggle-desc" class="text-[11px] text-slate-450 dark:text-slate-500">Enable this to register multiple people under a single group code.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer select-none">
+                                <input type="hidden" name="companions_enabled" id="edit-reg-companions-enabled-hidden" value="0">
+                                <input type="checkbox" id="edit-reg-group-toggle" onchange="toggleEditRegistrationGroup(this)" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-650 peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Repeater Container -->
+                        <div id="edit-reg-companions-wrapper" class="hidden space-y-4 pt-2">
+                            <div id="edit-reg-companions-container" class="space-y-4">
+                                <!-- Populated dynamically by javascript -->
+                            </div>
+                            
+                            <button type="button" onclick="addEditCompanionField()"
+                                class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-purple-500/80 dark:hover:border-purple-400/80 text-slate-550 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 font-extrabold text-xs rounded-2xl transition duration-150 active:scale-[0.995]">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                Add Companion Form
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Footer Action Bar -->

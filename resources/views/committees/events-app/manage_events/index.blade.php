@@ -418,6 +418,13 @@
                 <i class="fa-solid fa-square-poll-horizontal text-xs"></i>
                 <span>Post-Event Survey</span>
             </button>
+
+            <!-- Premium + Add Attendee Button -->
+            <button type="button" id="btn-add-attendee" onclick="openAddAttendeeModal()" 
+                class="ml-auto mr-1.5 relative z-10 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-extrabold text-xs transition-all duration-150 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-purple-500/10 focus:outline-none whitespace-nowrap shrink-0">
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>+ Add Attendee</span>
+            </button>
         </div>
 
         @include('committees.events-app.manage_events.requests')
@@ -455,6 +462,7 @@
 </div>
 
 @include('committees.events-app.events-components.edit_event_modal')
+@include('committees.events-app.events-components.add_attendee_modal')
 @endsection
 
 @section('scripts')
@@ -586,6 +594,21 @@
             panelSurvey.classList.remove('hidden');
         }
 
+        // Toggle the "+ Add Attendee" button visibility
+        const btnAddAttendee = document.getElementById('btn-add-attendee');
+        if (btnAddAttendee) {
+            if (targetTab === 'requests') {
+                btnAddAttendee.classList.remove('hidden');
+            } else {
+                btnAddAttendee.classList.add('hidden');
+            }
+        }
+
+        // Update URL query parameter without page reload!
+        const url = new URL(window.location);
+        url.searchParams.set('tab', targetTab);
+        window.history.replaceState({}, '', url);
+
         currentTab = targetTab;
         
         // Slide the background indicator to the newly active tab!
@@ -602,8 +625,7 @@
         if (tab) {
             switchTab(tab);
         } else {
-            // Position the initial 'requests' indicator cleanly
-            setTimeout(() => positionActiveTabIndicator('requests'), 50);
+            switchTab('requests');
         }
 
         // Initialize Premium Custom Flatpickr Datetime Pickers for edit modal
@@ -805,6 +827,37 @@
         }, 200);
     }
 
+    // Modal Control: Add Attendee Manually
+    function openAddAttendeeModal() {
+        const modal = document.getElementById('add-attendee-modal');
+        const content = document.getElementById('add-attendee-modal-content');
+        if (!modal || !content) return;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeAddAttendeeModal() {
+        const modal = document.getElementById('add-attendee-modal');
+        const content = document.getElementById('add-attendee-modal-content');
+        if (!modal || !content) return;
+
+        modal.classList.add('opacity-0');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
     function handleEditCapacityChange(selectEl) {
         const val = selectEl.value;
         const wrapper = document.getElementById('edit-capacity-input-wrapper');
@@ -835,9 +888,13 @@
 
     // Close modals on background backdrop click
     window.addEventListener('click', function(event) {
-        const modal = document.getElementById('edit-event-modal');
-        if (event.target === modal) {
+        const editModal = document.getElementById('edit-event-modal');
+        if (event.target === editModal) {
             closeEditEventModal();
+        }
+        const addModal = document.getElementById('add-attendee-modal');
+        if (event.target === addModal) {
+            closeAddAttendeeModal();
         }
     });
 
