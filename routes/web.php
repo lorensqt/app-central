@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\TitleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
 use App\Http\Middleware\EnsurePinIsConfigured;
 use App\Models\Committee;
@@ -20,6 +21,9 @@ Route::get('/', function () {
 
     return view('login');
 })->name('login');
+
+// Public XML Sitemap Route
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Google Authentication Endpoints
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');

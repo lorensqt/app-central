@@ -1,2 +1,5 @@
 User-agent: *
 Disallow:
+
+# XML Sitemap Link
+Sitemap: https://sako-central.org/sitemap.xml
