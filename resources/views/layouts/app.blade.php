@@ -34,6 +34,18 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Custom SweetAlert Input Overrides */
+        .swal2-input.swal2-custom-input {
+            box-shadow: none !important;
+            height: auto !important;
+            margin: 1rem auto 0 auto !important;
+            width: 90% !important;
+            max-width: 90% !important;
+        }
+        .swal2-input.swal2-custom-input:focus {
+            box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1) !important;
+            border-color: #9333ea !important;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('styles')
@@ -235,6 +247,37 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     onConfirm();
+                }
+            });
+        };
+
+        // --- PROMPT MODAL ENGINE (SWEETALERT2) ---
+        window.showPromptModal = function(title, message, placeholder, onConfirm) {
+            const isDark = document.documentElement.classList.contains('dark');
+            Swal.fire({
+                title: title,
+                html: `
+                    <div class="text-sm text-slate-650 dark:text-slate-350 leading-relaxed">${message}</div>
+                `,
+                input: 'text',
+                inputPlaceholder: placeholder,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // red/rose confirm for decline operations
+                cancelButtonColor: isDark ? '#334155' : '#e2e8f0',
+                confirmButtonText: 'Submit',
+                cancelButtonText: 'Cancel',
+                background: isDark ? '#1e293b' : '#ffffff',
+                color: isDark ? '#f1f5f9' : '#0f172a',
+                customClass: {
+                    popup: 'rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xl',
+                    input: 'swal2-custom-input rounded-xl border border-slate-300 dark:border-slate-800 py-2.5 px-4 text-slate-700 dark:text-slate-200 text-sm focus:outline-none bg-white dark:bg-slate-950 transition-all duration-300 w-full',
+                    confirmButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1',
+                    cancelButton: 'rounded-xl text-xs font-semibold px-4 py-2.5 mx-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700')
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    onConfirm(result.value);
                 }
             });
         };

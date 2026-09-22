@@ -120,6 +120,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/committees/registrations/{registration}/decline', [AdminEventController::class, 'declineRegistration'])->name('committees.registrations.decline');
         Route::post('/committees/registrations/{registration}/toggle-attendance', [AdminEventController::class, 'toggleAttendance'])->name('committees.registrations.toggle_attendance');
         Route::delete('/committees/registrations/{registration}', [AdminEventController::class, 'destroyRegistration'])->name('committees.registrations.destroy');
+        Route::delete('/committees/registrations/{registration}/survey-response', [AdminEventController::class, 'deleteSurveyResponse'])->name('committees.registrations.delete_survey_response');
+        Route::put('/committees/registrations/{registration}', [AdminEventController::class, 'updateRegistration'])->name('committees.registrations.update');
         Route::post('/committees/registrations/bulk-approve', [AdminEventController::class, 'bulkApproveRegistrations'])->name('committees.registrations.bulk_approve');
         Route::post('/committees/registrations/bulk-decline', [AdminEventController::class, 'bulkDeclineRegistrations'])->name('committees.registrations.bulk_decline');
         Route::post('/committees/registrations/bulk-delete', [AdminEventController::class, 'bulkDestroyRegistrations'])->name('committees.registrations.bulk_delete');

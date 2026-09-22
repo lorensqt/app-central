@@ -1,3 +1,65 @@
+@php
+    // Sort registrations by division alphabetically, placing unspecified/blank divisions at the bottom
+    $registrations = $registrations->sortBy(function($reg) {
+        return empty($reg->division) ? 'zzzzz' : strtolower($reg->division);
+    });
+
+    // --- Age Demographics ---
+    $kids = 0;       // < 12
+    $youth = 0;      // 12-17
+    $youngAdults = 0;// 18-30
+    $adults = 0;     // 31-59
+    $seniors = 0;    // 60+
+    $unspecifiedAge = 0;
+
+    foreach ($registrations as $reg) {
+        if ($reg->birthday) {
+            $age = $reg->age;
+            if ($age === null) {
+                $unspecifiedAge++;
+            } elseif ($age < 12) {
+                $kids++;
+            } elseif ($age <= 17) {
+                $youth++;
+            } elseif ($age <= 30) {
+                $youngAdults++;
+            } elseif ($age <= 59) {
+                $adults++;
+            } else {
+                $seniors++;
+            }
+        } else {
+            $unspecifiedAge++;
+        }
+    }
+
+    $kidsPct = $total > 0 ? round(($kids / $total) * 100) : 0;
+    $youthPct = $total > 0 ? round(($youth / $total) * 100) : 0;
+    $yaPct = $total > 0 ? round(($youngAdults / $total) * 100) : 0;
+    $adultPct = $total > 0 ? round(($adults / $total) * 100) : 0;
+    $seniorPct = $total > 0 ? round(($seniors / $total) * 100) : 0;
+
+    // --- Division Distribution ---
+    $divisions = [];
+    foreach ($registrations as $reg) {
+        $div = trim($reg->division ?? '');
+        if ($div === '') {
+            $div = 'Unspecified';
+        }
+        if (!isset($divisions[$div])) {
+            $divisions[$div] = 0;
+        }
+        $divisions[$div]++;
+    }
+    arsort($divisions); // sort by count descending
+
+    // --- Load App Logo Base64 ---
+    $logoPath = base_path('resources/views/imgs/letter-s.png');
+    $logoBase64 = '';
+    if (file_exists($logoPath)) {
+        $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -190,11 +252,15 @@
     <table class="header-table">
         <tr>
             <td style="vertical-align: middle;">
-                <p class="report-subtitle">App Central Executive Analytics</p>
+                <p class="report-subtitle">SAKO Central • {{ $event->committee ? $event->committee->name : 'General Events' }}</p>
                 <h1 class="report-title">Event Summary Report</h1>
             </td>
             <td style="text-align: right; vertical-align: middle; width: 120px;">
-                <span class="logo-badge">{{ $event->committee ? substr($event->committee->name, 0, 2) : 'EM' }}</span>
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height: 40px; width: auto;" alt="SAKO Logo">
+                @else
+                    <span class="logo-badge">SC</span>
+                @endif
             </td>
         </tr>
     </table>
@@ -311,17 +377,77 @@
         </tr>
     </table>
 
+    <table class="metadata-table" style="margin-top: 15px;">
+        <tr>
+            <td class="metadata-td">
+                <div class="card" style="height: 175px;">
+                    <h4 class="card-title">Age Distribution</h4>
+                    <table style="width: 100%; font-size: 11px;">
+                        <tr>
+                            <td style="color: #64748b; font-weight: 700; padding: 2px 0;">Kids (&lt;12):</td>
+                            <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $kids }} ({{ $kidsPct }}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 700; padding: 2px 0;">Youth (12-17):</td>
+                            <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $youth }} ({{ $youthPct }}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 700; padding: 2px 0;">Young Adults (18-30):</td>
+                            <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $youngAdults }} ({{ $yaPct }}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 700; padding: 2px 0;">Adults (31-59):</td>
+                            <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $adults }} ({{ $adultPct }}%)</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b; font-weight: 700; padding: 2px 0;">Seniors (60+):</td>
+                            <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $seniors }} ({{ $seniorPct }}%)</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td class="metadata-td" style="padding-right: 0;">
+                <div class="card" style="height: 175px;">
+                    <h4 class="card-title">Division Distribution</h4>
+                    <table style="width: 100%; font-size: 11px;">
+                        @php $divCount = 0; @endphp
+                        @forelse($divisions as $divName => $count)
+                            @if($divCount < 5)
+                                @php
+                                    $divPct = $total > 0 ? round(($count / $total) * 100) : 0;
+                                @endphp
+                                <tr>
+                                    <td style="color: #64748b; font-weight: 700; padding: 2.5px 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $divName }}:</td>
+                                    <td class="text-right" style="font-weight: 700; color: #0f172a;">{{ $count }} ({{ $divPct }}%)</td>
+                                </tr>
+                                @php $divCount++; @endphp
+                            @endif
+                        @empty
+                            <tr>
+                                <td colspan="2" style="color: #64748b; font-style: italic; padding: 10px 0;">No division data available.</td>
+                            </tr>
+                        @endforelse
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
     <!-- Attendee List Table Section (Page Break to fit beautifully) -->
     <div class="page-break"></div>
 
     <table class="header-table">
         <tr>
             <td style="vertical-align: middle;">
-                <p class="report-subtitle">App Central Executive Analytics</p>
+                <p class="report-subtitle">SAKO Central • {{ $event->committee ? $event->committee->name : 'General Events' }}</p>
                 <h1 class="report-title">Attendee Registration Directory</h1>
             </td>
             <td style="text-align: right; vertical-align: middle; width: 120px;">
-                <span class="logo-badge">{{ $event->committee ? substr($event->committee->name, 0, 2) : 'EM' }}</span>
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" style="height: 40px; width: auto;" alt="SAKO Logo">
+                @else
+                    <span class="logo-badge">AC</span>
+                @endif
             </td>
         </tr>
     </table>
@@ -329,19 +455,34 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 35%;">Attendee Profile</th>
-                <th style="width: 25%;">Email Address</th>
+                <th style="width: 25%;">Attendee Profile</th>
                 <th style="width: 15%;">Ticket Code</th>
+                <th style="width: 10%; text-align: center;">Age</th>
+                <th style="width: 15%;">Gender</th>
+                <th style="width: 15%;">Division</th>
                 <th style="width: 10%; text-align: center;">Status</th>
-                <th style="width: 15%; text-align: right;">Attendance</th>
+                <th style="width: 10%; text-align: right;">Attendance</th>
             </tr>
         </thead>
         <tbody>
             @forelse($registrations as $reg)
                 <tr>
-                    <td style="font-weight: 700; color: #0f172a; border-bottom: none; padding-bottom: 2px;">{{ $reg->name }}</td>
-                    <td style="font-family: monospace; font-size: 10px; border-bottom: none; padding-bottom: 2px;">{{ $reg->email }}</td>
-                    <td style="font-family: monospace; font-weight: 700; color: #8b5cf6; border-bottom: none; padding-bottom: 2px;">{{ $reg->ticket_code ?? 'N/A' }}</td>
+                    <td style="border-bottom: none; padding-bottom: 2px;">
+                        <span style="font-weight: 700; color: #0f172a; display: block;">{{ $reg->name }}</span>
+                        <span style="font-family: monospace; font-size: 9px; color: #64748b; display: block; margin-top: 2px;">{{ $reg->email }}</span>
+                    </td>
+                    <td style="font-family: monospace; font-weight: 700; color: #8b5cf6; border-bottom: none; padding-bottom: 2px;">{{ $reg->ticket_code ?? '—' }}</td>
+                    <td style="text-align: center; font-weight: 600; border-bottom: none; padding-bottom: 2px;">{{ $reg->birthday ? $reg->age . ' yrs' : '—' }}</td>
+                    <td style="border-bottom: none; padding-bottom: 2px;">
+                        <span class="badge" style="background-color: #f1f5f9; color: #475569;">{{ $reg->gender ?? 'Unspecified' }}</span>
+                    </td>
+                    <td style="border-bottom: none; padding-bottom: 2px;">
+                        @if($reg->division)
+                            <span class="badge" style="background-color: #f3e8ff; color: #6b21a8;">{{ $reg->division }}</span>
+                        @else
+                            <span style="color: #94a3b8;">—</span>
+                        @endif
+                    </td>
                     <td style="text-align: center; border-bottom: none; padding-bottom: 2px;">
                         @if($reg->status === 'approved')
                             <span class="badge badge-approved">Approved</span>
@@ -365,7 +506,7 @@
                 </tr>
                 @if(!empty($reg->custom_fields) && is_array($reg->custom_fields))
                     <tr>
-                        <td colspan="5" style="padding-top: 2px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; background-color: #faf5ff;">
+                        <td colspan="7" style="padding-top: 2px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; background-color: #faf5ff;">
                             <div style="font-size: 9px; color: #6b21a8; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; padding-left: 12px;">
                                 Questionnaire Responses:
                             </div>
@@ -389,14 +530,14 @@
                     </tr>
                 @else
                     <tr>
-                        <td colspan="5" style="border-bottom: 1px solid #e2e8f0; font-size: 9px; color: #64748b; font-style: italic; padding-top: 2px; padding-bottom: 8px; padding-left: 12px;">
+                        <td colspan="7" style="border-bottom: 1px solid #e2e8f0; font-size: 9px; color: #64748b; font-style: italic; padding-top: 2px; padding-bottom: 8px; padding-left: 12px;">
                             No questionnaire responses supplied.
                         </td>
                     </tr>
                 @endif
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center; color: #64748b; font-style: italic; padding: 30px;">
+                    <td colspan="7" style="text-align: center; color: #64748b; font-style: italic; padding: 30px;">
                         No registrations have been logged for this event.
                     </td>
                 </tr>

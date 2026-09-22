@@ -562,6 +562,22 @@
                                 </div>
                             </div>
 
+                            <!-- Division Input -->
+                            <div class="space-y-2">
+                                <label for="division" class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                    Division <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </span>
+                                    <input type="text" name="division" id="division" required value="{{ old('division') }}" placeholder="e.g. Youth / Sector 1" 
+                                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
+                                </div>
+                            </div>
+
                             <!-- Custom / Dynamic Questions -->
                             @foreach($normalizedFields as $field)
                                 @php
@@ -959,6 +975,15 @@
                     <input type="date" name="companions[${companionIndex}][birthday]" required max="${new Date().toISOString().split('T')[0]}"
                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-slate-605 dark:text-slate-300 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition cursor-pointer">
                 </div>
+
+                <!-- Division -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-semibold">Division <span class="text-[9px] text-slate-450 dark:text-slate-500 font-normal italic">(Optional)</span></label>
+                    </div>
+                    <input type="text" name="companions[${companionIndex}][division]" placeholder="e.g. Youth / Sector 1 (Optional)"
+                        class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition">
+                </div>
             `;
 
             container.appendChild(card);
@@ -1034,8 +1059,28 @@
         }
 
         function submitRegistration() {
+            const confirmBtn = document.getElementById('confirm-submit-btn');
+            const cancelBtn = confirmBtn?.previousElementSibling;
             const form = document.getElementById('registration-form');
-            if (form) {
+            
+            if (confirmBtn && form) {
+                // Disable both buttons to prevent double-submit or canceling mid-request
+                confirmBtn.disabled = true;
+                if (cancelBtn) {
+                    cancelBtn.disabled = true;
+                    cancelBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                
+                // Show beautiful inline animated loading spinner
+                confirmBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Registering...</span>
+                `;
+                
+                // Submit the form
                 form.submit();
             }
         }
@@ -1056,6 +1101,19 @@
                     if (!termsCheckbox || !termsCheckbox.checked) {
                         e.preventDefault();
                         openTermsModal();
+                    } else {
+                        // Form is submitting directly! Show spinner on the main button
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = `
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Submitting...</span>
+                            `;
+                        }
                     }
                 });
             }

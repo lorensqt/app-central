@@ -157,17 +157,38 @@
 </style>
 
 <div class="space-y-8 max-w-7xl mx-auto">
-    <!-- Breadcrumbs -->
-    <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <a href="{{ route('dashboard') }}?tab=committees" class="hover:text-slate-900 dark:hover:text-white transition-colors">Portal</a>
-        <svg class="w-4 h-4 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-        <a href="{{ route('committees.events.index') }}?committee_id={{ $event->committee_id }}" class="hover:text-slate-900 dark:hover:text-white transition-colors">{{ $event->committee->name }} Workspace</a>
-        <svg class="w-4 h-4 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-        <span class="text-slate-900 dark:text-slate-300 font-medium">Event Control Room</span>
+    <!-- Premium Responsive Breadcrumbs -->
+    <div class="flex items-center justify-between text-xs select-none">
+        <!-- Desktop Full Path Breadcrumbs -->
+        <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <!-- Portal Link with Icon -->
+            <a href="{{ route('dashboard') }}?tab=committees" class="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition-all font-medium">
+                <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Portal
+            </a>
+            
+            <!-- Separator -->
+            <svg class="w-3 h-3 text-slate-300 dark:text-slate-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+
+            <!-- Committee Workspace Link with Hover -->
+            <a href="{{ route('committees.events.index') }}?committee_id={{ $event->committee_id }}" class="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-100/80 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition-all font-medium">
+                {{ $event->committee->name }} Workspace
+            </a>
+            
+            <!-- Separator -->
+            <svg class="w-3 h-3 text-slate-300 dark:text-slate-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            
+            <!-- Active Page Badge -->
+            <span class="px-2 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold rounded-md border border-purple-500/10">
+                Event Control Room
+            </span>
+        </div>
     </div>
 
         <!-- Header / Cover Card (Rich Aesthetics - The Modern "Hero Banner Split" Option A) -->
@@ -247,14 +268,9 @@
                         <div class="relative w-full sm:w-auto">
                             <button onclick="toggleActionDropdown()" id="action-dropdown-btn" type="button" 
                                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md hover:shadow-lg focus:outline-none transition duration-150 group">
-                                <svg class="w-4 h-4 text-purple-200 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
+                                <i class="fa-solid fa-gear text-purple-200 group-hover:text-white transition-colors text-sm"></i>
                                 <span>Manage Assembly</span>
-                                <svg class="w-3.5 h-3.5 text-purple-200 group-hover:text-white transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-purple-200 group-hover:text-white transition-transform duration-150"></i>
                             </button>
                             
                             <!-- Action Dropdown Menu -->
@@ -265,18 +281,13 @@
                                     <a href="{{ route('events.public_show', $event) }}" target="_blank" rel="noopener noreferrer" 
                                         onclick="toggleActionDropdown()"
                                         class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
-                                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
+                                        <i class="fa-solid fa-eye text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 text-sm w-4 shrink-0"></i>
                                         View Landing Page
                                     </a>
                                     <!-- Copy Shareable Link -->
                                     <button onclick="copyEventLink('{{ route('events.public_show', $event) }}'); toggleActionDropdown();" 
                                         class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
-                                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10M10 9l3-3m-3 3l3 3" />
-                                        </svg>
+                                        <i class="fa-solid fa-copy text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 text-sm w-4 shrink-0"></i>
                                         Copy Share Link
                                     </button>
                                 </div>
@@ -284,9 +295,7 @@
                                     <!-- Edit Event -->
                                     <button onclick="openEditEventModal(); toggleActionDropdown();" 
                                         class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
-                                        <svg class="w-4 h-4 text-purple-500 group-hover:text-purple-650 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
+                                        <i class="fa-solid fa-pen-to-square text-purple-500 group-hover:text-purple-650 text-sm w-4 shrink-0"></i>
                                         Edit Event Details
                                     </button>
                                 </div>
@@ -296,9 +305,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-red-650 dark:text-red-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center gap-2.5 transition">
-                                            <svg class="w-4 h-4 text-red-500 group-hover:text-red-650 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
+                                            <i class="fa-solid fa-trash-can text-red-500 group-hover:text-red-650 text-sm w-4 shrink-0"></i>
                                             Delete Event
                                         </button>
                                     </form>
@@ -322,9 +329,7 @@
             <!-- Date Card -->
             <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
                 <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
+                    <i class="fa-solid fa-calendar-days text-sm"></i>
                 </span>
                 <div class="truncate text-left">
                     <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Assembly Date</p>
@@ -335,10 +340,7 @@
             <!-- Location Card -->
             <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
                 <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                    <i class="fa-solid fa-location-dot text-sm"></i>
                 </span>
                 <div class="truncate text-left">
                     <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Location</p>
@@ -349,9 +351,7 @@
             <!-- Registrants Card -->
             <div class="flex items-center gap-3 text-slate-650 dark:text-slate-400 bg-slate-50/40 dark:bg-slate-950/25 hover:bg-slate-50 dark:hover:bg-slate-950/40 px-4 py-3 rounded-2xl border border-slate-100/80 dark:border-slate-800/60 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-200 hover:-translate-y-0.5 group">
                 <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold shrink-0 transition-transform duration-200 group-hover:scale-105">
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                    <i class="fa-solid fa-users text-sm"></i>
                 </span>
                 <div class="truncate text-left">
                     <p class="text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-wider mb-0.5">Total Registrants</p>
@@ -379,52 +379,44 @@
         </div>
     @endif
 
-    @if(session('status'))
-        <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-400 text-sm flex items-center gap-3 shadow-sm">
-            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>{{ session('status') }}</span>
-        </div>
-    @endif
+
 
     <!-- Tabbed Layout Container -->
     <div class="space-y-6">
-        <!-- Tabs Navigation Row -->
-        <div class="flex border-b border-slate-200 dark:border-slate-800 gap-1.5 scrollbar-thin overflow-x-auto select-none">
+        <!-- Premium Glassmorphic Segmented Tabs Navigation Row -->
+        <div id="tabs-nav-container" class="relative flex items-center bg-slate-100/90 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/80 scrollbar-none overflow-x-auto select-none w-full gap-1.5 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
+            <!-- Dynamic sliding active tab indicator -->
+            <div id="tab-active-indicator" class="absolute bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-[0_4px_12px_rgba(15,23,42,0.06)] rounded-xl transition-all duration-300 ease-out z-0 pointer-events-none"></div>
+
             <!-- Tab 1 Button: Requests -->
-            <button onclick="switchTab('requests')" id="tab-btn-requests" class="tab-btn px-5 py-3 border-b-2 border-purple-600 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
+            <button onclick="switchTab('requests')" id="tab-btn-requests" 
+                class="tab-btn relative z-10 px-5 py-3 rounded-xl text-purple-600 dark:text-purple-400 font-extrabold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-address-card text-xs"></i>
                 <span>Registration Requests</span>
-                <span id="requests-badge-count" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 text-[10px] font-bold rounded-full">
+                <span id="requests-badge-count" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 text-[10px] font-extrabold rounded-full transition duration-200">
                     {{ $event->registrations->where('status', 'pending')->count() }}
                 </span>
             </button>
 
             <!-- Tab 2 Button: Summary / Report -->
-            <button onclick="switchTab('summary')" id="tab-btn-summary" class="tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
-                Summary & Analytics
+            <button onclick="switchTab('summary')" id="tab-btn-summary" 
+                class="tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-chart-line text-xs"></i>
+                <span>Summary & Analytics</span>
             </button>
 
             <!-- Tab 3 Button: Manage Questions -->
-            <button onclick="switchTab('questions')" id="tab-btn-questions" class="tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                </svg>
-                Manage Questions
+            <button onclick="switchTab('questions')" id="tab-btn-questions" 
+                class="tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-circle-question text-xs"></i>
+                <span>Manage Questions</span>
             </button>
 
             <!-- Tab 4 Button: Post-Event Survey -->
-            <button onclick="switchTab('survey')" id="tab-btn-survey" class="tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                </svg>
-                Post-Event Survey
+            <button onclick="switchTab('survey')" id="tab-btn-survey" 
+                class="tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-square-poll-horizontal text-xs"></i>
+                <span>Post-Event Survey</span>
             </button>
         </div>
 
@@ -535,6 +527,24 @@
 
     // Interactive Tab Switching Logic
     let currentTab = 'requests';
+    
+    function positionActiveTabIndicator(targetTab = null) {
+        const activeTab = targetTab || currentTab;
+        const activeBtn = document.getElementById('tab-btn-' + activeTab);
+        const indicator = document.getElementById('tab-active-indicator');
+        const container = document.getElementById('tabs-nav-container');
+        
+        if (activeBtn && indicator && container) {
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            
+            indicator.style.left = (btnRect.left - containerRect.left + container.scrollLeft) + 'px';
+            indicator.style.width = btnRect.width + 'px';
+            indicator.style.height = btnRect.height + 'px';
+            indicator.style.top = (btnRect.top - containerRect.top) + 'px';
+        }
+    }
+
     function switchTab(targetTab) {
         const tabRequestsBtn = document.getElementById('tab-btn-requests');
         const tabSummaryBtn = document.getElementById('tab-btn-summary');
@@ -548,10 +558,10 @@
 
         if (!tabRequestsBtn || !tabSummaryBtn || !tabQuestionsBtn || !tabSurveyBtn || !panelRequests || !panelSummary || !panelQuestions || !panelSurvey) return;
 
-        // Reset Styles
+        // Reset Styles to Inactive Rounded Pills (transparent background, with Hover text state)
         const btns = [tabRequestsBtn, tabSummaryBtn, tabQuestionsBtn, tabSurveyBtn];
         btns.forEach(btn => {
-            btn.className = "tab-btn px-5 py-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 font-semibold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            btn.className = "tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap";
         });
         
         panelRequests.classList.add('hidden');
@@ -559,23 +569,31 @@
         panelQuestions.classList.add('hidden');
         panelSurvey.classList.add('hidden');
 
-        // Apply active Styles
+        const activeClass = "tab-btn relative z-10 px-5 py-3 rounded-xl text-purple-600 dark:text-purple-400 font-extrabold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap";
+
+        // Apply active Styles (sliding background indicator handles background/borders)
         if (targetTab === 'requests') {
-            tabRequestsBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            tabRequestsBtn.className = activeClass;
             panelRequests.classList.remove('hidden');
         } else if (targetTab === 'summary') {
-            tabSummaryBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            tabSummaryBtn.className = activeClass;
             panelSummary.classList.remove('hidden');
         } else if (targetTab === 'questions') {
-            tabQuestionsBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            tabQuestionsBtn.className = activeClass;
             panelQuestions.classList.remove('hidden');
         } else if (targetTab === 'survey') {
-            tabSurveyBtn.className = "tab-btn px-5 py-3 border-b-2 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400 font-bold text-sm transition duration-150 flex items-center gap-2 focus:outline-none whitespace-nowrap";
+            tabSurveyBtn.className = activeClass;
             panelSurvey.classList.remove('hidden');
         }
 
         currentTab = targetTab;
+        
+        // Slide the background indicator to the newly active tab!
+        positionActiveTabIndicator(targetTab);
     }
+
+    // Call position function on window resize
+    window.addEventListener('resize', () => positionActiveTabIndicator());
 
     // Auto-switch to requested tab from query parameter on page load
     document.addEventListener('DOMContentLoaded', () => {
@@ -583,6 +601,9 @@
         const tab = urlParams.get('tab');
         if (tab) {
             switchTab(tab);
+        } else {
+            // Position the initial 'requests' indicator cleanly
+            setTimeout(() => positionActiveTabIndicator('requests'), 50);
         }
 
         // Initialize Premium Custom Flatpickr Datetime Pickers for edit modal
@@ -656,42 +677,42 @@
     let activeStatusFilter = 'all';
 
     function setStatusFilter(status) {
-        activeStatusFilter = status;
-
-        // Reset background & styles of all buttons
-        const statuses = ['all', 'pending', 'approved', 'declined'];
-        statuses.forEach(st => {
-            const btn = document.getElementById('filter-btn-' + st);
-            if (btn) {
-                if (st === status) {
-                    btn.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm transition duration-150";
-                } else {
-                    btn.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-800/40 transition duration-150";
-                }
-            }
-        });
-
-        // Run matching list update
+        // Kept for backward compatibility
+        const statusDropdown = document.getElementById('filter-status');
+        if (statusDropdown) {
+            statusDropdown.value = status;
+        }
         filterApplicants();
     }
 
     function filterApplicants() {
-        const query = document.getElementById('applicant-search') ? document.getElementById('applicant-search').value.toLowerCase() : '';
+        const query = document.getElementById('applicant-search') ? document.getElementById('applicant-search').value.toLowerCase().trim() : '';
+        const statusVal = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'all';
+        const typeVal = document.getElementById('filter-type') ? document.getElementById('filter-type').value : 'all';
+        const genderVal = document.getElementById('filter-gender') ? document.getElementById('filter-gender').value : 'all';
+        const sortVal = document.getElementById('filter-sort') ? document.getElementById('filter-sort').value : 'date-desc';
+
         const rows = document.querySelectorAll('.applicant-row');
         const noResults = document.getElementById('no-applicants-matched');
 
         let matchesCount = 0;
 
         rows.forEach(row => {
-            const name = row.getAttribute('data-name') || '';
+            const name = row.getAttribute('data-name') ? row.getAttribute('data-name').toLowerCase() : '';
             const email = row.getAttribute('data-email') || '';
             const code = row.getAttribute('data-code') || '';
             const status = row.getAttribute('data-status') || '';
+            const isGroup = row.getAttribute('data-is-group') === 'true';
+            const gender = row.getAttribute('data-gender') || 'unspecified';
 
             const matchesSearch = name.includes(query) || email.includes(query) || code.includes(query);
-            const matchesStatus = activeStatusFilter === 'all' || status === activeStatusFilter;
+            const matchesStatus = statusVal === 'all' || status === statusVal;
+            const matchesType = typeVal === 'all' || (typeVal === 'group' && isGroup) || (typeVal === 'individual' && !isGroup);
+            const matchesGender = genderVal === 'all' || 
+                (genderVal === 'lgbtq+' && (gender.includes('lgbtq') || gender.includes('lesbian') || gender.includes('gay') || gender.includes('bi') || gender.includes('trans') || gender.includes('queer'))) || 
+                gender === genderVal;
 
-            if (matchesSearch && matchesStatus) {
+            if (matchesSearch && matchesStatus && matchesType && matchesGender) {
                 row.classList.remove('hidden');
                 matchesCount++;
             } else {
@@ -706,6 +727,51 @@
                 noResults.classList.add('hidden');
             }
         }
+
+        // Apply sorting
+        const tableBody = document.getElementById('applicants-table-body');
+        const mobileContainer = document.getElementById('applicants-mobile-cards');
+
+        if (tableBody) {
+            sortElementList(tableBody, sortVal);
+        }
+        if (mobileContainer) {
+            sortElementList(mobileContainer, sortVal);
+        }
+    }
+
+    function sortElementList(container, sortType) {
+        const items = Array.from(container.children);
+        const sortableItems = items.filter(el => el.classList.contains('applicant-row'));
+        const unsortableItems = items.filter(el => !el.classList.contains('applicant-row'));
+
+        sortableItems.sort((a, b) => {
+            if (sortType === 'name-asc' || sortType === 'name-desc') {
+                const nameA = (a.getAttribute('data-name') || '').toLowerCase();
+                const nameB = (b.getAttribute('data-name') || '').toLowerCase();
+                const cmp = nameA.localeCompare(nameB);
+                return sortType === 'name-asc' ? cmp : -cmp;
+            }
+
+            if (sortType === 'age-asc' || sortType === 'age-desc') {
+                const ageA = parseInt(a.getAttribute('data-age')) || 0;
+                const ageB = parseInt(b.getAttribute('data-age')) || 0;
+                return sortType === 'age-asc' ? ageA - ageB : ageB - ageA;
+            }
+
+            if (sortType === 'date-asc' || sortType === 'date-desc') {
+                const tsA = parseInt(a.getAttribute('data-timestamp')) || 0;
+                const tsB = parseInt(b.getAttribute('data-timestamp')) || 0;
+                return sortType === 'date-asc' ? tsA - tsB : tsB - tsA;
+            }
+            
+            return 0;
+        });
+
+        // Clear container and append in sorted order
+        container.innerHTML = '';
+        sortableItems.forEach(item => container.appendChild(item));
+        unsortableItems.forEach(item => container.appendChild(item));
     }
 
     // Modal Control: Edit Event Details
@@ -795,10 +861,26 @@
             }
         }
 
+        // Master Select-All checkbox toggle
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', () => {
+                const isChecked = selectAllCheckbox.checked;
+                // Select only the visible and enabled checkboxes
+                const visibleCheckboxes = document.querySelectorAll('.applicant-row:not(.hidden) .applicant-checkbox:not(:disabled)');
+                visibleCheckboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                });
+                updateBulkBarState();
+            });
+        }
+
         // Individual checkbox change (forcing manual selection)
         applicantCheckboxes.forEach(cb => {
             cb.addEventListener('change', () => {
                 updateBulkBarState();
+                if (selectAllCheckbox && !cb.checked) {
+                    selectAllCheckbox.checked = false;
+                }
             });
         });
 
@@ -817,44 +899,61 @@
                 const submitBtn = form.querySelector('button');
                 if (!submitBtn || submitBtn.disabled) return;
 
-                let url = form.action;
-                let rejectionReason = null;
-                if (isSingleDecline) {
-                    rejectionReason = prompt("Please enter the reason for declining this request (Optional):");
-                    if (rejectionReason === null) {
-                        return; // Cancelled
+                const runAction = (rejectionReason = null) => {
+                    let url = form.action;
+                    if (rejectionReason) {
+                        url += (url.includes('?') ? '&' : '?') + 'rejection_reason=' + encodeURIComponent(rejectionReason);
                     }
-                    url += (url.includes('?') ? '&' : '?') + 'rejection_reason=' + encodeURIComponent(rejectionReason);
-                }
 
-                const originalHTML = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'Syncing...';
+                    const originalHTML = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = 'Syncing...';
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        animateRowStatusUpdate(row, action, data.ticket_code);
-                        window.showToast(data.message, 'success');
-                    } else {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            animateRowStatusUpdate(row, action, data.ticket_code);
+                            window.showToast(data.message, 'success');
+                        } else {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalHTML;
+                            window.showToast(data.message || 'Action failed.', 'error');
+                        }
+                    })
+                    .catch(err => {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalHTML;
-                        window.showToast(data.message || 'Action failed.', 'error');
+                        window.showToast('Server connection failed.', 'error');
+                    });
+                };
+
+                if (isSingleDecline) {
+                    if (window.showPromptModal) {
+                        window.showPromptModal(
+                            'Decline Request',
+                            'Please enter the reason for declining this attendee registration:',
+                            'Reason (Optional)...',
+                            (reason) => {
+                                runAction(reason);
+                            }
+                        );
+                    } else {
+                        const rejectionReason = prompt("Please enter the reason for declining this request (Optional):");
+                        if (rejectionReason !== null) {
+                            runAction(rejectionReason);
+                        }
                     }
-                })
-                .catch(err => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalHTML;
-                    window.showToast('Server connection failed.', 'error');
-                });
+                } else {
+                    runAction();
+                }
             } else if (isToggleAttendance) {
                 e.preventDefault();
 
@@ -977,6 +1076,9 @@
             applicantCheckboxes.forEach(cb => {
                 cb.checked = false;
             });
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+            }
             updateBulkBarState();
         };
 
@@ -1006,8 +1108,8 @@
                 }
             }
 
-            // Update Status Badge TD (Index 5 since Ticket Code is Index 2)
-            const statusCell = row.children[5];
+            // Update Status Badge TD (Index 6)
+            const statusCell = row.children[6];
             statusCell.style.opacity = '0';
             setTimeout(() => {
                 if (action === 'approved') {
@@ -1035,8 +1137,8 @@
                 statusCell.style.opacity = '1';
             }, 150);
 
-            // Update Actions Column TD (Index 6 since Ticket Code is Index 2)
-            const actionsCell = row.children[6];
+            // Update Actions Column TD (Index 7)
+            const actionsCell = row.children[7];
             actionsCell.style.opacity = '0';
             setTimeout(() => {
                 if (action === 'approved') {
@@ -1082,6 +1184,27 @@
             // Dynamically recalculate and update summary analytics cards & badges
             recalculateAnalytics();
             updateBulkBarState();
+
+            // Check if the row matches the current filter settings. If not, animate it out smoothly!
+            const statusDropdown = document.getElementById('filter-status');
+            const currentFilterStatus = statusDropdown ? statusDropdown.value : 'all';
+            
+            if (currentFilterStatus !== 'all' && action !== currentFilterStatus) {
+                // Give the admin 1.2 seconds to see the updated status badge before smoothly animating the row out
+                setTimeout(() => {
+                    row.style.transition = 'all 400ms ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        row.classList.add('hidden');
+                        // Reset style properties so the row behaves normally if they change filters later
+                        row.style.opacity = '';
+                        row.style.transform = '';
+                        // Re-run filterApplicants to handle empty states dynamically
+                        filterApplicants();
+                    }, 400);
+                }, 1200);
+            }
         }
 
         // Dynamic analytics counter update
@@ -1116,75 +1239,89 @@
             const ids = Array.from(checkedCheckboxes).map(cb => cb.getAttribute('data-id'));
             if (ids.length === 0) return;
 
-            let rejectionReason = null;
-            if (action === 'decline') {
-                rejectionReason = prompt("Please enter the reason for declining these requests (Optional):");
-                if (rejectionReason === null) {
-                    return; // Cancelled
+            const runBulkAction = (rejectionReason = null) => {
+                let url = '';
+                if (action === 'approve') {
+                    url = '{{ route('committees.registrations.bulk_approve') }}';
+                } else if (action === 'decline') {
+                    url = '{{ route('committees.registrations.bulk_decline') }}';
+                } else if (action === 'delete') {
+                    url = '{{ route('committees.registrations.bulk_delete') }}';
                 }
-            }
 
-            let url = '';
-            if (action === 'approve') {
-                url = '{{ route('committees.registrations.bulk_approve') }}';
-            } else if (action === 'decline') {
-                url = '{{ route('committees.registrations.bulk_decline') }}';
-            } else if (action === 'delete') {
-                url = '{{ route('committees.registrations.bulk_delete') }}';
-            }
+                // Show loading indicators inside the bulk actions bar
+                const bulkButtons = bulkBar.querySelectorAll('button');
+                bulkButtons.forEach(btn => btn.disabled = true);
 
-            // Show loading indicators inside the bulk actions bar
-            const bulkButtons = bulkBar.querySelectorAll('button');
-            bulkButtons.forEach(btn => btn.disabled = true);
+                const requestBody = { ids: ids };
+                if (rejectionReason !== null) {
+                    requestBody.rejection_reason = rejectionReason;
+                }
 
-            const requestBody = { ids: ids };
-            if (rejectionReason !== null) {
-                requestBody.rejection_reason = rejectionReason;
-            }
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            })
-            .then(res => res.json())
-            .then(data => {
-                bulkButtons.forEach(btn => btn.disabled = false);
-                if (data.success) {
-                    if (action === 'delete') {
-                        checkedCheckboxes.forEach(cb => {
-                            const row = cb.closest('.applicant-row');
-                            row.style.transition = 'all 300ms ease';
-                            row.style.opacity = '0';
-                            row.style.transform = 'translateX(20px)';
-                            setTimeout(() => {
-                                row.remove();
-                                recalculateAnalytics();
-                            }, 300);
-                        });
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    bulkButtons.forEach(btn => btn.disabled = false);
+                    if (data.success) {
+                        if (action === 'delete') {
+                            checkedCheckboxes.forEach(cb => {
+                                const row = cb.closest('.applicant-row');
+                                row.style.transition = 'all 300ms ease';
+                                row.style.opacity = '0';
+                                row.style.transform = 'translateX(20px)';
+                                setTimeout(() => {
+                                    row.remove();
+                                    recalculateAnalytics();
+                                }, 300);
+                            });
+                        } else {
+                            checkedCheckboxes.forEach(cb => {
+                                const row = cb.closest('.applicant-row');
+                                const regId = cb.getAttribute('data-id');
+                                const ticketCode = data.ticket_codes ? data.ticket_codes[regId] : null;
+                                animateRowStatusUpdate(row, action === 'approve' ? 'approved' : 'declined', ticketCode);
+                            });
+                        }
+                        clearSelection();
+                        window.showToast(data.message, 'success');
                     } else {
-                        checkedCheckboxes.forEach(cb => {
-                            const row = cb.closest('.applicant-row');
-                            const regId = cb.getAttribute('data-id');
-                            const ticketCode = data.ticket_codes ? data.ticket_codes[regId] : null;
-                            animateRowStatusUpdate(row, action === 'approve' ? 'approved' : 'declined', ticketCode);
-                        });
+                        window.showToast(data.message || 'Bulk action failed.', 'error');
                     }
-                    clearSelection();
-                    window.showToast(data.message, 'success');
+                })
+                .catch(err => {
+                    bulkButtons.forEach(btn => btn.disabled = false);
+                    window.showToast('Server connection failed.', 'error');
+                });
+            };
+
+            if (action === 'decline') {
+                if (window.showPromptModal) {
+                    window.showPromptModal(
+                        'Decline Selected Requests',
+                        'Please enter the reason for declining these selected registrations:',
+                        'Reason (Optional)...',
+                        (reason) => {
+                            runBulkAction(reason);
+                        }
+                    );
                 } else {
-                    window.showToast(data.message || 'Bulk action failed.', 'error');
+                    const rejectionReason = prompt("Please enter the reason for declining these requests (Optional):");
+                    if (rejectionReason !== null) {
+                        runBulkAction(rejectionReason);
+                    }
                 }
-            })
-            .catch(err => {
-                bulkButtons.forEach(btn => btn.disabled = false);
-                window.showToast('Server connection failed.', 'error');
-            });
+            } else {
+                runBulkAction();
+            }
         };
     });
 
@@ -1386,6 +1523,37 @@
             onclick="event.stopPropagation();">
     </div>
 </div>
+
+<!-- Back to Top Button -->
+<button id="back-to-top" class="fixed bottom-6 right-6 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white p-3 rounded-full shadow-2xl z-50 transition-all duration-300 transform translate-y-16 opacity-0 pointer-events-none hover:scale-110 flex items-center justify-center focus:outline-none" title="Back to Top">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+    </svg>
+</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const backToTopBtn = document.getElementById('back-to-top');
+        if (!backToTopBtn) return;
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
+                backToTopBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            } else {
+                backToTopBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                backToTopBtn.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 @endsection

@@ -1,7 +1,7 @@
 <!-- TAB 1: REGISTRATION REQUESTS PANEL -->
 <div id="tab-panel-requests" class="space-y-6">
     <!-- Filter Actions Strip -->
-    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 shadow-sm">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 shadow-sm">
         <!-- Left Side: Live Search Box -->
         <div class="relative flex-grow max-w-md bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_8px_rgba(15,23,42,0.01)] transition duration-200">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -12,20 +12,73 @@
             <input type="text" id="applicant-search" oninput="filterApplicants()" placeholder="Search applicants by name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
         </div>
 
-        <!-- Right Side: Filter Buttons for Quick Toggle (All, Pending, Approved, Declined) -->
-        <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80 shrink-0 select-none">
-            <button type="button" onclick="setStatusFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-xs transition duration-150">
-                All ({{ $event->registrations->count() }})
-            </button>
-            <button type="button" onclick="setStatusFilter('pending')" id="filter-btn-pending" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-amber-500/5 dark:hover:bg-amber-950/20 hover:text-amber-600 dark:hover:text-amber-400 border border-transparent transition duration-150">
-                Pending ({{ $event->registrations->where('status', 'pending')->count() }})
-            </button>
-            <button type="button" onclick="setStatusFilter('approved')" id="filter-btn-approved" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-emerald-500/5 dark:hover:bg-emerald-950/20 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent transition duration-150">
-                Approved ({{ $event->registrations->where('status', 'approved')->count() }})
-            </button>
-            <button type="button" onclick="setStatusFilter('declined')" id="filter-btn-declined" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 dark:text-slate-450 hover:bg-rose-500/5 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-450 border border-transparent transition duration-150">
-                Declined ({{ $event->registrations->where('status', 'declined')->count() }})
-            </button>
+        <!-- Right Side: Filter Dropdowns designed elegantly -->
+        <div class="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-xl border border-slate-100 dark:border-slate-800/80 select-none">
+            <!-- Status Dropdown -->
+            <div class="relative min-w-[155px]">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-circle-check text-xs text-purple-600 dark:text-purple-400"></i>
+                </span>
+                <select id="filter-status" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
+                    <option value="all">All Statuses ({{ $event->registrations->count() }})</option>
+                    <option value="pending">Pending ({{ $event->registrations->where('status', 'pending')->count() }})</option>
+                    <option value="approved">Approved ({{ $event->registrations->where('status', 'approved')->count() }})</option>
+                    <option value="declined">Declined ({{ $event->registrations->where('status', 'declined')->count() }})</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+
+            <!-- Request Type Dropdown (Individual vs Group) -->
+            <div class="relative min-w-[150px]">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-users text-xs text-purple-600 dark:text-purple-400"></i>
+                </span>
+                <select id="filter-type" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
+                    <option value="all">All Types</option>
+                    <option value="individual">Individual Only</option>
+                    <option value="group">Group Only</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+
+            <!-- Gender Dropdown -->
+            <div class="relative min-w-[150px]">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-venus-mars text-xs text-purple-600 dark:text-purple-400"></i>
+                </span>
+                <select id="filter-gender" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
+                    <option value="all">All Genders</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="lgbtq+">LGBTQ+</option>
+                    <option value="unspecified">Unspecified / Other</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="relative min-w-[190px]">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-arrow-down-wide-short text-xs text-purple-600 dark:text-purple-400"></i>
+                </span>
+                <select id="filter-sort" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
+                    <option value="date-desc">Submission (Newest First)</option>
+                    <option value="date-asc">Submission (Oldest First)</option>
+                    <option value="name-asc">Name (A - Z)</option>
+                    <option value="name-desc">Name (Z - A)</option>
+                    <option value="age-asc">Age (Youngest First)</option>
+                    <option value="age-desc">Age (Oldest First)</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -45,7 +98,9 @@
                 <table class="w-full text-left text-sm border-collapse">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            <th class="py-3.5 px-6 w-12 text-center select-none text-[10px] tracking-wider text-slate-400">Sel</th>
+                            <th class="py-3.5 px-3 w-10 text-center select-none">
+                                <input type="checkbox" id="select-all-checkbox" class="w-4 h-4 rounded border-slate-300 dark:border-slate-800/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-950 transition duration-150 cursor-pointer">
+                            </th>
                             <th class="py-3.5 px-6">Attendee Profile</th>
                             <th class="py-3.5 px-6">Ticket Code</th>
                             <th class="py-3.5 px-6">Gender</th>
@@ -62,11 +117,15 @@
                                 data-name="{{ $reg->name }}" 
                                 data-email="{{ strtolower($reg->email) }}" 
                                 data-code="{{ strtolower($reg->ticket_code) }}"
-                                data-status="{{ $reg->status }}">
+                                data-status="{{ $reg->status }}"
+                                data-is-group="{{ $reg->group_code ? 'true' : 'false' }}"
+                                data-gender="{{ strtolower($reg->gender ?? 'unspecified') }}"
+                                data-age="{{ $reg->birthday ? $reg->age : 0 }}"
+                                data-timestamp="{{ $reg->created_at ? $reg->created_at->timestamp : 0 }}">
                                 
                                 <!-- Selection Checkbox -->
-                                <td class="py-4 px-6 text-center select-none">
-                                    <input type="checkbox" class="applicant-checkbox w-4 h-4 rounded border-slate-300 dark:border-slate-700/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-900 transition duration-150" data-id="{{ $reg->id }}">
+                                <td class="py-4 px-3 text-center select-none">
+                                    <input type="checkbox" class="applicant-checkbox w-4 h-4 rounded border-slate-300 dark:border-slate-800/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-950 transition duration-150 cursor-pointer" data-id="{{ $reg->id }}">
                                 </td>
                                 
                                 <!-- Profile / Avatar Initials with Merged Name & Email (Pro-Level Layout) -->
@@ -212,14 +271,18 @@
                         data-name="{{ strtolower($reg->name) }}" 
                         data-email="{{ strtolower($reg->email) }}" 
                         data-code="{{ strtolower($reg->ticket_code) }}"
-                        data-status="{{ $reg->status }}">
+                        data-status="{{ $reg->status }}"
+                        data-is-group="{{ $reg->group_code ? 'true' : 'false' }}"
+                        data-gender="{{ strtolower($reg->gender ?? 'unspecified') }}"
+                        data-age="{{ $reg->birthday ? $reg->age : 0 }}"
+                        data-timestamp="{{ $reg->created_at ? $reg->created_at->timestamp : 0 }}">
                         
                         <!-- Top Header Row: Profile Avatar, Name, and Status Badge -->
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex items-center gap-3">
                                 <!-- Selection Checkbox & Profile Avatar -->
                                 <div class="flex items-center gap-2">
-                                    <input type="checkbox" class="applicant-checkbox w-4.5 h-4.5 rounded border-slate-300 dark:border-slate-700/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-900 transition duration-150" data-id="{{ $reg->id }}">
+                                    <input type="checkbox" class="applicant-checkbox w-4.5 h-4.5 rounded border-slate-300 dark:border-slate-800/80 text-purple-600 dark:text-purple-400 focus:ring-purple-500/20 dark:focus:ring-purple-500/10 bg-white dark:bg-slate-950 transition duration-150 cursor-pointer" data-id="{{ $reg->id }}">
                                     
                                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
                                         {{ substr($reg->name, 0, 2) }}

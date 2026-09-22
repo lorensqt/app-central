@@ -86,40 +86,45 @@
         <div class="space-y-6">
             <!-- Dispatch Card -->
             <div class="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-sm text-left space-y-6 font-sans">
-                <!-- Decorative background elements -->
-                <div class="absolute -top-10 -right-10 w-24 h-24 bg-purple-500/10 dark:bg-purple-400/5 rounded-full blur-2xl pointer-events-none"></div>
-                <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-2xl pointer-events-none"></div>
+                <!-- Decorative background elements with rich glowing accents -->
+                <div class="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-tr from-purple-500/10 to-indigo-500/10 dark:from-purple-400/5 dark:to-indigo-400/5 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-bl from-indigo-500/10 to-purple-500/10 dark:from-indigo-400/5 dark:to-purple-400/5 rounded-full blur-2xl pointer-events-none"></div>
 
                 <div class="relative flex flex-col gap-4">
                     <!-- Status Header / Badge Block -->
                     <div class="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-                        <h4 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">Broadcast Survey</h4>
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm">
+                                <i class="fa-solid fa-bullhorn"></i>
+                            </span>
+                            <h4 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">Broadcast Survey</h4>
+                        </div>
                         
                         @if(!$event->survey_enabled)
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shadow-sm">
+                                <i class="fa-solid fa-circle-pause text-slate-400"></i>
                                 Inactive
                             </span>
                         @elseif(empty($surveyQuestions))
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider shadow-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500 animate-pulse"></i>
                                 No Questions
                             </span>
                         @elseif($event->survey_sent)
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider shadow-sm">
+                                <i class="fa-solid fa-paper-plane text-blue-500"></i>
                                 Sent
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider shadow-sm">
+                                <i class="fa-solid fa-circle-check text-emerald-500 animate-pulse"></i>
                                 Ready
                             </span>
                         @endif
                     </div>
 
                     <p class="text-xs text-slate-550 dark:text-slate-400 leading-relaxed">
-                        Ready to collect feedback? Once your questions are saved, click below to securely blast the survey emails to all approved invitees.
+                        Ready to collect feedback? Once your questions are saved, trigger the broadcast below to securely blast personalized survey emails to all approved invitees.
                     </p>
                 </div>
 
@@ -130,72 +135,62 @@
                 @endphp
                 <div class="p-4 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-100/80 dark:border-slate-800/80 space-y-3">
                     <div class="flex items-center justify-between text-xs font-semibold">
-                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
+                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-purple-500 w-4 text-center"></i>
                             Approved Recipients
                         </span>
-                        <span class="text-slate-800 dark:text-slate-200 font-bold font-mono">{{ $approvedCount }}</span>
+                        <span class="text-slate-800 dark:text-slate-200 font-bold font-mono bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-2 py-0.5 rounded-lg text-[11px]">{{ $approvedCount }}</span>
                     </div>
                     <div class="h-px bg-slate-100 dark:bg-slate-800/60"></div>
                     <div class="flex items-center justify-between text-xs font-semibold">
-                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-purple-500 w-4 text-center"></i>
                             Configured Questions
                         </span>
-                        <span class="text-slate-800 dark:text-slate-200 font-bold font-mono">{{ $questionsCount }}</span>
+                        <span class="text-slate-800 dark:text-slate-200 font-bold font-mono bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-2 py-0.5 rounded-lg text-[11px]">{{ $questionsCount }}</span>
                     </div>
                     <div class="h-px bg-slate-100 dark:bg-slate-800/60"></div>
                     <div class="flex items-center justify-between text-xs font-semibold">
-                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
+                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-toggle-on text-purple-500 w-4 text-center"></i>
                             Integration Toggle
                         </span>
-                        <span class="font-bold uppercase tracking-wider text-[10px] {{ $event->survey_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500' }}">
+                        <span class="font-extrabold uppercase tracking-wider text-[10px] {{ $event->survey_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500' }}">
                             {{ $event->survey_enabled ? 'Enabled' : 'Disabled' }}
                         </span>
                     </div>
                 </div>
 
                 @if($event->survey_sent)
-                    <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-400 text-xs flex gap-3 shadow-inner">
-                        <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
+                    <div class="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-400 text-xs flex gap-3 shadow-sm">
+                        <i class="fa-solid fa-paper-plane text-amber-500 shrink-0 text-base mt-0.5"></i>
                         <div class="space-y-1 text-left">
                             <p class="font-bold">Surveys dispatched!</p>
-                            <p class="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">Feedback request emails were already broadcasted. Initiating a new dispatch will notify any recently approved invitees and re-request responses.</p>
+                            <p class="text-[10px] leading-relaxed text-slate-555 dark:text-slate-400">Feedback request emails were already broadcasted. Initiating a new dispatch will notify any recently approved invitees and re-request responses.</p>
                         </div>
                     </div>
                 @endif
 
-                <form action="{{ route('committees.events.broadcast_surveys', $event) }}" method="POST" class="pt-2">
+                <form id="broadcast-surveys-form" action="{{ route('committees.events.broadcast_surveys', $event) }}" method="POST" class="pt-2">
                     @csrf
-                    <button type="submit" id="broadcast-surveys-btn" 
+                    <button type="button" id="broadcast-surveys-btn" onclick="openBroadcastConfirmationModal()"
                         {{ !$event->survey_enabled || empty($surveyQuestions) ? 'disabled' : '' }}
-                        class="w-full inline-flex items-center justify-center gap-2 text-xs font-bold py-3.5 px-5 rounded-2xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] focus:scale-[0.98] text-white disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-550 disabled:border-transparent transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-purple-500/25 disabled:shadow-none focus:outline-none cursor-pointer disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
+                        class="w-full inline-flex items-center justify-center gap-2 text-xs font-bold py-3.5 px-5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-700 active:scale-[0.98] focus:scale-[0.98] text-white disabled:from-slate-100 disabled:to-slate-100 dark:disabled:from-slate-800 dark:disabled:to-slate-800 disabled:text-slate-400 dark:disabled:text-slate-550 disabled:border-transparent transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-purple-500/25 disabled:shadow-none focus:outline-none cursor-pointer disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bullhorn text-xs"></i>
                         Broadcast Survey Emails
                     </button>
                 </form>
             </div>
 
             <!-- Stats/Responses Card -->
-            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-sm text-left space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-sm text-left space-y-5">
                 <div class="flex items-center justify-between">
-                    <h4 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">Response Progress</h4>
-                    <span class="inline-flex items-center justify-center p-2 rounded-xl bg-purple-500/15 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/>
-                        </svg>
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 text-sm animate-pulse">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </span>
+                        <h4 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">Response Progress</h4>
+                    </div>
                 </div>
                 <div class="space-y-4 pt-1">
                     @php
@@ -222,6 +217,14 @@
                             <span class="text-[10px] font-bold text-purple-600 dark:text-purple-400 font-mono tracking-wide bg-purple-500/10 dark:bg-purple-400/10 px-2 py-0.5 rounded-full">{{ $responseRate }}% Submitted</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <button type="button" onclick="openSurveyAudienceModal()"
+                        class="w-full inline-flex items-center justify-center gap-2 text-xs font-bold py-3 px-5 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800/80 transition-all duration-200 shadow-xs active:scale-[0.98]">
+                        <i class="fa-solid fa-users-viewfinder text-purple-500 text-xs"></i>
+                        View Completion Roster
+                    </button>
                 </div>
             </div>
         </div>
@@ -288,11 +291,11 @@
                 <div class="overflow-x-auto custom-scrollbar">
                     <table class="w-full text-left text-sm border-collapse min-w-[700px]">
                         <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                                <th class="py-3.5 px-6 text-left">Attendee Details</th>
-                                <th class="py-3.5 px-6 text-left">Answers Summary</th>
-                                <th class="py-3.5 px-6 text-center w-44">Submitted Date</th>
-                                <th class="py-3.5 px-6 text-right w-40">Actions</th>
+                            <tr class="bg-slate-50/50 dark:bg-slate-950/30 border-b border-slate-100 dark:border-slate-800/40 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                <th class="py-3 px-6 text-left">Attendee Details</th>
+                                <th class="py-3 px-6 text-left">Answers Summary</th>
+                                <th class="py-3 px-6 text-center w-48">Submitted Date</th>
+                                <th class="py-3 px-6 text-right w-52">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="survey-feedbacks-tbody" class="divide-y divide-slate-150 dark:divide-slate-800/50">
@@ -306,29 +309,45 @@
                                     data-email="{{ strtolower($registration->email) }}"
                                     data-timestamp="{{ $registration->updated_at->timestamp }}"
                                     onclick="openFeedbackDetailsModal('{{ addslashes($registration->name) }}', '{{ addslashes($registration->email) }}', '{{ $registration->updated_at->format('M j, Y • g:i A') }}', {{ $responsesJson }})">
-                                    <td class="py-4 px-6 text-left align-middle">
-                                        <div class="font-bold text-slate-800 dark:text-slate-200">{{ $registration->name }}</div>
-                                        <div class="text-xs text-slate-400 font-mono mt-0.5">{{ $registration->email }}</div>
+                                    <td class="py-3 px-6 text-left align-middle">
+                                        <div class="font-bold text-slate-800 dark:text-slate-200 text-xs leading-normal">{{ $registration->name }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono mt-0.5 leading-none">{{ $registration->email }}</div>
                                     </td>
-                                    <td class="py-4 px-6 text-left align-middle">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 dark:bg-purple-400/10 text-xs font-bold text-purple-600 dark:text-purple-400">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {{ $answersCount }} Answers Submitted
+                                    <td class="py-3 px-6 text-left align-middle">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-350">
+                                            <i class="fa-solid fa-clipboard-question text-purple-500 text-xs shrink-0"></i>
+                                            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ $answersCount }}</span> Answers
                                         </span>
                                     </td>
-                                    <td class="py-4 px-6 text-center text-xs text-slate-500 font-mono align-middle" data-sort-val="{{ $registration->updated_at->timestamp }}">
+                                    <td class="py-3 px-6 text-center text-xs text-slate-500 font-mono align-middle" data-sort-val="{{ $registration->updated_at->timestamp }}">
                                         {{ $registration->updated_at->format('M j, Y • g:i A') }}
                                     </td>
-                                    <td class="py-4 px-6 text-right align-middle">
-                                        <button type="button" class="inline-flex items-center gap-1.5 text-xs font-extrabold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition duration-150">
-                                            <span>View Response</span>
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
+                                    <td class="py-3 px-6 text-right align-middle">
+                                        <div class="flex items-center justify-end gap-2" onclick="event.stopPropagation();">
+                                            <!-- View Response Icon-Button -->
+                                            <button type="button" 
+                                                onclick="openFeedbackDetailsModal('{{ addslashes($registration->name) }}', '{{ addslashes($registration->email) }}', '{{ $registration->updated_at->format('M j, Y • g:i A') }}', {{ $responsesJson }})"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 bg-slate-50 hover:bg-purple-500/10 dark:bg-slate-950 dark:hover:bg-purple-400/10 border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-900/40 transition duration-150 active:scale-95 shadow-xs"
+                                                title="View response details">
+                                                <i class="fa-solid fa-eye text-[10px]"></i>
+                                                <span>View</span>
+                                            </button>
+
+                                            <!-- Delete Response Form -->
+                                            <form action="{{ route('committees.registrations.delete_survey_response', $registration) }}" method="POST" class="inline"
+                                                data-confirm="Are you sure you want to clear the survey responses submitted by {{ addslashes($registration->name) }}?"
+                                                data-confirm-sub="This action will permanently delete their answers and reset their feedback status to pending, allowing them to fill out the survey again."
+                                                data-confirm-title="Clear Survey Responses">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:text-white bg-rose-50 hover:bg-rose-600 dark:bg-rose-950/20 dark:hover:bg-rose-500 border border-rose-100 dark:border-rose-900/30 hover:border-rose-600 dark:hover:border-rose-500 transition duration-150 active:scale-95 shadow-xs"
+                                                    title="Clear response feedback">
+                                                    <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -342,12 +361,13 @@
 
 <!-- DYNAMIC DETAILS MODAL -->
 <div id="feedback-details-modal" 
-    class="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/90 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0">
+    class="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/90 backdrop-blur-[6px] z-[160] hidden items-center justify-center p-4 transition-all duration-300 opacity-0"
+    style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important;">
     <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
         id="feedback-details-modal-content">
         
         <!-- Modal Header -->
-        <div class="relative overflow-hidden px-6 py-5 sm:px-8 border-b border-slate-100 dark:border-slate-800/60 shrink-0 bg-gradient-to-r from-purple-50/50 via-transparent to-indigo-50/30 dark:from-purple-950/10 dark:to-transparent">
+        <div class="relative overflow-hidden px-6 py-5 sm:px-8 border-b border-slate-100 dark:border-slate-800/60 shrink-0 bg-white dark:bg-slate-900 bg-gradient-to-r from-purple-50/50 via-transparent to-indigo-50/30 dark:from-purple-950/10 dark:to-transparent">
             <!-- Decorative blur background blobs -->
             <div class="absolute -top-12 -left-12 w-24 h-24 bg-purple-400/10 rounded-full blur-2xl pointer-events-none"></div>
             
@@ -385,6 +405,199 @@
         <div class="flex items-center justify-end px-6 py-4 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-slate-50/50 dark:bg-slate-900/40">
             <button type="button" onclick="closeFeedbackDetailsModal()"
                 class="text-xs font-bold py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98] shadow-sm">
+                Close View
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- PREMIUM BACKDROP MODAL: BROADCAST CONFIRMATION -->
+<div id="broadcast-confirmation-modal"
+    class="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/90 backdrop-blur-[6px] z-[160] hidden items-center justify-center p-4 transition-all duration-300 opacity-0"
+    style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important;">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 max-w-md w-full shadow-2xl flex flex-col transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
+        id="broadcast-confirmation-modal-content">
+        
+        <!-- Premium Header Panel with Soft Warm Warning Gradient -->
+        <div class="relative overflow-hidden px-6 py-5 sm:px-8 border-b border-slate-100 dark:border-slate-800/60 shrink-0 bg-gradient-to-r from-amber-50/50 via-transparent to-purple-50/30 dark:from-amber-950/10 dark:to-transparent">
+            <!-- Decorative blur balls -->
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-purple-400/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="relative flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-lg">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-tight tracking-tight">
+                            Confirm Broadcast
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            High-volume notification dispatch
+                        </p>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="closeBroadcastConfirmationModal()"
+                    class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Confirmation Warning Body -->
+        <div class="p-6 sm:p-8 space-y-4 text-left">
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                You are about to trigger an email broadcast for <strong class="text-slate-900 dark:text-white font-bold text-sm">{{ $approvedCount }}</strong> approved attendees of this assembly.
+            </p>
+            
+            <div class="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/10 text-amber-805 dark:text-amber-400 text-xs flex gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-base shrink-0 text-amber-500 mt-0.5"></i>
+                <div class="space-y-1">
+                    <p class="font-bold text-slate-900 dark:text-white">Important Notice</p>
+                    <p class="text-[11px] leading-relaxed text-slate-550 dark:text-slate-400 opacity-90">
+                        This action will immediately dispatch high-volume, personalized feedback links to their mailboxes. Please make sure your questions are finalized.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Action Bar -->
+        <div class="px-6 py-5 sm:px-8 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-end gap-3 shrink-0">
+            <button type="button" onclick="closeBroadcastConfirmationModal()"
+                class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 bg-white dark:bg-slate-900 transition-all duration-150 active:scale-[0.98]">
+                Cancel
+            </button>
+            <button type="button" onclick="submitBroadcastSurveys()"
+                class="inline-flex items-center gap-2 text-xs font-bold py-3 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition-all duration-150 shadow-md hover:shadow-lg hover:shadow-purple-500/20 active:scale-[0.98] focus:outline-none">
+                <i class="fa-solid fa-paper-plane"></i>
+                Yes, Dispatch Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- PREMIUM BACKDROP MODAL: SURVEY COMPLETION ROSTER -->
+<div id="survey-audience-modal"
+    class="fixed inset-0 bg-slate-900/70 dark:bg-slate-950/90 backdrop-blur-[6px] z-[160] hidden items-center justify-center p-4 transition-all duration-300 opacity-0"
+    style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important;">
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 max-w-lg w-full shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300 transform scale-95 opacity-0 overflow-hidden"
+        id="survey-audience-modal-content">
+        
+        <!-- Premium Header Panel -->
+        <div class="relative overflow-hidden px-6 py-5 sm:px-8 border-b border-slate-100 dark:border-slate-800/60 shrink-0 bg-gradient-to-r from-purple-50/50 via-transparent to-indigo-50/30 dark:from-purple-950/10 dark:to-transparent">
+            <!-- Decorative blur balls -->
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-purple-400/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="relative flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 text-lg">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-lg leading-tight tracking-tight">
+                            Completion Roster
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Track survey response completion in real-time
+                        </p>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="closeSurveyAudienceModal()"
+                    class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Controls: Search & Tabs -->
+        <div class="p-5 sm:px-8 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20 space-y-4">
+            <!-- Search Input -->
+            <div class="relative w-full bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-500/10 transition duration-150 shadow-sm">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-450">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </span>
+                <input type="text" id="roster-search-input" onkeyup="filterRosterList()"
+                    placeholder="Search attendee or email..."
+                    class="w-full pl-9 pr-4 py-2.5 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
+            </div>
+
+            <!-- Tab Pills -->
+            <div class="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl select-none text-[11px] font-bold">
+                <button type="button" onclick="setRosterTab('all')" id="roster-tab-all"
+                    class="flex-1 text-center py-2 px-3 rounded-lg text-purple-600 dark:text-purple-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-150">
+                    All ({{ $approvedCount }})
+                </button>
+                @php
+                    $submittedCount = $event->registrations->where('status', 'approved')->whereNotNull('survey_responses')->count();
+                    $pendingRosterCount = $approvedCount - $submittedCount;
+                @endphp
+                <button type="button" onclick="setRosterTab('submitted')" id="roster-tab-submitted"
+                    class="flex-1 text-center py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all duration-150">
+                    Submitted ({{ $submittedCount }})
+                </button>
+                <button type="button" onclick="setRosterTab('pending')" id="roster-tab-pending"
+                    class="flex-1 text-center py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all duration-150">
+                    Pending ({{ $pendingRosterCount }})
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable List of Approved Attendees -->
+        <div class="flex-grow overflow-y-auto custom-scrollbar p-6 sm:px-8 space-y-3 max-h-[40vh] bg-slate-50/20 dark:bg-slate-950/5">
+            <div id="roster-empty-state" class="hidden py-8 text-center text-slate-400 dark:text-slate-500 text-xs font-semibold">
+                No matching attendees found.
+            </div>
+
+            <div id="roster-list-container" class="space-y-2.5">
+                @php
+                    $approvedAttendees = $event->registrations->where('status', 'approved');
+                @endphp
+                @foreach($approvedAttendees as $attendee)
+                    @php
+                        $hasSubmitted = !empty($attendee->survey_responses);
+                        $initials = strtoupper(substr($attendee->name, 0, 1));
+                    @endphp
+                    <div class="roster-item p-3.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl flex items-center justify-between gap-4 transition duration-150 hover:shadow-xs"
+                        data-name="{{ strtolower($attendee->name) }}"
+                        data-email="{{ strtolower($attendee->email) }}"
+                        data-status="{{ $hasSubmitted ? 'submitted' : 'pending' }}">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <!-- High-end Initials Avatar -->
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black select-none shrink-0 bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                {{ $initials }}
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="font-bold text-slate-800 dark:text-slate-200 text-xs truncate leading-tight">{{ $attendee->name }}</h4>
+                                <p class="text-[10px] text-slate-400 font-mono truncate mt-0.5">{{ $attendee->email }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div class="shrink-0">
+                            @if($hasSubmitted)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider shadow-inner">
+                                    <i class="fa-solid fa-circle-check text-[10px]"></i>
+                                    Submitted
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider shadow-inner">
+                                    <i class="fa-solid fa-circle-notch text-[10px] animate-spin"></i>
+                                    Pending
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-5 sm:px-8 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-end shrink-0">
+            <button type="button" onclick="closeSurveyAudienceModal()"
+                class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 bg-white dark:bg-slate-900 transition-all duration-150 active:scale-[0.98] shadow-sm">
                 Close View
             </button>
         </div>
@@ -607,6 +820,127 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }, 300);
+    }
+
+    // Broadcast Survey Confirmation Modal Controllers
+    function openBroadcastConfirmationModal() {
+        const modal = document.getElementById('broadcast-confirmation-modal');
+        const content = document.getElementById('broadcast-confirmation-modal-content');
+        if (!modal || !content) return;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+
+    function closeBroadcastConfirmationModal() {
+        const modal = document.getElementById('broadcast-confirmation-modal');
+        const content = document.getElementById('broadcast-confirmation-modal-content');
+        if (!modal || !content) return;
+        
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+
+    function submitBroadcastSurveys() {
+        const form = document.getElementById('broadcast-surveys-form');
+        const confirmBtn = document.querySelector('#broadcast-confirmation-modal-content button[onclick="submitBroadcastSurveys()"]');
+        if (!form) return;
+        
+        // Show high-end premium loading feedback on click
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Dispatching...';
+        }
+        
+        form.submit();
+    }
+
+    // Survey Completion Roster Modal Controllers
+    let currentRosterTab = 'all';
+
+    function openSurveyAudienceModal() {
+        const modal = document.getElementById('survey-audience-modal');
+        const content = document.getElementById('survey-audience-modal-content');
+        if (!modal || !content) return;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+
+    function closeSurveyAudienceModal() {
+        const modal = document.getElementById('survey-audience-modal');
+        const content = document.getElementById('survey-audience-modal-content');
+        if (!modal || !content) return;
+        
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+
+    function setRosterTab(tab) {
+        currentRosterTab = tab;
+        
+        const tabs = ['all', 'submitted', 'pending'];
+        tabs.forEach(t => {
+            const btn = document.getElementById('roster-tab-' + t);
+            if (btn) {
+                if (t === tab) {
+                    btn.className = "flex-1 text-center py-2 px-3 rounded-lg text-purple-600 dark:text-purple-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-150";
+                } else {
+                    btn.className = "flex-1 text-center py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:white transition-all duration-150";
+                }
+            }
+        });
+        
+        filterRosterList();
+    }
+
+    function filterRosterList() {
+        const query = document.getElementById('roster-search-input').value.trim().toLowerCase();
+        const items = document.querySelectorAll('.roster-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            const name = item.getAttribute('data-name') || '';
+            const email = item.getAttribute('data-email') || '';
+            const status = item.getAttribute('data-status') || '';
+            
+            const matchesSearch = name.includes(query) || email.includes(query);
+            const matchesTab = currentRosterTab === 'all' || status === currentRosterTab;
+            
+            if (matchesSearch && matchesTab) {
+                item.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+        
+        const emptyState = document.getElementById('roster-empty-state');
+        if (visibleCount === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+        }
     }
 
     // Client-side real-time query searching

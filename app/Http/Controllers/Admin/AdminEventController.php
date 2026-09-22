@@ -392,6 +392,34 @@ class AdminEventController extends Controller
     }
 
     /**
+     * Update an attendee's registration details (Admin action).
+     */
+    public function updateRegistration(Request $request, EventRegistration $registration)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'ticket_code' => 'nullable|string|max:100',
+            'gender' => 'nullable|string|max:50',
+            'birthday' => 'nullable|date',
+            'division' => 'nullable|string|max:100',
+            'custom_fields' => 'nullable|array',
+        ]);
+
+        $registration->update($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Attendee registration updated successfully.',
+                'registration' => $registration->fresh(),
+            ]);
+        }
+
+        return redirect()->back()->with('status', 'Attendee registration updated successfully.');
+    }
+
+    /**
      * Delete/Destroy an attendee registration request.
      */
     public function destroyRegistration(EventRegistration $registration)
@@ -493,14 +521,14 @@ class AdminEventController extends Controller
     public function broadcastSurveys(Request $request, Event $event)
     {
         if (!$event->survey_enabled || empty($event->survey_questions)) {
-            return redirect()->back()->with('error', 'Post-event survey must be enabled and have questions before broadcasting.');
+            return redirect()->route('committees.events.manage', ['event' => $event, 'tab' => 'survey'])->with('error', 'Post-event survey must be enabled and have questions before broadcasting.');
         }
 
         // Get approved attendees (we can send to those whose status is 'approved')
         $attendees = $event->registrations()->where('status', 'approved')->get();
 
         if ($attendees->isEmpty()) {
-            return redirect()->back()->with('error', 'No approved attendees found to send the survey to.');
+            return redirect()->route('committees.events.manage', ['event' => $event, 'tab' => 'survey'])->with('error', 'No approved attendees found to send the survey to.');
         }
 
         $sentCount = 0;
@@ -523,6 +551,25 @@ class AdminEventController extends Controller
             $message .= " However, {$failedCount} emails failed to send. Check SMTP logs.";
         }
 
-        return redirect()->back()->with('status', $message);
+        return redirect()->route('committees.events.manage', ['event' => $event, 'tab' => 'survey'])->with('status', $message);
+    }
+
+    /**
+     * Delete/Clear a survey response for an attendee (admin action).
+     */
+    public function deleteSurveyResponse(Request $request, EventRegistration $registration)
+    {
+        $registration->update(['survey_responses' => null]);
+
+        $message = "Survey feedback response for {$registration->name} cleared successfully.";
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->route('committees.events.manage', ['event' => $registration->event_id, 'tab' => 'survey'])->with('status', $message);
     }
 }

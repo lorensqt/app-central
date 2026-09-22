@@ -28,6 +28,7 @@ class EventController extends Controller
             'email' => 'required|email|max:255',
             'gender' => 'required|string|max:255',
             'birthday' => 'required|date|before_or_equal:today',
+            'division' => 'required|string|max:255',
         ];
 
         if ($event->allow_group_registration) {
@@ -36,6 +37,7 @@ class EventController extends Controller
             $rules['companions.*.email'] = 'nullable|email|max:255';
             $rules['companions.*.gender'] = 'required|string|max:255';
             $rules['companions.*.birthday'] = 'required|date|before_or_equal:today';
+            $rules['companions.*.division'] = 'nullable|string|max:255';
         }
 
         // Support both old and new formats
@@ -160,6 +162,7 @@ class EventController extends Controller
                 'email' => $email,
                 'gender' => $validated['gender'] ?? null,
                 'birthday' => $validated['birthday'] ?? null,
+                'division' => $validated['division'] ?? null,
                 'status' => 'pending',
                 'group_code' => $groupCode,
                 'is_group_primary' => $isGroup,
@@ -187,6 +190,7 @@ class EventController extends Controller
                         'email' => $companionEmail,
                         'gender' => $companion['gender'] ?? null,
                         'birthday' => $companion['birthday'] ?? null,
+                        'division' => $companion['division'] ?? null,
                         'status' => 'pending',
                         'group_code' => $groupCode,
                         'is_group_primary' => false,
