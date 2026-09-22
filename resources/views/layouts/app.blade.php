@@ -46,6 +46,20 @@
             box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1) !important;
             border-color: #9333ea !important;
         }
+        /* Smooth Icon Rotation for Theme Toggle */
+        .theme-icon-spin {
+            animation: theme-spin 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes theme-spin {
+            0% {
+                transform: rotate(0deg) scale(0.7);
+                opacity: 0.5;
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+                opacity: 1;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('styles')
@@ -75,6 +89,11 @@
                     <!-- Right: Premium Unified Profile Dropdown -->
                     <div class="flex items-center">
                         @auth
+                            <!-- Elegant Theme Switcher Button -->
+                            <button type="button" id="theme-toggle-navbar" class="mr-3 flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 focus:outline-none select-none" title="Switch Theme">
+                                <i id="theme-icon-navbar" class="fa-solid text-lg transition-all duration-300"></i>
+                            </button>
+
                             <div class="relative inline-block text-left" id="profile-dropdown-container">
                                 <!-- Trigger Button -->
                                 <button type="button" id="profile-dropdown-trigger" class="flex items-center gap-2.5 p-1.5 pl-3 pr-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 transition duration-150 focus:outline-none select-none">
@@ -142,16 +161,7 @@
                                         <!-- Integrated Theme Toggle Menu Item -->
                                         <button type="button" id="theme-toggle-dropdown" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white transition duration-150">
                                             <span class="flex items-center gap-2.5">
-                                                <span id="theme-icon-container" class="text-slate-400 dark:text-slate-500">
-                                                    <!-- Moon Icon (visible in light mode) -->
-                                                    <svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                                    </svg>
-                                                    <!-- Sun Icon (visible in dark mode) -->
-                                                    <svg class="w-4 h-4 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                    </svg>
-                                                </span>
+                                                <i id="theme-icon-dropdown" class="fa-solid text-sm transition-all duration-300"></i>
                                                 <span id="theme-toggle-text-dropdown">Switch Theme</span>
                                             </span>
                                             <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 py-0.5 px-1.5 rounded-md uppercase tracking-wider font-bold">Theme</span>
@@ -356,30 +366,65 @@
                 });
             }
 
-            // Dropdown Integrated Theme Toggle Logic
+            // Theme Toggle Logic for both Navbar and Dropdown
+            const themeToggleBtnNavbar = document.getElementById('theme-toggle-navbar');
             const themeToggleBtnDropdown = document.getElementById('theme-toggle-dropdown');
             const themeToggleTextDropdown = document.getElementById('theme-toggle-text-dropdown');
 
-            const updateThemeText = () => {
+            const syncThemeIcons = () => {
+                const navbarIcon = document.getElementById('theme-icon-navbar');
+                const dropdownIcon = document.getElementById('theme-icon-dropdown');
+                const isDark = document.documentElement.classList.contains('dark');
+
+                if (navbarIcon) {
+                    navbarIcon.className = isDark 
+                        ? 'fa-solid fa-sun text-lg text-amber-400 transition-all duration-300' 
+                        : 'fa-solid fa-moon text-lg text-slate-700 transition-all duration-300';
+                }
+
+                if (dropdownIcon) {
+                    dropdownIcon.className = isDark 
+                        ? 'fa-solid fa-sun text-sm text-amber-400 transition-all duration-300' 
+                        : 'fa-solid fa-moon text-sm text-slate-400 dark:text-slate-500 transition-all duration-300';
+                }
+
                 if (themeToggleTextDropdown) {
-                    themeToggleTextDropdown.textContent = document.documentElement.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+                    themeToggleTextDropdown.textContent = isDark ? 'Light Mode' : 'Dark Mode';
                 }
             };
 
-            // Initialize dropdown theme label
-            updateThemeText();
+            const toggleTheme = () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+                
+                syncThemeIcons();
+
+                // Trigger smooth 360-degree rotation animation
+                const navbarIcon = document.getElementById('theme-icon-navbar');
+                const dropdownIcon = document.getElementById('theme-icon-dropdown');
+                [navbarIcon, dropdownIcon].forEach(icon => {
+                    if (icon) {
+                        icon.classList.remove('theme-icon-spin');
+                        void icon.offsetWidth; // Force reflow to restart keyframe animation
+                        icon.classList.add('theme-icon-spin');
+                    }
+                });
+            };
+
+            // Initialize theme icons and text labels
+            syncThemeIcons();
+
+            if (themeToggleBtnNavbar) {
+                themeToggleBtnNavbar.addEventListener('click', toggleTheme);
+            }
 
             if (themeToggleBtnDropdown) {
-                themeToggleBtnDropdown.addEventListener('click', function() {
-                    if (document.documentElement.classList.contains('dark')) {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('theme', 'light');
-                    } else {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('theme', 'dark');
-                    }
-                    updateThemeText();
-                });
+                themeToggleBtnDropdown.addEventListener('click', toggleTheme);
             }
         });
     </script>

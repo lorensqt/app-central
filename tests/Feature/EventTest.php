@@ -53,6 +53,7 @@ class EventTest extends TestCase
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
             'birthday' => '1995-10-24',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $response->assertRedirect();
@@ -64,6 +65,7 @@ class EventTest extends TestCase
             'email' => 'john.guest@example.com',
             'status' => 'pending',
             'birthday' => '1995-10-24 00:00:00',
+            'division' => 'OPEC Visayas Division',
         ]);
     }
 
@@ -87,6 +89,7 @@ class EventTest extends TestCase
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
             'birthday' => '1995-10-24',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         // Attempt duplicate registration
@@ -95,6 +98,7 @@ class EventTest extends TestCase
             'email' => 'john.guest@example.com',
             'gender' => 'Male',
             'birthday' => '1995-10-24',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $response->assertRedirect();
@@ -212,6 +216,7 @@ class EventTest extends TestCase
             'email' => 'john.venue@example.com',
             'gender' => 'Male',
             'birthday' => '1995-10-24',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $response->assertRedirect();
@@ -225,6 +230,7 @@ class EventTest extends TestCase
             'status' => 'pending',
             'ticket_code' => null,
             'birthday' => '1995-10-24 00:00:00',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $reg = EventRegistration::where('event_id', $event->id)->where('email', 'john.venue@example.com')->first();
@@ -256,6 +262,7 @@ class EventTest extends TestCase
             'email' => 'primary@example.com',
             'gender' => 'Male',
             'birthday' => '1990-10-12',
+            'division' => 'OPEC Visayas Division',
             'companions' => [
                 [
                     'name' => 'Companion Jane',
@@ -282,6 +289,7 @@ class EventTest extends TestCase
             'email' => 'primary@example.com',
             'status' => 'pending',
             'is_group_primary' => true,
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $primaryReg = EventRegistration::where('event_id', $event->id)->where('email', 'primary@example.com')->first();
@@ -331,6 +339,7 @@ class EventTest extends TestCase
             'email' => 'parent@example.com',
             'gender' => 'Male',
             'birthday' => '1985-05-10',
+            'division' => 'OPEC Visayas Division',
             'companions' => [
                 [
                     'name' => 'Jane Kid',
@@ -382,6 +391,7 @@ class EventTest extends TestCase
             'email' => 'late@example.com',
             'gender' => 'Female',
             'birthday' => '1995-10-24',
+            'division' => 'OPEC Visayas Division',
         ]);
 
         $response->assertRedirect();
