@@ -573,7 +573,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
                                     </span>
-                                    <input type="text" name="division" id="division" required value="{{ old('division') }}" placeholder="e.g. Youth / Sector 1" 
+                                    <input type="text" name="division" id="division" required value="{{ old('division') }}" placeholder="e.g. Technology Group / VPO / Your Department" 
                                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
                                 </div>
                             </div>
