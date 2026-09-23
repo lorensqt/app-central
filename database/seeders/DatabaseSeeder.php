@@ -19,8 +19,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Default Admin User
+        $superAdminEmail = config('app.super_admin_email') ?: 'castillojohnlaurence0@gmail.com';
         $admin = User::updateOrCreate(
-            ['email' => 'castillojohnlaurence0@gmail.com'],
+            ['email' => $superAdminEmail],
             [
                 'name' => 'John Laurence Castillo',
                 'password' => Hash::make('password'),

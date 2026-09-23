@@ -72,7 +72,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if ($user->email === 'castillojohnlaurence0@gmail.com' && strtolower($request->input('email')) !== 'castillojohnlaurence0@gmail.com') {
+        $superAdminEmail = config('app.super_admin_email');
+        if ($superAdminEmail && $user->email === $superAdminEmail && strtolower($request->input('email')) !== $superAdminEmail) {
             return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The primary super administrator email address cannot be changed.');
         }
 
@@ -96,7 +97,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if ($user->email === 'castillojohnlaurence0@gmail.com') {
+        $superAdminEmail = config('app.super_admin_email');
+        if ($superAdminEmail && $user->email === $superAdminEmail) {
             return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'The primary super administrator user cannot be deleted.');
         }
 

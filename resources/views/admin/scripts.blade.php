@@ -45,7 +45,8 @@
         document.getElementById('edit_user_title').value = user.title_id || '';
 
         const emailInput = document.getElementById('edit_user_email');
-        if (user.email === 'castillojohnlaurence0@gmail.com') {
+        const superAdminEmail = "{{ config('app.super_admin_email') }}";
+        if (superAdminEmail && user.email === superAdminEmail) {
             emailInput.setAttribute('readonly', 'true');
             emailInput.classList.add('bg-slate-50', 'dark:bg-slate-950', 'text-slate-400', 'dark:text-slate-500');
         } else {

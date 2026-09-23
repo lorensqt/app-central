@@ -30,7 +30,8 @@ class GoogleController extends Controller
         }
 
         $email = $googleUser->getEmail();
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         $isMlhuillier = str_ends_with(strtolower($email), '@mlhuillier.com');
 
         // Check if they are a public voter

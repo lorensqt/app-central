@@ -449,7 +449,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
@@ -487,7 +488,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
@@ -532,7 +534,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
         }
@@ -574,7 +577,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             return response()->json([
                 'success' => false,
@@ -693,7 +697,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required.');
         }
@@ -756,7 +761,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required.');
         }
@@ -854,7 +860,8 @@ class ElectionController extends Controller
         }
 
         $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $isSuperAdmin = ($email === 'castillojohnlaurence0@gmail.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         if (!$isMlhuillier && !$isSuperAdmin) {
             abort(403, 'Access Denied: An authorized email domain is required.');
         }

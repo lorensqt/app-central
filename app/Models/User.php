@@ -66,6 +66,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return $this->email === 'castillojohnlaurence0@gmail.com' || (bool) $this->is_admin;
+        $superAdminEmail = config('app.super_admin_email');
+        return ($superAdminEmail && $this->email === $superAdminEmail) || (bool) $this->is_admin;
     }
 }

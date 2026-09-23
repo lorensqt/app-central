@@ -31,8 +31,8 @@ Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallb
 
 // Public Shareable Event Landing & RSVP Routes (Guest Accessible)
 Route::get('/events/{event}/{slug?}', [EventController::class, 'showPublic'])->name('events.public_show');
-Route::post('/events/{event}/register', [EventController::class, 'registerPublic'])->name('events.public_register');
-Route::post('/events/{event}/request-access', [EventController::class, 'requestAccessLink'])->name('events.request_access');
+Route::post('/events/{event}/register', [EventController::class, 'registerPublic'])->middleware('throttle:event-registration')->name('events.public_register');
+Route::post('/events/{event}/request-access', [EventController::class, 'requestAccessLink'])->middleware('throttle:request-access')->name('events.request_access');
 
 // Secure Signed Tickets & Luma-Style Cancellation Gateway
 Route::get('/rsvp/{registration}/manage', [EventController::class, 'showTicket'])->name('events.manage_ticket');
@@ -40,20 +40,20 @@ Route::post('/rsvp/{registration}/cancel', [EventController::class, 'cancelRegis
 
 // Mobile Self Check-In Portal
 Route::get('/events/{event}/check-in', [EventController::class, 'showCheckIn'])->name('events.check_in');
-Route::post('/events/{event}/check-in', [EventController::class, 'submitCheckIn'])->name('events.submit_check_in');
+Route::post('/events/{event}/check-in', [EventController::class, 'submitCheckIn'])->middleware('throttle:venue-check-in')->name('events.submit_check_in');
 Route::get('/events/{event}/check-in/success', [EventController::class, 'checkInSuccess'])->name('events.check_in_success');
 Route::get('/rsvp/{registration}/check-in/direct', [EventController::class, 'directCheckIn'])->name('events.direct_check_in');
 
 // Post-Event Survey Routes (Guest Accessible - Secured via Signed URLs)
 Route::get('/survey/{registration}', [EventController::class, 'showSurvey'])->name('events.survey_show');
-Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])->name('events.survey_submit');
+Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])->middleware('throttle:survey-submission')->name('events.survey_submit');
 
 // Isolated Voter Public Portal Routes (Purely session-based, no users accounts created)
 Route::get('/elections/{election}/login', [\App\Http\Controllers\ElectionController::class, 'voterLogin'])->name('elections.voter.login');
 Route::get('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'showVoterSetup'])->name('elections.voter.setup');
-Route::post('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'submitVoterSetup'])->name('elections.voter.setup.submit');
+Route::post('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'submitVoterSetup'])->middleware('throttle:election-setup')->name('elections.voter.setup.submit');
 Route::get('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'showBallot'])->name('elections.ballot');
-Route::post('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'submitBallot'])->name('elections.ballot.submit');
+Route::post('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'submitBallot'])->middleware('throttle:election-vote')->name('elections.ballot.submit');
 
 // Authenticated Sessions Group
 Route::middleware(['auth'])->group(function () {
@@ -62,11 +62,11 @@ Route::middleware(['auth'])->group(function () {
 
     // First-Time Access PIN Configuration
     Route::get('/setup-pin', [GoogleController::class, 'showSetupPin'])->name('pin.setup');
-    Route::post('/setup-pin', [GoogleController::class, 'saveSetupPin'])->name('pin.save');
+    Route::post('/setup-pin', [GoogleController::class, 'saveSetupPin'])->middleware('throttle:pin-verification')->name('pin.save');
 
     // returning users PIN 2FA Verification
     Route::get('/verify-pin', [GoogleController::class, 'showVerifyPin'])->name('pin.verify');
-    Route::post('/verify-pin', [GoogleController::class, 'submitVerifyPin'])->name('pin.verify.submit');
+    Route::post('/verify-pin', [GoogleController::class, 'submitVerifyPin'])->middleware('throttle:pin-verification')->name('pin.verify.submit');
 
     // Secure App Portal (PIN Configuration Required)
     Route::middleware([EnsurePinIsConfigured::class])->group(function () {

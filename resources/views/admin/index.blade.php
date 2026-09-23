@@ -301,7 +301,7 @@
                                                             class="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                                             {{ $user->name }}
                                                             @if ($user->isSuperAdmin())
-                                                                @if ($user->email === 'castillojohnlaurence0@gmail.com')
+                                                                @if ($user->email === config('app.super_admin_email'))
                                                                     <span
                                                                         class="px-1.5 py-0.5 bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-[9px] rounded font-bold uppercase tracking-wider">Super Admin</span>
                                                                 @else
@@ -357,7 +357,7 @@
                                                     Edit
                                                 </button>
 
-                                                @if ($user->email !== 'castillojohnlaurence0@gmail.com')
+                                                @if ($user->email !== config('app.super_admin_email'))
                                                     <form action="{{ route('admin.users.destroy', $user) }}"
                                                         method="POST"
                                                         data-confirm="Are you sure you want to revoke system access for this user?"
