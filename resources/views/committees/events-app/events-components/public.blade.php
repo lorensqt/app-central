@@ -16,6 +16,7 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
@@ -113,12 +114,8 @@
         <div class="flex items-center gap-2 sm:gap-3">
             <!-- Theme Toggle Button -->
             <button id="theme-toggle" type="button" class="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/60 transition duration-150 focus:outline-none shrink-0">
-                <svg id="theme-toggle-dark-icon" class="hidden w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-                <svg id="theme-toggle-light-icon" class="hidden w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <i id="theme-toggle-dark-icon" class="fas fa-moon hidden w-3.5 h-3.5 sm:w-4 sm:h-4 flex items-center justify-center"></i>
+                <i id="theme-toggle-light-icon" class="fas fa-sun hidden w-3.5 h-3.5 sm:w-4 sm:h-4 flex items-center justify-center"></i>
             </button>
             <div class="hidden sm:inline-flex text-[10px] font-semibold text-slate-450 dark:text-slate-500 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/80 shadow-sm transition-colors duration-300">
                 Secure Portal Gateway
@@ -134,9 +131,13 @@
             <div class="lg:col-span-7 space-y-6 text-left">
                 <!-- Event Banner Image Card -->
                 @if($event->image)
-                    <div class="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl group aspect-video">
+                    <div onclick="openImageModal('{{ $event->image }}')" class="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl group aspect-video cursor-pointer">
                         <img src="{{ $event->image }}" alt="{{ $event->title }}" class="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out">
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex items-center justify-center">
+                            <div class="p-4 bg-slate-900/80 backdrop-blur-md rounded-full text-white border border-white/10 shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-350">
+                                <i class="fas fa-expand text-xl"></i>
+                            </div>
+                        </div>
                     </div>
                 @endif
 
@@ -151,9 +152,7 @@
                         <!-- Division & Status Badges -->
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md text-purple-200 text-xs font-bold rounded-lg border border-white/10 uppercase tracking-widest">
-                                <svg class="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                </svg>
+                                <i class="fas fa-users text-purple-300 text-xs"></i>
                                 {{ $event->committee ? $event->committee->name : 'Division Assembly' }}
                             </span>
 
@@ -206,9 +205,7 @@
                         
                         <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                             <span class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100/80 dark:border-purple-900/30 shrink-0 h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white dark:group-hover:bg-purple-500 dark:group-hover:text-slate-950 transition-all duration-300">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                                <i class="fas fa-calendar-alt text-base sm:text-lg transition-transform duration-300"></i>
                             </span>
                             <div class="space-y-0.5 min-w-0">
                                 <div class="text-[9px] sm:text-[10px] font-bold text-purple-500 dark:text-purple-400 uppercase tracking-widest leading-none">Date & Schedule</div>
@@ -221,36 +218,28 @@
                         <!-- Right: Time Badge & Calendar Add Button Group -->
                         <div class="flex flex-wrap items-center gap-2 sm:justify-end shrink-0 z-10">
                             <!-- Time Badge -->
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg sm:rounded-xl bg-purple-50/60 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-100/40 dark:border-purple-900/30 text-[10px] sm:text-xs font-bold whitespace-nowrap">
-                                <svg class="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ $event->event_date->format('g:i A') }} (EST)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg sm:rounded-xl bg-purple-50/60 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-100/40 dark:border-purple-900/30 text-[10px] sm:text-xs font-bold whitespace-nowrap">
+                                <i class="far fa-clock text-purple-500 dark:text-purple-400 text-xs"></i>
+                                {{ $event->event_date->format('g:i A') }} (PST)
                             </span>
 
                             <!-- Add to Calendar Selector Button -->
                             <div class="relative inline-block text-left" id="calendar-dropdown-container">
                                 <button type="button" onclick="toggleCalendarDropdown(event)"
                                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg sm:rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white text-[10px] sm:text-xs font-bold transition-all duration-150 shadow-sm whitespace-nowrap">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                    </svg>
+                                    <i class="fas fa-plus text-xs"></i>
                                     Add to Calendar
                                 </button>
                                 <!-- Dropdown Menu -->
                                 <div id="calendar-dropdown-menu" class="hidden absolute right-0 mt-1.5 w-40 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-30 overflow-hidden transform origin-top-right transition-all duration-200">
                                     <button type="button" onclick="triggerAddToCalendar('google')"
                                         class="w-full text-left px-4 py-2 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 6h3.5v2.5H12V15H9.5V9H12zm5 5h-1v1h-1.5v-1h-1V12.5h1v-1H15v1h1V14z"/>
-                                        </svg>
+                                        <i class="fab fa-google text-purple-500 text-sm"></i>
                                         Google
                                     </button>
                                     <button type="button" onclick="triggerAddToCalendar('ical')"
                                         class="w-full text-left px-4 py-2 text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                                        <i class="fab fa-apple text-purple-500 text-sm"></i>
                                         iCal / Apple
                                     </button>
                                 </div>
@@ -265,10 +254,7 @@
                         
                         <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                             <span class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100/80 dark:border-indigo-900/30 shrink-0 h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-indigo-500 dark:group-hover:text-slate-950 transition-all duration-300">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
+                                <i class="fas fa-map-marker-alt text-base sm:text-lg transition-transform duration-300"></i>
                             </span>
                             <div class="space-y-0.5 min-w-0">
                                 <div class="text-[9px] sm:text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest leading-none">Location & Venue</div>
@@ -280,10 +266,8 @@
 
                         <!-- Right action button -->
                         <div class="shrink-0 self-start sm:self-auto">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg sm:rounded-xl bg-indigo-50/60 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-100/30 dark:border-indigo-900/20 text-[10px] sm:text-xs font-bold group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/60 transition-colors whitespace-nowrap">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                                </svg>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg sm:rounded-xl bg-indigo-50/60 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-100/30 dark:border-indigo-900/20 text-[10px] sm:text-xs font-bold group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/60 transition-colors whitespace-nowrap">
+                                <i class="fas fa-map text-xs"></i>
                                 Open Maps
                             </span>
                         </div>
@@ -328,18 +312,11 @@
                         <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                             <span class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-{{ $themeColor }}-50 dark:bg-{{ $themeColor }}-950/40 text-{{ $themeColor }}-600 dark:text-{{ $themeColor }}-400 border border-{{ $themeColor }}-100/80 dark:border-{{ $themeColor }}-900/30 shrink-0 h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-{{ $themeColor }}-600 group-hover:text-white dark:group-hover:bg-{{ $themeColor }}-500 dark:group-hover:text-slate-950 transition-all duration-300">
                                 @if($isFullyBooked)
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                                    </svg>
+                                    <i class="fas fa-ban text-base sm:text-lg transition-transform duration-300"></i>
                                 @elseif($hasLimit)
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
+                                    <i class="fas fa-chair text-base sm:text-lg transition-transform duration-300"></i>
                                 @else
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                                    </svg>
+                                    <i class="fas fa-infinity text-base sm:text-lg transition-transform duration-300"></i>
                                 @endif
                             </span>
                             <div class="space-y-0.5 min-w-0">
@@ -389,9 +366,7 @@
                 <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-[0_8px_30px_rgba(15,23,42,0.02)] space-y-4">
                     <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
                         <span class="p-1 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 shrink-0">
-                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                            <i class="fas fa-info-circle text-purple-500 text-sm"></i>
                         </span>
                         <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Entry & Arrival Instructions</h3>
                     </div>
@@ -425,9 +400,7 @@
                     <!-- Fully Booked Status Panel -->
                     <div class="text-center py-8 space-y-6">
                         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 animate-pulse shrink-0">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
+                            <i class="fas fa-lock text-3xl"></i>
                         </div>
                         <div class="space-y-2 text-center">
                             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">Registration Closed</h2>
@@ -455,9 +428,7 @@
                                     <input type="text" name="name" id="name" required value="{{ old('name') }}" placeholder="e.g. Jane Smith" 
                                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
                                     <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-450 dark:text-slate-500">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                        <i class="fas fa-user text-sm text-slate-450 dark:text-slate-500"></i>
                                     </span>
                                 </div>
                             </div>
@@ -469,9 +440,7 @@
                                     <input type="email" name="email" id="email" required value="{{ old('email') }}" placeholder="e.g. jane.smith@domain.com" 
                                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
                                     <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-450 dark:text-slate-500">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
+                                        <i class="fas fa-envelope text-sm text-slate-450 dark:text-slate-500"></i>
                                     </span>
                                 </div>
                             </div>
@@ -516,9 +485,7 @@
                                     </label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                            <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                            </svg>
+                                            <i class="fas fa-venus-mars text-sm text-slate-400 dark:text-slate-500"></i>
                                         </span>
                                         <select id="gender-select" onchange="handleGenderChange(this)" {{ ($fieldsConfig['gender']['required'] ?? false) ? 'required' : '' }} 
                                             class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-10 text-slate-600 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 appearance-none cursor-pointer">
@@ -529,9 +496,7 @@
                                             <option value="Others" {{ (old('gender') && !in_array(old('gender'), ['Male', 'Female', 'LGBTQ+'])) ? 'selected' : '' }}>Others (Please Specify)</option>
                                         </select>
                                         <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
+                                            <i class="fas fa-chevron-down text-sm"></i>
                                         </span>
                                     </div>
                                     <!-- Hidden actual input submitted with form -->
@@ -553,9 +518,7 @@
                                 </label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                                        <i class="fas fa-calendar text-sm text-slate-400 dark:text-slate-500"></i>
                                     </span>
                                     <input type="date" id="birthday-input" name="birthday" required max="{{ now()->format('Y-m-d') }}" value="{{ old('birthday') }}"
                                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-650 dark:text-slate-300 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300 cursor-pointer">
@@ -569,9 +532,7 @@
                                 </label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>
+                                        <i class="fas fa-building text-sm text-slate-400 dark:text-slate-500"></i>
                                     </span>
                                     <input type="text" name="division" id="division" required value="{{ old('division') }}" placeholder="e.g. Technology Group / VPO / Your Department" 
                                         class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-10 pr-4 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
@@ -598,9 +559,7 @@
                                             <input type="tel" name="custom_fields[{{ $fieldId }}]" id="custom_field_{{ $fieldId }}" {{ $isRequired ? 'required' : '' }} value="{{ $oldValue }}" placeholder="e.g. +1 555-0199" 
                                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-3 pl-4 pr-10 text-slate-700 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-slate-50/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-950 transition-all duration-300">
                                             <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-455 dark:text-slate-500">
-                                                <svg class="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                </svg>
+                                                <i class="fas fa-phone text-sm text-slate-400 dark:text-slate-500"></i>
                                             </span>
                                         @else
                                             <input type="text" name="custom_fields[{{ $fieldId }}]" id="custom_field_{{ $fieldId }}" {{ $isRequired ? 'required' : '' }} value="{{ $oldValue }}" placeholder="Enter your response" 
@@ -623,9 +582,7 @@
                                     <div id="companions-container" class="space-y-4"></div>
                                     <button type="button" onclick="addCompanionField()"
                                         class="inline-flex items-center gap-1.5 text-xs font-bold py-2.5 px-4 rounded-xl border border-purple-200 dark:border-purple-800/80 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/25 transition duration-150 shadow-sm">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
-                                        </svg>
+                                        <i class="fas fa-plus text-xs"></i>
                                         Add Companion
                                     </button>
                                 </div>
@@ -634,18 +591,14 @@
 
                             <!-- Inclusion Badge with Heart Icon -->
                             <div class="flex items-center gap-3 px-4 py-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-2xl text-xs text-purple-700 dark:text-purple-400 font-medium shadow-sm transition-colors duration-300">
-                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
+                                <i class="fas fa-heart text-purple-600 dark:text-purple-400 text-sm shrink-0"></i>
                                 <span>Open for All • Inclusivity Assured</span>
                             </div>
 
                             <!-- Action Button -->
                             <button type="submit" class="group w-full inline-flex items-center justify-center gap-2 text-sm font-semibold py-3.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500/20">
                                 <span>Submit Registration Request</span>
-                                <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                </svg>
+                                <i class="fas fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1"></i>
                             </button>
                         </form>
                     </div>
@@ -653,9 +606,7 @@
 
                 <!-- Anti-spam Disclaimer -->
                 <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 dark:text-slate-500 flex items-start gap-2">
-                    <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0-6h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <i class="fas fa-info-circle text-sm text-slate-400 dark:text-slate-500 shrink-0 mt-0.5"></i>
                     <span>Only one registration request is permitted per email address to ensure fair and accurate seating distribution.</span>
                 </div>
             </div>
@@ -706,12 +657,20 @@
                 <button type="button" id="confirm-submit-btn" disabled onclick="submitRegistration()"
                     class="inline-flex items-center gap-1.5 text-xs font-bold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 text-white transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-purple-500/20 disabled:shadow-none disabled:cursor-not-allowed active:scale-[0.98]">
                     <span>Confirm & Register</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i class="fas fa-check text-xs"></i>
                 </button>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeImageModal()">
+        <div class="relative max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl transition-all duration-300 scale-95" id="image-modal-content" onclick="event.stopPropagation()">
+            <button type="button" onclick="closeImageModal()" class="absolute top-4 right-4 z-10 p-2 text-slate-400 hover:text-white bg-slate-950/40 hover:bg-slate-950/60 rounded-full transition-colors duration-200">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+            <img id="image-modal-img" src="" alt="Full Event Image" class="w-full h-auto max-h-[85vh] object-contain">
         </div>
     </div>
 
@@ -769,20 +728,16 @@
                 progressBarGradient = 'from-emerald-400 to-teal-500';
                 categoryLabel = 'Success';
                 iconSvg = `
-                    <span class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                    <span class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center justify-center h-10 w-10">
+                        <i class="fas fa-check-circle text-lg"></i>
                     </span>
                 `;
             } else {
                 progressBarGradient = 'from-rose-400 to-red-500';
                 categoryLabel = 'System Notice';
                 iconSvg = `
-                    <span class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
+                    <span class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 shrink-0 flex items-center justify-center h-10 w-10">
+                        <i class="fas fa-exclamation-triangle text-lg"></i>
                     </span>
                 `;
             }
@@ -793,10 +748,8 @@
                     <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none mb-1.5">${categoryLabel}</p>
                     <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 tracking-tight leading-relaxed">${message}</p>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 transition-colors shrink-0 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350 transition-colors shrink-0 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center justify-center h-6 w-6">
+                    <i class="fas fa-times text-sm"></i>
                 </button>
                 <div class="progress-bar absolute bottom-0 left-0 h-1 bg-gradient-to-r ${progressBarGradient} rounded-b-2xl" style="width: 100%; transition: width 4000ms linear;"></div>
             `;
@@ -927,9 +880,7 @@
                 <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-850">
                     <span class="text-[10px] font-extrabold text-purple-650 dark:text-purple-400 uppercase tracking-widest">Companion #${companionIndex + 1}</span>
                     <button type="button" onclick="removeCompanionField(${companionIndex})" class="text-rose-500 hover:text-rose-600 p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <i class="fas fa-trash-alt text-sm"></i>
                     </button>
                 </div>
                 
@@ -962,9 +913,7 @@
                             <option value="Others">Others</option>
                         </select>
                         <span class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-slate-400">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
+                            <i class="fas fa-chevron-down text-xs"></i>
                         </span>
                     </div>
                 </div>
@@ -1058,6 +1007,36 @@
             }
         }
 
+        function openImageModal(imgSrc) {
+            const modal = document.getElementById('image-modal');
+            const content = document.getElementById('image-modal-content');
+            const modalImg = document.getElementById('image-modal-img');
+            if (modal && content && modalImg) {
+                modalImg.src = imgSrc;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                });
+            }
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            const content = document.getElementById('image-modal-content');
+            if (modal && content) {
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        }
+
         function submitRegistration() {
             const confirmBtn = document.getElementById('confirm-submit-btn');
             const cancelBtn = confirmBtn?.previousElementSibling;
@@ -1073,10 +1052,7 @@
                 
                 // Show beautiful inline animated loading spinner
                 confirmBtn.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <i class="fas fa-circle-notch fa-spin -ml-1 mr-2 text-white inline-block"></i>
                     <span>Registering...</span>
                 `;
                 
@@ -1107,10 +1083,7 @@
                         if (submitBtn) {
                             submitBtn.disabled = true;
                             submitBtn.innerHTML = `
-                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                                <i class="fas fa-circle-notch fa-spin -ml-1 mr-2 text-white inline-block"></i>
                                 <span>Submitting...</span>
                             `;
                         }
