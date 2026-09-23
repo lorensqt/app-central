@@ -310,7 +310,7 @@ class EventController extends Controller
 
         $registration->delete();
 
-        return redirect()->route('events.public_show', $event)
+        return redirect()->to($event->public_url)
             ->with('success', 'Your RSVP has been successfully cancelled and your seat reservation has been released.');
     }
 
@@ -320,18 +320,18 @@ class EventController extends Controller
     public function showCheckIn(Event $event)
     {
         if ($event->registration_type !== 'venue_confirmation') {
-            return redirect()->route('events.public_show', $event);
+            return redirect()->to($event->public_url);
         }
 
         if ($event->isEnded()) {
-            return redirect()->route('events.public_show', $event)
+            return redirect()->to($event->public_url)
                 ->with('error', 'Check-In Closed: This assembly has already ended.');
         }
 
         if (!$event->canCheckIn()) {
             $daysLeft = $event->daysUntilStart();
             $timeMsg = $event->startsTomorrow() ? 'tomorrow' : "in {$daysLeft} days";
-            return redirect()->route('events.public_show', $event)
+            return redirect()->to($event->public_url)
                 ->with('error', "Check-In Closed: This assembly is scheduled {$timeMsg}. Check-in will open on the day of the event.");
         }
 
@@ -344,7 +344,7 @@ class EventController extends Controller
     public function submitCheckIn(Request $request, Event $event)
     {
         if ($event->registration_type !== 'venue_confirmation') {
-            return redirect()->route('events.public_show', $event);
+            return redirect()->to($event->public_url);
         }
 
         if (!$event->canCheckIn()) {

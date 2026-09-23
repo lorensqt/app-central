@@ -278,14 +278,14 @@
                                 class="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-[0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-black/5 divide-y divide-slate-100 dark:divide-slate-800/60 hidden z-50 animate-fade-in-up">
                                 <div class="py-1.5">
                                     <!-- View Public Page -->
-                                    <a href="{{ route('events.public_show', $event) }}" target="_blank" rel="noopener noreferrer" 
+                                    <a href="{{ $event->public_url }}" target="_blank" rel="noopener noreferrer" 
                                         onclick="toggleActionDropdown()"
                                         class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
                                         <i class="fa-solid fa-eye text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 text-sm w-4 shrink-0"></i>
                                         View Landing Page
                                     </a>
                                     <!-- Copy Shareable Link -->
-                                    <button onclick="copyEventLink('{{ route('events.public_show', $event) }}'); toggleActionDropdown();" 
+                                    <button onclick="copyEventLink('{{ $event->public_url }}'); toggleActionDropdown();" 
                                         class="group w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition">
                                         <i class="fa-solid fa-copy text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 text-sm w-4 shrink-0"></i>
                                         Copy Share Link

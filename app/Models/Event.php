@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
@@ -151,5 +152,16 @@ class Event extends Model
 
         // Allowed if it's ongoing or starting today (on the same calendar day)
         return $this->isOngoing() || $this->event_date->isToday();
+    }
+
+    /**
+     * Get the SEO-friendly public URL for the event landing page.
+     */
+    public function getPublicUrlAttribute(): string
+    {
+        return route('events.public_show', [
+            'event' => $this->id,
+            'slug' => Str::slug($this->title),
+        ]);
     }
 }

@@ -123,7 +123,7 @@
                 <!-- Help link / Not registered option -->
                 <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs space-y-1.5">
                     <p class="text-slate-500 dark:text-slate-400">Not registered yet?</p>
-                    <a href="{{ route('events.public_show', $event) }}" class="font-bold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1">
+                    <a href="{{ $event->public_url }}" class="font-bold text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1">
                         Register Immediately On the Spot
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>

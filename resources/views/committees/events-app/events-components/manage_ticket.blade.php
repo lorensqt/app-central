@@ -237,7 +237,7 @@
 
             <!-- Return back and theme toggle info -->
             <div class="flex items-center justify-between text-xs text-slate-400 px-2">
-                <a href="{{ route('events.public_show', $event) }}" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1.5">
+                <a href="{{ $event->public_url }}" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>

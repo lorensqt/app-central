@@ -33,7 +33,7 @@ class SitemapTest extends TestCase
 
         // 4. Assert content contains public paths
         $response->assertSee(route('login'));
-        $response->assertSee(route('events.public_show', $event));
+        $response->assertSee($event->public_url);
     }
 
     /**

@@ -30,7 +30,7 @@ Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name(
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 // Public Shareable Event Landing & RSVP Routes (Guest Accessible)
-Route::get('/events/{event}', [EventController::class, 'showPublic'])->name('events.public_show');
+Route::get('/events/{event}/{slug?}', [EventController::class, 'showPublic'])->name('events.public_show');
 Route::post('/events/{event}/register', [EventController::class, 'registerPublic'])->name('events.public_register');
 Route::post('/events/{event}/request-access', [EventController::class, 'requestAccessLink'])->name('events.request_access');
 

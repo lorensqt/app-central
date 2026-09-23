@@ -31,7 +31,7 @@ class SitemapController extends Controller
 
             foreach ($events as $event) {
                 $urls[] = [
-                    'loc' => route('events.public_show', $event),
+                    'loc' => $event->public_url,
                     'lastmod' => $event->updated_at->toAtomString(),
                     'changefreq' => 'weekly',
                     'priority' => '0.8',
