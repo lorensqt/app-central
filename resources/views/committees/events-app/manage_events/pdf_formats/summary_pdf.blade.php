@@ -66,10 +66,10 @@
     <meta charset="utf-8">
     <title>Event Summary Report - {{ $event->title }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
         body {
-            font-family: 'Inter', 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
             color: #1e293b;
             font-size: 11px;
             line-height: 1.55;
