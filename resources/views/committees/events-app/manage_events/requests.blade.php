@@ -164,12 +164,17 @@
                                 <!-- Birthdate & Age -->
                                 <td class="py-4 px-6 text-slate-650 dark:text-slate-300 font-semibold text-xs whitespace-nowrap">
                                     @if($reg->birthday)
-                                        <div class="text-left leading-tight">
-                                            <span class="block text-slate-800 dark:text-slate-200 font-bold">🎂 {{ $reg->birthday->format('M d, Y') }}</span>
-                                            <span class="block text-[10px] text-purple-650 dark:text-purple-400 font-extrabold mt-0.5 uppercase tracking-wider">{{ $reg->age }} Years Old</span>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-bold">
+                                                <i class="fa-solid fa-cake-candles text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                                                <span>{{ $reg->birthday->format('M d, Y') }}</span>
+                                            </div>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-100/60 dark:border-purple-800/40 text-[10px] font-extrabold uppercase tracking-wider">
+                                                {{ $reg->age }} yrs old
+                                            </span>
                                         </div>
                                     @else
-                                        <span class="text-slate-400 dark:text-slate-500 italic">N/A</span>
+                                        <span class="text-slate-400 dark:text-slate-600 font-medium">—</span>
                                     @endif
                                 </td>
                                 
@@ -182,18 +187,18 @@
                                 <td class="status-cell py-4 px-6">
                                     @if($reg->status === 'approved')
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            <i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i>
                                             Approved
                                         </span>
                                         <div class="attendance-badge-wrapper mt-1">
                                             @if($reg->attended)
                                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <i class="fa-solid fa-user-check text-[10px] text-emerald-600 dark:text-emerald-400"></i>
                                                     Attended
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                                    <i class="fa-solid fa-user-xmark text-[10px] text-slate-400 dark:text-slate-500"></i>
                                                     Absent
                                                 </span>
                                             @endif
@@ -219,43 +224,60 @@
                                 </td>
                                 
                                 <!-- Actions Column (Desktop actions-cell target) -->
-                                <td class="actions-cell py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
-                                    @if($reg->status === 'pending')
-                                        <!-- Approve Form -->
-                                        <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white dark:hover:text-slate-900 hover:bg-emerald-500 dark:hover:bg-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                Approve
-                                            </button>
-                                        </form>
-
-                                        <!-- Decline Form -->
-                                        <form action="{{ route('committees.registrations.decline', $reg) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="text-xs font-semibold text-red-500 dark:text-red-400 hover:text-white dark:hover:text-slate-900 hover:bg-red-500 dark:hover:bg-red-400 border border-red-200 dark:border-red-900/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                Decline
-                                            </button>
-                                        </form>
-                                    @elseif($reg->status === 'approved')
-                                        <!-- Attendance Check Toggle -->
-                                        <form action="{{ route('committees.registrations.toggle_attendance', $reg) }}" method="POST" class="inline toggle-attendance-form">
-                                            @csrf
-                                            <button type="submit" class="text-xs font-semibold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 dark:hover:bg-amber-550' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600' }} hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                                {{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}
-                                            </button>
-                                        </form>
-                                    @endif
-
-                                    <!-- Delete Registration Form -->
-                                    <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="inline delete-registration-form" data-name="{{ $reg->name }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
-                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
+                                <td class="actions-cell py-4 px-6 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <!-- View Details Button -->
+                                        <button type="button" onclick="openAttendeeModal({{ $reg->id }})" class="p-1.5 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-xl border border-slate-200 dark:border-slate-800 transition duration-150 shrink-0" title="View Registration Details">
+                                            <i class="fa-solid fa-eye text-xs"></i>
                                         </button>
-                                    </form>
+
+                                        @if($reg->status === 'pending')
+                                            <!-- Approve Form -->
+                                            <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white dark:hover:text-slate-900 hover:bg-emerald-500 dark:hover:bg-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
+                                                    <i class="fa-solid fa-check text-[11px]"></i>
+                                                    <span>Approve</span>
+                                                </button>
+                                            </form>
+
+                                            <!-- Decline Form -->
+                                            <form action="{{ route('committees.registrations.decline', $reg) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-500 dark:text-red-400 hover:text-white dark:hover:text-slate-900 hover:bg-red-500 dark:hover:bg-red-400 border border-red-200 dark:border-red-900/60 hover:border-transparent dark:hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
+                                                    <i class="fa-solid fa-xmark text-[11px]"></i>
+                                                    <span>Decline</span>
+                                                </button>
+                                            </form>
+                                        @elseif($reg->status === 'approved')
+                                            <!-- Attendance Check Toggle -->
+                                            <form action="{{ route('committees.registrations.toggle_attendance', $reg) }}" method="POST" class="inline toggle-attendance-form">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 dark:hover:bg-amber-550' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600' }} hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
+                                                    <i class="fa-solid {{ $reg->attended ? 'fa-user-xmark' : 'fa-user-check' }} text-[11px]"></i>
+                                                    <span>{{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}</span>
+                                                </button>
+                                            </form>
+                                        @elseif($reg->status === 'declined')
+                                            <!-- Re-approve Form -->
+                                            <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white dark:hover:text-slate-900 hover:bg-emerald-500 dark:hover:bg-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent dark:hover:border-transparent px-2.5 py-1.5 rounded-xl transition duration-150" title="Re-approve Request">
+                                                    <i class="fa-solid fa-rotate-left text-[11px]"></i>
+                                                    <span>Approve</span>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <!-- Delete Registration Form -->
+                                        <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="inline delete-registration-form" data-name="{{ $reg->name }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent rounded-xl transition duration-150 shrink-0" title="Delete Registrant">
+                                                <i class="fa-solid fa-trash-can text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -298,18 +320,18 @@
                             <div class="status-cell shrink-0 text-right">
                                 @if($reg->status === 'approved')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i>
                                         Approved
                                     </span>
                                     <div class="attendance-badge-wrapper mt-1">
                                         @if($reg->attended)
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                <i class="fa-solid fa-user-check text-[10px] text-emerald-600 dark:text-emerald-400"></i>
                                                 Attended
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                                <i class="fa-solid fa-user-xmark text-[10px] text-slate-400 dark:text-slate-500"></i>
                                                 Absent
                                             </span>
                                         @endif
@@ -361,52 +383,73 @@
                             </div>
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-slate-400 font-medium">Birthdate & Age:</span>
-                                <span class="font-bold text-slate-800 dark:text-slate-200">
-                                    @if($reg->birthday)
-                                        🎂 {{ $reg->birthday->format('M d, Y') }} ({{ $reg->age }} yrs)
-                                    @else
-                                        N/A
-                                    @endif
-                                </span>
+                                @if($reg->birthday)
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200 text-xs">
+                                            <i class="fa-solid fa-cake-candles text-[11px] text-purple-600 dark:text-purple-400"></i>
+                                            {{ $reg->birthday->format('M d, Y') }}
+                                        </span>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-100/60 dark:border-purple-800/40 text-[9px] font-extrabold uppercase tracking-wider">
+                                            {{ $reg->age }} yrs
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="text-slate-400 dark:text-slate-600 font-medium text-xs">—</span>
+                                @endif
                             </div>
                         </div>
 
                         <!-- Mobile Moderation Actions (Mobile actions-cell target) -->
                         <div class="actions-cell mobile-actions-container flex items-center justify-end gap-2 pt-1 border-t border-slate-50 dark:border-slate-800/40">
+                            <!-- View Button -->
+                            <button type="button" onclick="openAttendeeModal({{ $reg->id }})" class="p-2 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-xl border border-slate-200 dark:border-slate-800 transition duration-150 shrink-0" title="View Details">
+                                <i class="fa-solid fa-eye text-xs"></i>
+                            </button>
+
                             @if($reg->status === 'pending')
                                 <!-- Approve Form -->
                                 <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="flex-grow">
                                     @csrf
-                                    <button type="submit" class="w-full text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-500 dark:bg-emerald-950/20 dark:hover:bg-emerald-400 hover:text-white dark:hover:text-slate-900 border border-emerald-100 dark:border-emerald-900/30 py-2 rounded-xl transition duration-150">
-                                        Approve
+                                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-500 dark:bg-emerald-950/20 dark:hover:bg-emerald-400 hover:text-white dark:hover:text-slate-900 border border-emerald-100 dark:border-emerald-900/30 py-2 rounded-xl transition duration-150">
+                                        <i class="fa-solid fa-check text-[11px]"></i>
+                                        <span>Approve</span>
                                     </button>
                                 </form>
 
                                 <!-- Decline Form -->
                                 <form action="{{ route('committees.registrations.decline', $reg) }}" method="POST" class="flex-grow">
                                     @csrf
-                                    <button type="submit" class="w-full text-center text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 hover:bg-red-500 dark:bg-red-950/20 dark:hover:bg-red-400 hover:text-white dark:hover:text-slate-900 border border-red-100/30 dark:border-red-900/30 py-2 rounded-xl transition duration-150">
-                                        Decline
+                                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 hover:bg-red-500 dark:bg-red-950/20 dark:hover:bg-red-400 hover:text-white dark:hover:text-slate-900 border border-red-100/30 dark:border-red-900/30 py-2 rounded-xl transition duration-150">
+                                        <i class="fa-solid fa-xmark text-[11px]"></i>
+                                        <span>Decline</span>
                                     </button>
                                 </form>
                             @elseif($reg->status === 'approved')
                                 <!-- Attendance Toggle -->
                                 <form action="{{ route('committees.registrations.toggle_attendance', $reg) }}" method="POST" class="flex-grow toggle-attendance-form">
                                     @csrf
-                                    <button type="submit" class="w-full text-center text-xs font-bold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-500 hover:text-white' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-500 hover:text-white' }} py-2 rounded-xl transition duration-150">
-                                        {{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}
+                                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold {{ $reg->attended ? 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-500 hover:text-white' : 'text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-500 hover:text-white' }} py-2 rounded-xl transition duration-150">
+                                        <i class="fa-solid {{ $reg->attended ? 'fa-user-xmark' : 'fa-user-check' }} text-[11px]"></i>
+                                        <span>{{ $reg->attended ? 'Mark Absent' : 'Mark Attended' }}</span>
+                                    </button>
+                                </form>
+                            @elseif($reg->status === 'declined')
+                                <!-- Re-approve Form -->
+                                <form action="{{ route('committees.registrations.approve', $reg) }}" method="POST" class="flex-grow">
+                                    @csrf
+                                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 hover:bg-emerald-500 dark:bg-emerald-950/20 dark:hover:bg-emerald-400 hover:text-white dark:hover:text-slate-900 border border-emerald-100 dark:border-emerald-900/30 py-2 rounded-xl transition duration-150">
+                                        <i class="fa-solid fa-rotate-left text-[11px]"></i>
+                                        <span>Approve</span>
                                     </button>
                                 </form>
                             @endif
 
                             <!-- Delete Button -->
-                            <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="delete-registration-form" data-name="{{ $reg->name }}">
+                            <form action="{{ route('committees.registrations.destroy', $reg) }}" method="POST" class="delete-registration-form shrink-0" data-name="{{ $reg->name }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-xs font-semibold text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-600 hover:text-white border border-red-100 dark:border-red-900/30 p-2 rounded-xl transition duration-150" title="Delete Registrant">
-                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
+                                <button type="submit" class="p-2 text-xs font-semibold text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-600 hover:text-white border border-red-100 dark:border-red-900/30 rounded-xl transition duration-150" title="Delete Registrant">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
                             </form>
                         </div>

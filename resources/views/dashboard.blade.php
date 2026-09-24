@@ -14,11 +14,11 @@
         $greeting = 'Good evening';
     }
 
-    $imagePath = resource_path('views/imgs/header.png');
+    $imagePath = resource_path('views/imgs/dashboard.gif');
     $base64Image = '';
     if (file_exists($imagePath)) {
         $imageData = base64_encode(file_get_contents($imagePath));
-        $base64Image = 'data:image/png;base64,' . $imageData;
+        $base64Image = 'data:image/gif;base64,' . $imageData;
     }
 @endphp
 
@@ -235,27 +235,31 @@
         </div>
     </div>
 
-    <!-- Premium Mobile Bottom Floating Nav Bar (Icons Only) -->
-    <div class="fixed sm:hidden bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2.5rem)] max-w-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border border-slate-200/50 dark:border-slate-800/60 p-2.5 rounded-[24px] shadow-xl shadow-slate-950/10 dark:shadow-black/45 flex items-center justify-around ring-1 ring-white/10">
+    <!-- Premium Mobile Bottom Floating Nav Bar (Icons & Labels) -->
+    <div class="fixed sm:hidden bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/70 p-1.5 rounded-[24px] shadow-2xl shadow-slate-950/15 dark:shadow-black/60 flex items-center justify-around ring-1 ring-white/10">
         <!-- Board of Directors Button -->
-        <button onclick="switchTab('board')" id="tab-btn-board-mobile" class="tab-btn-mobile flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 active:scale-90 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Board of Directors">
-            <i class="fa-solid fa-building text-lg"></i>
+        <button onclick="switchTab('board')" id="tab-btn-board-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Board of Directors">
+            <i class="fa-solid fa-building text-base mb-1"></i>
+            <span class="text-[10px] font-bold tracking-tight leading-none">BOD</span>
         </button>
 
         <!-- Management Button -->
-        <button onclick="switchTab('management')" id="tab-btn-management-mobile" class="tab-btn-mobile flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 active:scale-90 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Management">
-            <i class="fa-solid fa-users text-lg"></i>
+        <button onclick="switchTab('management')" id="tab-btn-management-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Management">
+            <i class="fa-solid fa-users text-base mb-1"></i>
+            <span class="text-[10px] font-bold tracking-tight leading-none">Management</span>
         </button>
 
         <!-- Committees Button -->
-        <button onclick="switchTab('committees')" id="tab-btn-committees-mobile" class="tab-btn-mobile flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 active:scale-90 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Committees">
-            <i class="fa-solid fa-people-group text-lg"></i>
+        <button onclick="switchTab('committees')" id="tab-btn-committees-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Committees">
+            <i class="fa-solid fa-people-group text-base mb-1"></i>
+            <span class="text-[10px] font-bold tracking-tight leading-none">Committee</span>
         </button>
 
         <!-- Admin Button (Only for Super Admin) -->
         @if(Auth::user()->isSuperAdmin())
-            <button onclick="switchTab('admin')" id="tab-btn-admin-mobile" class="tab-btn-mobile flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 active:scale-90 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Administration">
-                <i class="fa-solid fa-users-gear text-lg"></i>
+            <button onclick="switchTab('admin')" id="tab-btn-admin-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Administration">
+                <i class="fa-solid fa-users-gear text-base mb-1"></i>
+                <span class="text-[10px] font-bold tracking-tight leading-none">Admin</span>
             </button>
         @endif
     </div>

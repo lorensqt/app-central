@@ -1036,15 +1036,15 @@
                     if (data.success) {
                         // Dynamically update toggle button layout
                         if (data.attended) {
-                            submitBtn.className = "text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 dark:hover:bg-amber-550 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150";
-                            submitBtn.innerText = 'Mark Absent';
+                            submitBtn.className = "inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-500 dark:hover:bg-amber-550 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150";
+                            submitBtn.innerHTML = '<i class="fa-solid fa-user-xmark text-[11px]"></i> <span>Mark Absent</span>';
                         } else {
-                            submitBtn.className = "text-xs font-semibold text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150";
-                            submitBtn.innerText = 'Mark Attended';
+                            submitBtn.className = "inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150";
+                            submitBtn.innerHTML = '<i class="fa-solid fa-user-check text-[11px]"></i> <span>Mark Attended</span>';
                         }
 
                         // Update attendance badge
-                        const statusCell = row.children[6]; // Shifted index because of Ticket Code column addition (was 5, now 6!)
+                        const statusCell = row.querySelector('.status-cell') || row.children[6];
                         const badgeWrapper = statusCell.querySelector('.attendance-badge-wrapper');
                         if (badgeWrapper) {
                             badgeWrapper.style.opacity = '0';
@@ -1052,14 +1052,14 @@
                                 if (data.attended) {
                                     badgeWrapper.innerHTML = `
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            <i class="fa-solid fa-user-check text-[10px] text-emerald-600 dark:text-emerald-400"></i>
                                             Attended
                                         </span>
                                     `;
                                 } else {
                                     badgeWrapper.innerHTML = `
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                            <i class="fa-solid fa-user-xmark text-[10px] text-slate-400 dark:text-slate-500"></i>
                                             Absent
                                         </span>
                                     `;
@@ -1172,12 +1172,12 @@
                 if (action === 'approved') {
                     statusCell.innerHTML = `
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i>
                             Approved
                         </span>
                         <div class="attendance-badge-wrapper mt-1">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span>
+                                <i class="fa-solid fa-user-xmark text-[10px] text-slate-400 dark:text-slate-500"></i>
                                 Absent
                             </span>
                         </div>
@@ -1195,48 +1195,65 @@
             }, 150);
 
             // Update Actions Column TD (Index 7)
-            const actionsCell = row.children[7];
-            actionsCell.style.opacity = '0';
-            setTimeout(() => {
-                if (action === 'approved') {
+            const actionsCell = row.querySelector('.actions-cell') || row.children[7];
+            if (actionsCell) {
+                actionsCell.style.opacity = '0';
+                setTimeout(() => {
                     const regId = row.getAttribute('data-id');
+                    const regName = row.getAttribute('data-name');
                     const toggleUrl = `{{ url('/committees/registrations') }}/${regId}/toggle-attendance`;
+                    const approveUrl = `{{ url('/committees/registrations') }}/${regId}/approve`;
                     const destroyUrl = `{{ url('/committees/registrations') }}/${regId}`;
-                    actionsCell.innerHTML = `
-                        <form action="${toggleUrl}" method="POST" class="inline toggle-attendance-form">
-                            @csrf
-                            <button type="submit" class="text-xs font-semibold text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
-                                Mark Attended
-                            </button>
-                        </form>
-                        <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${row.getAttribute('data-name')}">
-                            @csrf
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-650 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
-                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </form>
-                    `;
-                } else {
-                    const regId = row.getAttribute('data-id');
-                    const destroyUrl = `{{ url('/committees/registrations') }}/${regId}`;
-                    actionsCell.innerHTML = `
-                        <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${row.getAttribute('data-name')}">
-                            @csrf
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="text-xs font-semibold text-red-650 dark:text-red-400 hover:text-white hover:bg-red-605 border border-red-200 dark:border-red-900/40 hover:border-transparent p-1.5 rounded-xl transition duration-150" title="Delete Registrant">
-                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </form>
-                    `;
-                }
-                actionsCell.style.transition = 'opacity 300ms ease';
-                actionsCell.style.opacity = '1';
-            }, 150);
+                    
+                    if (action === 'approved') {
+                        actionsCell.innerHTML = `
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <button type="button" onclick="openAttendeeModal(${regId})" class="p-1.5 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-xl border border-slate-200 dark:border-slate-800 transition duration-150 shrink-0" title="View Registration Details">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </button>
+                                <form action="${toggleUrl}" method="POST" class="inline toggle-attendance-form">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-500 dark:hover:bg-purple-600 hover:text-white hover:border-transparent px-3 py-1.5 rounded-xl transition duration-150">
+                                        <i class="fa-solid fa-user-check text-[11px]"></i>
+                                        <span>Mark Attended</span>
+                                    </button>
+                                </form>
+                                <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${regName}">
+                                    @csrf
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="p-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent rounded-xl transition duration-150 shrink-0" title="Delete Registrant">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        `;
+                    } else {
+                        actionsCell.innerHTML = `
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <button type="button" onclick="openAttendeeModal(${regId})" class="p-1.5 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-xl border border-slate-200 dark:border-slate-800 transition duration-150 shrink-0" title="View Registration Details">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </button>
+                                <form action="${approveUrl}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-white dark:hover:text-slate-900 hover:bg-emerald-500 dark:hover:bg-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent dark:hover:border-transparent px-2.5 py-1.5 rounded-xl transition duration-150" title="Re-approve Request">
+                                        <i class="fa-solid fa-rotate-left text-[11px]"></i>
+                                        <span>Approve</span>
+                                    </button>
+                                </form>
+                                <form action="${destroyUrl}" method="POST" class="inline delete-registration-form" data-name="${regName}">
+                                    @csrf
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="p-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 border border-red-200 dark:border-red-900/40 hover:border-transparent rounded-xl transition duration-150 shrink-0" title="Delete Registrant">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        `;
+                    }
+                    actionsCell.style.transition = 'opacity 300ms ease';
+                    actionsCell.style.opacity = '1';
+                }, 150);
+            }
 
             // Dynamically recalculate and update summary analytics cards & badges
             recalculateAnalytics();

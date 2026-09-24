@@ -652,6 +652,7 @@
             @endif
         </div>
     </div>
+</div>
 
     <!-- Attendee Details Modal -->
     <div id="attendee-details-modal" class="hidden fixed inset-0 z-[150] w-full h-full overflow-y-auto items-center justify-center p-4 bg-slate-900/75 dark:bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important;">
@@ -703,8 +704,8 @@
             let attendanceBadge = '';
             if (attendee.status === 'approved') {
                 attendanceBadge = attendee.attended
-                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Attended</span>`
-                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-slate-450"></span> Absent</span>`;
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/30 text-[10px] font-bold rounded-md uppercase tracking-wider"><i class="fa-solid fa-user-check text-[10px] text-emerald-600 dark:text-emerald-400"></i> Attended</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-100 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/60 text-[10px] font-bold rounded-md uppercase tracking-wider"><i class="fa-solid fa-user-xmark text-[10px] text-slate-400 dark:text-slate-500"></i> Absent</span>`;
             }
 
             // Custom Questionnaire responses html
@@ -1423,4 +1424,3 @@
             }
         }
     </script>
-</div>
