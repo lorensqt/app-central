@@ -109,6 +109,7 @@ class GoogleController extends Controller
         ]);
 
         $user = Auth::user();
+        $isAjax = $request->expectsJson() || $request->ajax();
 
         if ($user->pin !== $validated['pin']) {
             // Track incorrect attempt
@@ -122,7 +123,25 @@ class GoogleController extends Controller
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
+                if ($isAjax) {
+                    return response()->json([
+                        'success' => false,
+                        'locked_out' => true,
+                        'redirect' => route('login'),
+                        'message' => 'Authentication Lockout: Entered incorrect PIN 3 times. Automatically logged out.',
+                    ], 403);
+                }
+
                 return redirect()->route('login')->with('error', 'Authentication Lockout: Entered incorrect PIN 3 times. Automatically logged out.');
+            }
+
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'locked_out' => false,
+                    'attempts_left' => 3 - $attempts,
+                    'message' => 'Incorrect PIN code. ' . (3 - $attempts) . ' attempts remaining.',
+                ], 422);
             }
 
             return redirect()->route('pin.verify')->with('error', 'Incorrect PIN code. ' . (3 - $attempts) . ' attempts remaining.');
@@ -131,6 +150,14 @@ class GoogleController extends Controller
         // Verification successful
         session()->forget('pin_attempts');
         session(['pin_verified' => true]);
+
+        if ($isAjax) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('dashboard'),
+                'message' => 'PIN verified successfully.',
+            ]);
+        }
 
         return redirect()->route('dashboard');
     }
@@ -169,6 +196,14 @@ class GoogleController extends Controller
 
         // Automatically mark as verified since they just configured it
         session(['pin_verified' => true]);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('dashboard'),
+                'message' => 'Your 6-digit access PIN has been successfully configured!',
+            ]);
+        }
 
         return redirect()->route('dashboard')->with('status', 'Your 6-digit access PIN has been successfully configured!');
     }

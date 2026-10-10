@@ -32,15 +32,21 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'title_id' => 'nullable|exists:titles,id',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,slug',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => strtolower($validated['email']),
             'title_id' => $validated['title_id'] ?? null,
             'pin' => null,
             'password' => null,
         ]);
+
+        if (!empty($validated['permissions'])) {
+            $user->syncPermissions($validated['permissions']);
+        }
 
         return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User registered successfully and granted access privileges. They will be prompted to set up their 6-digit access PIN upon their first login.');
     }
@@ -55,7 +61,7 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => strtolower($validated['email']),
             'title_id' => null,
@@ -81,6 +87,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'title_id' => 'nullable|exists:titles,id',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,slug',
         ]);
 
         $user->update([
@@ -89,7 +97,10 @@ class UserController extends Controller
             'title_id' => $validated['title_id'] ?? null,
         ]);
 
-        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User details updated successfully.');
+        // Sync permissions (if not explicitly marked as full super admin, or sync their selected permissions)
+        $user->syncPermissions($request->input('permissions', []));
+
+        return redirect()->route('admin.index', ['tab' => 'users'])->with('status', 'User details and application permissions updated successfully.');
     }
 
     /**

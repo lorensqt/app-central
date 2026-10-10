@@ -274,6 +274,7 @@
                                         class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800/60 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                         <th class="py-4 px-6">Personnel</th>
                                         <th class="py-4 px-6">Designation / Division</th>
+                                        <th class="py-4 px-6">App Access</th>
                                         <th class="py-4 px-6">OAuth Link</th>
                                         <th class="py-4 px-6 text-right">Actions</th>
                                     </tr>
@@ -323,6 +324,36 @@
                                                         {{ $user->title->group }}</div>
                                                 @else
                                                     <div class="text-slate-400 dark:text-slate-500 italic">No Title Assigned</div>
+                                                @endif
+                                            </td>
+                                            <td class="py-4 px-6">
+                                                @if ($user->isSuperAdmin())
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60">
+                                                        <i class="fa-solid fa-shield-halved text-[10px]"></i>
+                                                        Full Access
+                                                    </span>
+                                                @elseif ($user->permissions->isNotEmpty())
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        @foreach ($user->permissions as $perm)
+                                                            @if ($perm->slug === 'events.access')
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                                                                    <i class="fa-solid fa-calendar-check text-[9px]"></i>
+                                                                    Events
+                                                                </span>
+                                                            @elseif ($perm->slug === 'elections.access')
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
+                                                                    <i class="fa-solid fa-people-line text-[9px]"></i>
+                                                                    Elections
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                                                                    {{ $perm->name }}
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-xs text-slate-400 dark:text-slate-500 italic">No Apps Assigned</span>
                                                 @endif
                                             </td>
                                             <td class="py-4 px-6">
@@ -723,7 +754,7 @@
     <div id="user-edit-modal"
         class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
         <div id="user-edit-modal-content"
-            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 max-w-md w-full shadow-2xl p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 max-w-lg w-full shadow-2xl p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
             <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60">
                 <h3 class="font-bold text-slate-900 dark:text-white text-lg">Edit User Access</h3>
                 <button onclick="closeUserEditModal()"
@@ -780,6 +811,46 @@
                     </div>
                 </div>
 
+                <!-- Application Workspace Permissions -->
+                <div class="space-y-2.5 pt-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            Application Access Permissions
+                        </label>
+                        <span id="edit_super_admin_notice" class="hidden text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+                            Super Admin (Full Access)
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Event Management Permission Card -->
+                        <label class="relative flex items-start p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-all duration-200 group">
+                            <input type="checkbox" name="permissions[]" value="events.access" id="edit_perm_events"
+                                class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500/20 focus:ring-offset-0 bg-white dark:bg-slate-900 transition">
+                            <div class="ml-3">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    <i class="fa-solid fa-calendar-check text-[11px] text-emerald-500"></i>
+                                    Event Management
+                                </div>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-tight mt-1">Conferences, RSVPs, check-in & surveys</p>
+                            </div>
+                        </label>
+
+                        <!-- Election Management Permission Card -->
+                        <label class="relative flex items-start p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-all duration-200 group">
+                            <input type="checkbox" name="permissions[]" value="elections.access" id="edit_perm_elections"
+                                class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500/20 focus:ring-offset-0 bg-white dark:bg-slate-900 transition">
+                            <div class="ml-3">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    <i class="fa-solid fa-people-line text-[11px] text-indigo-500"></i>
+                                    Election Management
+                                </div>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-tight mt-1">Ballots, candidates & voter tallying</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-3 pt-5 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeUserEditModal()"
                         class="text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 transition duration-150 active:scale-[0.98]">
@@ -798,7 +869,7 @@
     <div id="whitelist-create-modal"
         class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-[4px] z-50 hidden flex items-center justify-center p-4 transition-all duration-300 opacity-0">
         <div id="whitelist-create-modal-content"
-            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 max-w-md w-full shadow-2xl p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 max-w-lg w-full shadow-2xl p-6 sm:p-8 space-y-6 transform scale-95 opacity-0 transition-all duration-300">
             <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800/60">
                 <h3 class="font-bold text-slate-900 dark:text-white text-lg">Whitelist Personnel</h3>
                 <button type="button" onclick="closeWhitelistCreateModal()"
@@ -851,6 +922,44 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Application Workspace Permissions -->
+                <div class="space-y-2.5 pt-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            Application Access Permissions
+                        </label>
+                        <span class="text-[11px] text-slate-400 dark:text-slate-500">Select workspaces to grant</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Event Management Permission Card -->
+                        <label class="relative flex items-start p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-all duration-200 group">
+                            <input type="checkbox" name="permissions[]" value="events.access"
+                                class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500/20 focus:ring-offset-0 bg-white dark:bg-slate-900 transition">
+                            <div class="ml-3">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                    <i class="fa-solid fa-calendar-check text-[11px] text-emerald-500"></i>
+                                    Event Management
+                                </div>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-tight mt-1">Conferences, RSVPs, check-in & surveys</p>
+                            </div>
+                        </label>
+
+                        <!-- Election Management Permission Card -->
+                        <label class="relative flex items-start p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-all duration-200 group">
+                            <input type="checkbox" name="permissions[]" value="elections.access"
+                                class="mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500/20 focus:ring-offset-0 bg-white dark:bg-slate-900 transition">
+                            <div class="ml-3">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    <i class="fa-solid fa-people-line text-[11px] text-indigo-500"></i>
+                                    Election Management
+                                </div>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500 leading-tight mt-1">Ballots, candidates & voter tallying</p>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

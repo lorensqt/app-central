@@ -54,6 +54,30 @@
             emailInput.classList.remove('bg-slate-50', 'dark:bg-slate-950', 'text-slate-400', 'dark:text-slate-500');
         }
 
+        // Populate Application Workspace Permissions
+        const permEvents = document.getElementById('edit_perm_events');
+        const permElections = document.getElementById('edit_perm_elections');
+        const superAdminNotice = document.getElementById('edit_super_admin_notice');
+
+        const isSuperAdmin = (superAdminEmail && user.email === superAdminEmail) || Boolean(user.is_admin);
+        const userPermSlugs = Array.isArray(user.permissions) ? user.permissions.map(p => p.slug) : [];
+
+        if (permEvents) {
+            permEvents.checked = isSuperAdmin || userPermSlugs.includes('events.access');
+            permEvents.disabled = isSuperAdmin;
+        }
+        if (permElections) {
+            permElections.checked = isSuperAdmin || userPermSlugs.includes('elections.access');
+            permElections.disabled = isSuperAdmin;
+        }
+        if (superAdminNotice) {
+            if (isSuperAdmin) {
+                superAdminNotice.classList.remove('hidden');
+            } else {
+                superAdminNotice.classList.add('hidden');
+            }
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
 

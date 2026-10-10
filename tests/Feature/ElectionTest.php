@@ -32,6 +32,7 @@ class ElectionTest extends TestCase
             'name' => 'John Admin',
             'email' => 'john@mlhuillier.com',
             'pin' => '1234', // mock pin configured
+            'is_admin' => true,
         ]);
     }
 

@@ -120,7 +120,7 @@
         <!-- Header -->
         <div class="header">
             <h1>Registration Received</h1>
-            <p>App Central Division Workspace</p>
+            <p>Sako Central Division Workspace</p>
         </div>
 
         <!-- Body Content -->
@@ -174,7 +174,7 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p>&copy; {{ date('Y') }} App Central. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} Sako Central. All rights reserved.</p>
             <p style="margin-top: 4px;">You received this automated security notice because your email was used to register for a secure committee assembly.</p>
         </div>
     </div>

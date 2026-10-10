@@ -77,54 +77,54 @@ Route::middleware(['auth'])->group(function () {
             return view('dashboard', compact('committees'));
         })->name('dashboard');
 
-        // Unified Committee Events Application Portal
-        Route::get('/committees/events', [EventController::class, 'index'])->name('committees.events.index');
-        Route::get('/committees/events/create', [EventController::class, 'create'])->name('committees.events.create');
+        // Unified Committee Events Application Portal (Requires events.access)
+        Route::middleware(['permission:events.access'])->group(function () {
+            Route::get('/committees/events', [EventController::class, 'index'])->name('committees.events.index');
+            Route::get('/committees/events/create', [EventController::class, 'create'])->name('committees.events.create');
+            Route::get('/committees/events/{event}', [EventController::class, 'manage'])->name('committees.events.manage');
+            Route::get('/committees/events/{event}/summary-pdf', [EventController::class, 'exportSummaryPDF'])->name('committees.events.export_summary_pdf');
+            Route::get('/committees/{committee}/events', [EventController::class, 'committeeEvents'])->name('committees.events');
 
-        // Unified Committee Elections Application Portal
-        Route::get('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'index'])->name('committees.election.index');
-        Route::post('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'store'])->name('committees.election.store');
-        Route::get('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'manage'])->name('committees.election.manage');
-        Route::get('/committees/election-app/{election}/voters', [\App\Http\Controllers\ElectionController::class, 'getVoters'])->name('committees.election.voters');
-        Route::get('/committees/election-app/{election}/export', [\App\Http\Controllers\ElectionController::class, 'exportResults'])->name('committees.election.export');
-        Route::get('/committees/election-app/{election}/export-voters', [\App\Http\Controllers\ElectionController::class, 'exportVoters'])->name('committees.election.export_voters');
-        Route::get('/committees/election-app/{election}/export-pdf', [\App\Http\Controllers\ElectionController::class, 'exportPDF'])->name('committees.election.export_pdf');
-        Route::put('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'update'])->name('committees.election.update');
-        Route::delete('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'destroy'])->name('committees.election.destroy');
+            // Committee Event Management Actions (Available to anyone with events permission)
+            Route::post('/committees/events', [AdminEventController::class, 'store'])->name('committees.events.store');
+            Route::put('/committees/events/{event}', [AdminEventController::class, 'update'])->name('committees.events.update');
+            Route::post('/committees/events/{event}/fields', [AdminEventController::class, 'updateFields'])->name('committees.events.update_fields');
+            Route::post('/committees/events/{event}/survey', [AdminEventController::class, 'updateSurvey'])->name('committees.events.update_survey');
+            Route::post('/committees/events/{event}/survey/send', [AdminEventController::class, 'broadcastSurveys'])->name('committees.events.broadcast_surveys');
+            Route::delete('/committees/events/{event}', [AdminEventController::class, 'destroy'])->name('committees.events.destroy');
+            Route::post('/committees/registrations/{registration}/approve', [AdminEventController::class, 'approveRegistration'])->name('committees.registrations.approve');
+            Route::post('/committees/registrations/{registration}/decline', [AdminEventController::class, 'declineRegistration'])->name('committees.registrations.decline');
+            Route::post('/committees/registrations/{registration}/toggle-attendance', [AdminEventController::class, 'toggleAttendance'])->name('committees.registrations.toggle_attendance');
+            Route::delete('/committees/registrations/{registration}', [AdminEventController::class, 'destroyRegistration'])->name('committees.registrations.destroy');
+            Route::delete('/committees/registrations/{registration}/survey-response', [AdminEventController::class, 'deleteSurveyResponse'])->name('committees.registrations.delete_survey_response');
+            Route::put('/committees/registrations/{registration}', [AdminEventController::class, 'updateRegistration'])->name('committees.registrations.update');
+            Route::post('/committees/registrations/bulk-approve', [AdminEventController::class, 'bulkApproveRegistrations'])->name('committees.registrations.bulk_approve');
+            Route::post('/committees/registrations/bulk-decline', [AdminEventController::class, 'bulkDeclineRegistrations'])->name('committees.registrations.bulk_decline');
+            Route::post('/committees/registrations/bulk-delete', [AdminEventController::class, 'bulkDestroyRegistrations'])->name('committees.registrations.bulk_delete');
+        });
 
-        // Positions Management
-        Route::post('/committees/election-app/{election}/positions', [\App\Http\Controllers\ElectionController::class, 'storePosition'])->name('committees.election.positions.store');
-        Route::put('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'updatePosition'])->name('committees.election.positions.update');
-        Route::delete('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'destroyPosition'])->name('committees.election.positions.destroy');
+        // Unified Committee Elections Application Portal (Requires elections.access)
+        Route::middleware(['permission:elections.access'])->group(function () {
+            Route::get('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'index'])->name('committees.election.index');
+            Route::post('/committees/election-app', [\App\Http\Controllers\ElectionController::class, 'store'])->name('committees.election.store');
+            Route::get('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'manage'])->name('committees.election.manage');
+            Route::get('/committees/election-app/{election}/voters', [\App\Http\Controllers\ElectionController::class, 'getVoters'])->name('committees.election.voters');
+            Route::get('/committees/election-app/{election}/export', [\App\Http\Controllers\ElectionController::class, 'exportResults'])->name('committees.election.export');
+            Route::get('/committees/election-app/{election}/export-voters', [\App\Http\Controllers\ElectionController::class, 'exportVoters'])->name('committees.election.export_voters');
+            Route::get('/committees/election-app/{election}/export-pdf', [\App\Http\Controllers\ElectionController::class, 'exportPDF'])->name('committees.election.export_pdf');
+            Route::put('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'update'])->name('committees.election.update');
+            Route::delete('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'destroy'])->name('committees.election.destroy');
 
-        // Candidates Management
-        Route::post('/committees/election-app/positions/{position}/candidates', [\App\Http\Controllers\ElectionController::class, 'storeCandidate'])->name('committees.election.candidates.store');
-        Route::put('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'updateCandidate'])->name('committees.election.candidates.update');
-        Route::delete('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'destroyCandidate'])->name('committees.election.candidates.destroy');
+            // Positions Management
+            Route::post('/committees/election-app/{election}/positions', [\App\Http\Controllers\ElectionController::class, 'storePosition'])->name('committees.election.positions.store');
+            Route::put('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'updatePosition'])->name('committees.election.positions.update');
+            Route::delete('/committees/election-app/positions/{position}', [\App\Http\Controllers\ElectionController::class, 'destroyPosition'])->name('committees.election.positions.destroy');
 
-        // Dedicated Event Management Page
-        Route::get('/committees/events/{event}', [EventController::class, 'manage'])->name('committees.events.manage');
-        Route::get('/committees/events/{event}/summary-pdf', [EventController::class, 'exportSummaryPDF'])->name('committees.events.export_summary_pdf');
-
-        // Dynamic Committee Events Application Portal
-        Route::get('/committees/{committee}/events', [EventController::class, 'committeeEvents'])->name('committees.events');
-
-        // Committee Event Management Actions (Available to anyone in the committee)
-        Route::post('/committees/events', [AdminEventController::class, 'store'])->name('committees.events.store');
-        Route::put('/committees/events/{event}', [AdminEventController::class, 'update'])->name('committees.events.update');
-        Route::post('/committees/events/{event}/fields', [AdminEventController::class, 'updateFields'])->name('committees.events.update_fields');
-        Route::post('/committees/events/{event}/survey', [AdminEventController::class, 'updateSurvey'])->name('committees.events.update_survey');
-        Route::post('/committees/events/{event}/survey/send', [AdminEventController::class, 'broadcastSurveys'])->name('committees.events.broadcast_surveys');
-        Route::delete('/committees/events/{event}', [AdminEventController::class, 'destroy'])->name('committees.events.destroy');
-        Route::post('/committees/registrations/{registration}/approve', [AdminEventController::class, 'approveRegistration'])->name('committees.registrations.approve');
-        Route::post('/committees/registrations/{registration}/decline', [AdminEventController::class, 'declineRegistration'])->name('committees.registrations.decline');
-        Route::post('/committees/registrations/{registration}/toggle-attendance', [AdminEventController::class, 'toggleAttendance'])->name('committees.registrations.toggle_attendance');
-        Route::delete('/committees/registrations/{registration}', [AdminEventController::class, 'destroyRegistration'])->name('committees.registrations.destroy');
-        Route::delete('/committees/registrations/{registration}/survey-response', [AdminEventController::class, 'deleteSurveyResponse'])->name('committees.registrations.delete_survey_response');
-        Route::put('/committees/registrations/{registration}', [AdminEventController::class, 'updateRegistration'])->name('committees.registrations.update');
-        Route::post('/committees/registrations/bulk-approve', [AdminEventController::class, 'bulkApproveRegistrations'])->name('committees.registrations.bulk_approve');
-        Route::post('/committees/registrations/bulk-decline', [AdminEventController::class, 'bulkDeclineRegistrations'])->name('committees.registrations.bulk_decline');
-        Route::post('/committees/registrations/bulk-delete', [AdminEventController::class, 'bulkDestroyRegistrations'])->name('committees.registrations.bulk_delete');
+            // Candidates Management
+            Route::post('/committees/election-app/positions/{position}/candidates', [\App\Http\Controllers\ElectionController::class, 'storeCandidate'])->name('committees.election.candidates.store');
+            Route::put('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'updateCandidate'])->name('committees.election.candidates.update');
+            Route::delete('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'destroyCandidate'])->name('committees.election.candidates.destroy');
+        });
 
         // Whitelisted Super Admin Operations
         Route::middleware([EnsureUserIsSuperAdmin::class])->prefix('admin')->name('admin.')->group(function () {

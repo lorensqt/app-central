@@ -1,6 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Select Portal')
+@section('title', 'Application Center')
+
+@section('styles')
+<style>
+    @keyframes cardFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .app-card-entry {
+        animation: cardFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .app-card-entry:nth-child(1) { animation-delay: 0.05s; }
+    .app-card-entry:nth-child(2) { animation-delay: 0.12s; }
+    .app-card-entry:nth-child(3) { animation-delay: 0.19s; }
+</style>
+@endsection
 
 @section('content')
 @php
@@ -14,373 +35,407 @@
         $greeting = 'Good evening';
     }
 
-    $imagePath = resource_path('views/imgs/dashboard.gif');
-    $base64Image = '';
-    if (file_exists($imagePath)) {
-        $imageData = base64_encode(file_get_contents($imagePath));
-        $base64Image = 'data:image/gif;base64,' . $imageData;
-    }
+    $canEvents = Auth::user()->hasPermission('events.access');
+    $canElections = Auth::user()->hasPermission('elections.access');
+    $canAdmin = Auth::user()->isSuperAdmin();
+
+    $authorizedCount = ($canEvents ? 1 : 0) + ($canElections ? 1 : 0) + ($canAdmin ? 1 : 0);
 @endphp
 
-<div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start pb-24 sm:pb-0">
-    <!-- Left Column: Greeting & Illustration (Sticky on Desktop) -->
-    <div class="w-full lg:w-[320px] xl:w-[360px] shrink-0 space-y-6 lg:sticky lg:top-24">
-        <!-- Greeting & Info -->
-        <div class="space-y-3.5">
-            <div class="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
-                <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <span>{{ now()->format('l, F j, Y') }}</span>
+<div class="space-y-8 pb-16">
+    <!-- Hero Header Banner -->
+    <div class="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-xs overflow-hidden">
+        <!-- Ambient Background Glow -->
+        <div class="absolute -top-24 -right-24 w-80 h-80 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-pink-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <!-- Left: Greeting & Context -->
+            <div class="space-y-2.5 max-w-2xl">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
+                        <i class="fa-solid fa-shapes text-[10px]"></i>
+                    </span>
+                    <span>Sako Central • Application Hub</span>
+                    <span class="text-slate-300 dark:text-slate-700">•</span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">{{ now()->format('l, F j, Y') }}</span>
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                    {{ $greeting }}, <span class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-500 dark:from-purple-400 dark:via-indigo-400 dark:to-pink-400 bg-clip-text text-transparent">{{ explode(' ', Auth::user()->name)[0] }}</span>!
+                </h1>
+
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Access your authorized organizational applications below. All workspace portals are secured with your verified corporate credentials.
+                </p>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                {{ $greeting }}, {{ explode(' ', Auth::user()->name)[0] }}!
-            </h1>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                Select a division workspace from the authorized tabs on the right to launch your applications and tools.
-            </p>
-            
-            <!-- Active Tab Mobile Indicator (Visual Signpost for Mobile View) -->
-            <div class="flex sm:hidden items-center gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Active Workspace:</span>
-                <span id="active-tab-indicator-mobile" class="text-xs font-extrabold tracking-tight transition-all duration-300"></span>
+
+            <!-- Right: Executive Access & Clearance Capsule -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                <div class="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-50/90 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800/70 shadow-xs hover:border-purple-500/30 dark:hover:border-purple-500/30 transition-all duration-200">
+                    <!-- Icon Tile with Ambient Glow -->
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs {{ $canAdmin ? 'bg-gradient-to-tr from-purple-500/15 via-indigo-500/15 to-pink-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25' : 'bg-gradient-to-tr from-emerald-500/15 via-teal-500/15 to-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' }}">
+                        @if($canAdmin)
+                            <i class="fa-solid fa-shield-halved text-lg"></i>
+                        @else
+                            <i class="fa-solid fa-user-check text-base"></i>
+                        @endif
+                    </div>
+
+                    <!-- Identity Clearance Details -->
+                    <div class="min-w-0 pr-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="relative flex h-2 w-2 shrink-0">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
+                                @if($canAdmin)
+                                    Platform Administrator
+                                @else
+                                    Authorized Personnel
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-100 leading-tight mt-0.5 truncate">
+                            @if(Auth::user()->title)
+                                {{ Auth::user()->title->title }}
+                            @elseif($canAdmin)
+                                Global System Access
+                            @else
+                                {{ $authorizedCount }} {{ Str::plural('Workspace', $authorizedCount) }} Accessible
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Premium Header Illustration Image (Minimalist & Responsive Frame) -->
-        @if($base64Image)
-            <div class="hidden lg:block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 p-2">
-                <img src="{{ $base64Image }}" alt="Portal Header Illustration" class="w-full h-32 sm:h-40 md:h-48 lg:h-auto object-cover rounded-xl" />
+        <!-- Real-Time Search & Filter Bar -->
+        @if($authorizedCount > 0)
+            <div class="relative z-10 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="relative flex-1 max-w-md">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </div>
+                    <input type="text"
+                           id="app-search-input"
+                           placeholder="Filter applications (e.g. events, elections, admin)..."
+                           class="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 transition-all">
+                    <button type="button"
+                            id="app-search-clear"
+                            class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs focus:outline-none">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                    <span id="app-counter" class="font-bold text-slate-700 dark:text-slate-300">{{ $authorizedCount }}</span>
+                    <span>active workspaces accessible</span>
+                </div>
             </div>
         @endif
     </div>
 
-    <!-- Right Column: Tabs & Applications Grid -->
-    <div class="flex-1 min-w-0 space-y-6 w-full">
-        <!-- Tabs & Search Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-4 pb-2">
-            <!-- Premium Capsule Segmented Tabs Control -->
-            <div class="hidden sm:flex bg-slate-100/60 dark:bg-slate-950/45 backdrop-blur-md p-1.5 rounded-2xl items-center gap-1 overflow-x-auto no-scrollbar shrink-0 w-full sm:w-auto border border-slate-200/50 dark:border-slate-800/40 ring-1 ring-slate-100/10 dark:ring-white/5 shadow-xs">
-                <!-- Board of Directors Tab -->
-                <button onclick="switchTab('board')" id="tab-btn-board" class="tab-btn tab-btn-desktop flex items-center px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none whitespace-nowrap shrink-0 active:scale-95">
-                    <i class="fa-solid fa-building mr-1.5 opacity-85"></i>
-                    Board of Directors
-                </button>
+    <!-- Centralized Applications Grid -->
+    @if($authorizedCount > 0)
+        <div id="applications-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                <!-- Management Tab -->
-                <button onclick="switchTab('management')" id="tab-btn-management" class="tab-btn tab-btn-desktop flex items-center px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none whitespace-nowrap shrink-0 active:scale-95">
-                    <i class="fa-solid fa-users mr-1.5 opacity-85"></i>
-                    Management
-                </button>
+            <!-- APP 1: EVENT MANAGEMENT (EMERALD THEME) -->
+            @if($canEvents)
+                <div class="app-card app-card-entry group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-7 shadow-xs hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-500/50 dark:hover:border-emerald-500/40 hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between overflow-hidden"
+                     data-name="event management events assemblies conferences attendance check-in rsvp surveys"
+                     data-category="operational">
+                    
+                    <!-- Ambient Radial Glow -->
+                    <div class="absolute -right-16 -bottom-16 w-44 h-44 rounded-full bg-emerald-500/5 dark:bg-emerald-500/10 blur-3xl group-hover:bg-emerald-500/20 group-hover:scale-125 transition-all duration-500 pointer-events-none"></div>
 
-                <!-- Committees Tab -->
-                <button onclick="switchTab('committees')" id="tab-btn-committees" class="tab-btn tab-btn-desktop flex items-center px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none whitespace-nowrap shrink-0 active:scale-95">
-                    <i class="fa-solid fa-people-group mr-1.5 opacity-85"></i>
-                    Committees
-                </button>
-
-                <!-- Admin Tab (Only for Super Admin) -->
-                @if(Auth::user()->isSuperAdmin())
-                    <button onclick="switchTab('admin')" id="tab-btn-admin" class="tab-btn tab-btn-desktop flex items-center px-5 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none whitespace-nowrap shrink-0 active:scale-95">
-                        <i class="fa-solid fa-users-gear mr-1.5 opacity-85"></i>
-                        Administration
-                    </button>
-                @endif
-            </div>
-        </div>
-
-        <!-- Tab Panels -->
-        <div>
-            <!-- Panel 1: Board of Directors -->
-            <div id="panel-board" class="tab-panel hidden">
-                <div class="bg-white dark:bg-slate-900/50 rounded-[20px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center max-w-md mx-auto shadow-sm">
-                    <div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">No applications yet</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">There are currently no active applications in the Board of Directors workspace.</p>
-                </div>
-            </div>
-
-            <!-- Panel 2: Management -->
-            <div id="panel-management" class="tab-panel hidden">
-                <div class="bg-white dark:bg-slate-900/50 rounded-[20px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center max-w-md mx-auto shadow-sm">
-                    <div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">No applications yet</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">There are currently no active applications in the Management workspace.</p>
-                </div>
-            </div>
-
-            <!-- Panel 3: Committees -->
-            <div id="panel-committees" class="tab-panel hidden space-y-6">
-                <!-- App Grid -->
-                <div class="app-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                    <!-- Event Management Card -->
-                    <div class="app-card group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-none hover:shadow-lg hover:shadow-emerald-500/5 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 hover:bg-emerald-50/5 dark:hover:bg-emerald-950/5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 flex flex-col justify-between text-left min-h-[220px] overflow-hidden">
-                        <!-- Subtle Background Radial Glow -->
-                        <div class="absolute -right-10 -bottom-10 w-32 h-32 rounded-full bg-emerald-500/5 dark:bg-emerald-500/2 blur-2xl group-hover:bg-emerald-500/10 transition-colors duration-300"></div>
-
-                        <div class="w-full">
-                            <!-- Premium Icon Box -->
-                            <div class="w-11 h-11 rounded-xl border border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mb-5 bg-emerald-50/30 dark:bg-emerald-950/30 group-hover:bg-gradient-to-tr group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-emerald-500/5">
-                                <i class="fa-solid fa-calendar-check text-base"></i>
+                    <div>
+                        <!-- Top Header Row: Icon & Status Pill -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-14 h-14 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center bg-emerald-50/50 dark:bg-emerald-950/40 group-hover:bg-gradient-to-tr group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-emerald-500/10">
+                                <i class="fa-solid fa-calendar-check text-xl"></i>
                             </div>
 
-                            <!-- Title -->
-                            <h3 class="app-title text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200">
-                                Event Management
-                            </h3>
-
-                            <!-- 1-sentence Description -->
-                            <p class="app-desc text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
-                                Coordinate assemblies, schedule corporate gatherings, and approve registration RSVPs in a centralized hub.
-                            </p>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Operations
+                            </span>
                         </div>
 
-                        <!-- Launch Workspace Footer CTA -->
-                        <div class="mt-6 w-full flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase select-none opacity-85 group-hover:opacity-100 transition-opacity duration-200">
-                            <span>Launch workspace</span>
-                            <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        <!-- App Title & Description -->
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200">
+                            Event Management
+                        </h2>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
+                            Coordinate assemblies, schedule corporate gatherings, oversee attendance lists, and approve registration RSVPs in a centralized operational hub.
+                        </p>
+
+                        <!-- Feature Badges -->
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-ticket mr-1 text-[9px] text-emerald-500"></i>RSVP Approvals
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-qrcode mr-1 text-[9px] text-emerald-500"></i>Digital Passes
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-poll mr-1 text-[9px] text-emerald-500"></i>Post Surveys
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Link -->
+                    <div class="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 flex items-center gap-1.5 transition-colors">
+                            Launch Workspace
+                            <svg class="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                             </svg>
-                        </div>
-
-                        <!-- Click area expansion link -->
-                        <a href="{{ route('committees.events.index') }}" class="after:absolute after:inset-0 focus:outline-none"></a>
+                        </span>
+                        <span class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200 shadow-xs">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
                     </div>
 
-                    <!-- Election Management Card -->
-                    <div class="app-card group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-none hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-500/40 dark:hover:border-indigo-500/40 hover:bg-indigo-50/5 dark:hover:bg-indigo-950/5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 flex flex-col justify-between text-left min-h-[220px] overflow-hidden">
-                        <!-- Subtle Background Radial Glow -->
-                        <div class="absolute -right-10 -bottom-10 w-32 h-32 rounded-full bg-indigo-500/5 dark:bg-indigo-500/2 blur-2xl group-hover:bg-indigo-500/10 transition-colors duration-300"></div>
-
-                        <div class="w-full">
-                            <!-- Premium Icon Box -->
-                            <div class="w-11 h-11 rounded-xl border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mb-5 bg-indigo-50/30 dark:bg-indigo-950/30 group-hover:bg-gradient-to-tr group-hover:from-indigo-500 group-hover:to-purple-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-indigo-500/5">
-                                <i class="fa-solid fa-people-line text-base"></i>
-                            </div>
-
-                            <!-- Title -->
-                            <h3 class="app-title text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                                Election Management
-                            </h3>
-
-                            <!-- 1-sentence Description -->
-                            <p class="app-desc text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
-                                Establish secure ballots, register designated candidates, and track real-time voter turnout.
-                            </p>
-                        </div>
-
-                        <!-- Launch Workspace Footer CTA -->
-                        <div class="mt-6 w-full flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase select-none opacity-85 group-hover:opacity-100 transition-opacity duration-200">
-                            <span>Launch workspace</span>
-                            <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-
-                        <!-- Click area expansion link -->
-                        <a href="{{ route('committees.election.index') }}" class="after:absolute after:inset-0 focus:outline-none"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Panel 4: Admin (Only for Super Admin) -->
-            @if(Auth::user()->isSuperAdmin())
-                <div id="panel-admin" class="tab-panel hidden space-y-6">
-                    <!-- App Grid -->
-                    <div class="app-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                        <!-- Platform Administration Cockpit Card -->
-                        <div class="app-card group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-none hover:shadow-lg hover:shadow-purple-500/5 hover:border-purple-500/40 dark:hover:border-purple-500/40 hover:bg-purple-50/5 dark:hover:bg-purple-950/5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 flex flex-col justify-between text-left min-h-[220px] overflow-hidden">
-                            <!-- Subtle Background Radial Glow -->
-                            <div class="absolute -right-10 -bottom-10 w-32 h-32 rounded-full bg-purple-500/5 dark:bg-purple-500/2 blur-2xl group-hover:bg-purple-500/10 transition-colors duration-300"></div>
-
-                            <div class="w-full">
-                                <!-- Premium Icon Box -->
-                                <div class="w-11 h-11 rounded-xl border border-purple-100 dark:border-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mb-5 bg-purple-50/30 dark:bg-purple-950/30 group-hover:bg-gradient-to-tr group-hover:from-purple-500 group-hover:to-indigo-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-purple-500/5">
-                                    <i class="fa-solid fa-users-gear text-base"></i>
-                                </div>
-
-                                <!-- Title -->
-                                <h3 class="app-title text-base font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-200">
-                                    Platform Administration
-                                </h3>
-
-                                <!-- 1-sentence Description -->
-                                <p class="app-desc text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
-                                    Oversee authorized accounts, configure custom committees, and designate corporate titles.
-                                </p>
-                            </div>
-
-                            <!-- Launch Workspace Footer CTA -->
-                            <div class="mt-6 w-full flex items-center gap-1.5 text-[11px] font-bold text-purple-600 dark:text-purple-400 tracking-wider uppercase select-none opacity-85 group-hover:opacity-100 transition-opacity duration-200">
-                                <span>Launch workspace</span>
-                                <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-
-                            <!-- Click area expansion link -->
-                            <a href="{{ route('admin.index') }}" class="after:absolute after:inset-0 focus:outline-none"></a>
-                        </div>
-                    </div>
+                    <!-- Full Click Target -->
+                    <a href="{{ route('committees.events.index') }}" class="after:absolute after:inset-0 focus:outline-none" aria-label="Open Event Management"></a>
                 </div>
             @endif
+
+            <!-- APP 2: ELECTION MANAGEMENT (INDIGO THEME) -->
+            @if($canElections)
+                <div class="app-card app-card-entry group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-7 shadow-xs hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/50 dark:hover:border-indigo-500/40 hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between overflow-hidden"
+                     data-name="election management elections voting ballots candidates voters results"
+                     data-category="governance">
+                    
+                    <!-- Ambient Radial Glow -->
+                    <div class="absolute -right-16 -bottom-16 w-44 h-44 rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-3xl group-hover:bg-indigo-500/20 group-hover:scale-125 transition-all duration-500 pointer-events-none"></div>
+
+                    <div>
+                        <!-- Top Header Row: Icon & Status Pill -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-14 h-14 rounded-2xl border border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/40 group-hover:bg-gradient-to-tr group-hover:from-indigo-500 group-hover:to-purple-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-indigo-500/10">
+                                <i class="fa-solid fa-people-line text-xl"></i>
+                            </div>
+
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                Governance
+                            </span>
+                        </div>
+
+                        <!-- App Title & Description -->
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                            Election Management
+                        </h2>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
+                            Establish encrypted ballots, register designated candidates, verify authorized voting rosters, and monitor live voter turnout with PDF reporting.
+                        </p>
+
+                        <!-- Feature Badges -->
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-check-to-slot mr-1 text-[9px] text-indigo-500"></i>Secure Ballots
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-chart-pie mr-1 text-[9px] text-indigo-500"></i>Real-Time Tally
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-file-pdf mr-1 text-[9px] text-indigo-500"></i>Official Reports
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Link -->
+                    <div class="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 flex items-center gap-1.5 transition-colors">
+                            Launch Workspace
+                            <svg class="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </span>
+                        <span class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs group-hover:bg-indigo-600 group-hover:text-white transition-all duration-200 shadow-xs">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+
+                    <!-- Full Click Target -->
+                    <a href="{{ route('committees.election.index') }}" class="after:absolute after:inset-0 focus:outline-none" aria-label="Open Election Management"></a>
+                </div>
+            @endif
+
+            <!-- APP 3: PLATFORM COCKPIT / ADMIN (PURPLE THEME, SUPER ADMIN ONLY) -->
+            @if($canAdmin)
+                <div class="app-card app-card-entry group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-7 shadow-xs hover:shadow-xl hover:shadow-purple-500/10 hover:border-purple-500/50 dark:hover:border-purple-500/40 hover:-translate-y-2 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between overflow-hidden"
+                     data-name="platform administration cockpit admin users permissions titles rbac committees"
+                     data-category="administration">
+                    
+                    <!-- Ambient Radial Glow -->
+                    <div class="absolute -right-16 -bottom-16 w-44 h-44 rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-3xl group-hover:bg-purple-500/20 group-hover:scale-125 transition-all duration-500 pointer-events-none"></div>
+
+                    <div>
+                        <!-- Top Header Row: Icon & Status Pill -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-14 h-14 rounded-2xl border border-purple-200 dark:border-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center bg-purple-50/50 dark:bg-purple-950/40 group-hover:bg-gradient-to-tr group-hover:from-purple-500 group-hover:to-pink-600 group-hover:text-white group-hover:border-transparent group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm shadow-purple-500/10">
+                                <i class="fa-solid fa-gauge-high text-xl"></i>
+                            </div>
+
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                                Super Admin
+                            </span>
+                        </div>
+
+                        <!-- App Title & Description -->
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-200">
+                            Platform Administration
+                        </h2>
+
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-2.5">
+                            Manage authorized corporate personnel, assign granular page access permissions, configure dynamic operational committees, and govern corporate designations.
+                        </p>
+
+                        <!-- Feature Badges -->
+                        <div class="flex flex-wrap gap-1.5 mt-5">
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-user-shield mr-1 text-[9px] text-purple-500"></i>Personnel & RBAC
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-sitemap mr-1 text-[9px] text-purple-500"></i>Committees
+                            </span>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                                <i class="fa-solid fa-id-badge mr-1 text-[9px] text-purple-500"></i>Designations
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Link -->
+                    <div class="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 flex items-center gap-1.5 transition-colors">
+                            Launch Cockpit
+                            <svg class="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </span>
+                        <span class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs group-hover:bg-purple-600 group-hover:text-white transition-all duration-200 shadow-xs">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+
+                    <!-- Full Click Target -->
+                    <a href="{{ route('admin.index') }}" class="after:absolute after:inset-0 focus:outline-none" aria-label="Open Platform Cockpit"></a>
+                </div>
+            @endif
+
         </div>
-    </div>
 
-    <!-- Premium Mobile Bottom Floating Nav Bar (Icons & Labels) -->
-    <div class="fixed sm:hidden bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/70 p-1.5 rounded-[24px] shadow-2xl shadow-slate-950/15 dark:shadow-black/60 flex items-center justify-around ring-1 ring-white/10">
-        <!-- Board of Directors Button -->
-        <button onclick="switchTab('board')" id="tab-btn-board-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Board of Directors">
-            <i class="fa-solid fa-building text-base mb-1"></i>
-            <span class="text-[10px] font-bold tracking-tight leading-none">BOD</span>
-        </button>
+        <!-- No Matching Search Results State -->
+        <div id="no-search-results" class="hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center max-w-md mx-auto shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto mb-4 text-lg">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">No Matching Workspaces Found</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">No applications matched your filter query. Try searching with different terms.</p>
+        </div>
+    @else
+        <!-- Empty State for Users without Any Permissions Assigned -->
+        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-10 sm:p-16 text-center max-w-lg mx-auto shadow-xl shadow-purple-500/5">
+            <div class="relative inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 mb-5 shadow-inner border border-amber-200/60 dark:border-amber-800/40">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
 
-        <!-- Management Button -->
-        <button onclick="switchTab('management')" id="tab-btn-management-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Management">
-            <i class="fa-solid fa-users text-base mb-1"></i>
-            <span class="text-[10px] font-bold tracking-tight leading-none">Management</span>
-        </button>
+            <div class="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+                Workspace Access Restricted
+            </div>
 
-        <!-- Committees Button -->
-        <button onclick="switchTab('committees')" id="tab-btn-committees-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Committees">
-            <i class="fa-solid fa-people-group text-base mb-1"></i>
-            <span class="text-[10px] font-bold tracking-tight leading-none">Committee</span>
-        </button>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                No Applications Assigned Yet
+            </h2>
 
-        <!-- Admin Button (Only for Super Admin) -->
-        @if(Auth::user()->isSuperAdmin())
-            <button onclick="switchTab('admin')" id="tab-btn-admin-mobile" class="tab-btn-mobile flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 active:scale-95 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200" title="Administration">
-                <i class="fa-solid fa-users-gear text-base mb-1"></i>
-                <span class="text-[10px] font-bold tracking-tight leading-none">Admin</span>
-            </button>
-        @endif
-    </div>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2.5 leading-relaxed">
+                Your corporate account has been authenticated, but an administrator has not yet assigned workspace access permissions to your profile.
+            </p>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button type="button" onclick="window.location.reload()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-bold py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white shadow-xs active:scale-95 transition-all">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    Refresh Permissions
+                </button>
+            </div>
+        </div>
+    @endif
 </div>
 @endsection
 
 @section('scripts')
 <script>
-    function switchTab(tabId) {
-        // Hide all panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.add('hidden');
-        });
-
-        // 1. Reset and style Desktop tab buttons
-        const activeClassesDesktop = ['bg-white', 'dark:bg-slate-800', 'shadow-xs', 'border-slate-200/50', 'dark:border-slate-700/50', 'font-bold'];
-        const themeTextsDesktop = [
-            'text-blue-600', 'dark:text-blue-400',
-            'text-teal-600', 'dark:text-teal-400',
-            'text-indigo-600', 'dark:text-indigo-400',
-            'text-purple-600', 'dark:text-purple-400'
-        ];
-
-        document.querySelectorAll('.tab-btn-desktop').forEach(btn => {
-            btn.classList.remove(...activeClassesDesktop, ...themeTextsDesktop);
-            btn.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200', 'font-medium');
-        });
-
-        const activeBtnDesktop = document.getElementById('tab-btn-' + tabId);
-        if (activeBtnDesktop) {
-            activeBtnDesktop.classList.remove('border-transparent', 'text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200', 'font-medium');
-            activeBtnDesktop.classList.add(...activeClassesDesktop);
-
-            // Add dynamic theme accents
-            if (tabId === 'board') {
-                activeBtnDesktop.classList.add('text-blue-600', 'dark:text-blue-400');
-            } else if (tabId === 'management') {
-                activeBtnDesktop.classList.add('text-teal-600', 'dark:text-teal-400');
-            } else if (tabId === 'committees') {
-                activeBtnDesktop.classList.add('text-indigo-600', 'dark:text-indigo-400');
-            } else if (tabId === 'admin') {
-                activeBtnDesktop.classList.add('text-purple-600', 'dark:text-purple-400');
-            }
-        }
-
-        // 2. Reset and style Mobile tab buttons (iOS style backdrops)
-        const activeClassesMobile = ['bg-slate-100', 'dark:bg-slate-800/80', 'shadow-xs', 'font-bold'];
-        const themeTextsMobile = [
-            'text-blue-500', 'dark:text-blue-400',
-            'text-teal-500', 'dark:text-teal-400',
-            'text-indigo-500', 'dark:text-indigo-400',
-            'text-purple-500', 'dark:text-purple-400'
-        ];
-
-        document.querySelectorAll('.tab-btn-mobile').forEach(btn => {
-            btn.classList.remove(...activeClassesMobile, ...themeTextsMobile);
-            btn.classList.add('text-slate-400', 'dark:text-slate-500', 'hover:text-slate-900', 'dark:hover:text-slate-200');
-        });
-
-        const activeBtnMobile = document.getElementById('tab-btn-' + tabId + '-mobile');
-        if (activeBtnMobile) {
-            activeBtnMobile.classList.remove('text-slate-400', 'dark:text-slate-500');
-            activeBtnMobile.classList.add(...activeClassesMobile);
-
-            // Add dynamic theme accents for mobile buttons
-            if (tabId === 'board') {
-                activeBtnMobile.classList.add('text-blue-500', 'dark:text-blue-400');
-            } else if (tabId === 'management') {
-                activeBtnMobile.classList.add('text-teal-500', 'dark:text-teal-400');
-            } else if (tabId === 'committees') {
-                activeBtnMobile.classList.add('text-indigo-500', 'dark:text-indigo-400');
-            } else if (tabId === 'admin') {
-                activeBtnMobile.classList.add('text-purple-500', 'dark:text-purple-400');
-            }
-        }
-
-        // 3. Show active panel
-        const activePanel = document.getElementById('panel-' + tabId);
-        if (activePanel) {
-            activePanel.classList.remove('hidden');
-        }
-
-        // 4. Update Mobile Tab Name Indicator
-        const indicatorMobile = document.getElementById('active-tab-indicator-mobile');
-        if (indicatorMobile) {
-            indicatorMobile.className = 'text-xs font-extrabold tracking-tight transition-all duration-300';
-            if (tabId === 'board') {
-                indicatorMobile.textContent = 'Board of Directors';
-                indicatorMobile.classList.add('text-blue-600', 'dark:text-blue-400');
-            } else if (tabId === 'management') {
-                indicatorMobile.textContent = 'Management';
-                indicatorMobile.classList.add('text-teal-600', 'dark:text-teal-400');
-            } else if (tabId === 'committees') {
-                indicatorMobile.textContent = 'Committees';
-                indicatorMobile.classList.add('text-indigo-600', 'dark:text-indigo-400');
-            } else if (tabId === 'admin') {
-                indicatorMobile.textContent = 'Administration';
-                indicatorMobile.classList.add('text-purple-600', 'dark:text-purple-400');
-            }
-        }
-
-        // Keep current tab in URL state for preservation on redirect/refresh
-        const url = new URL(window.location);
-        url.searchParams.set('tab', tabId);
-        window.history.pushState({}, '', url);
-    }
-
-    // Initialize from URL search parameter or default to 'board'
     document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        let tab = urlParams.get('tab');
-        
-        // Safety check if tab is admin but user is not admin
-        @if(!Auth::user()->isSuperAdmin())
-            if (tab === 'admin') tab = 'board';
-        @endif
+        const searchInput = document.getElementById('app-search-input');
+        const clearBtn = document.getElementById('app-search-clear');
+        const counterEl = document.getElementById('app-counter');
+        const cards = Array.from(document.querySelectorAll('.app-card'));
+        const noResults = document.getElementById('no-search-results');
 
-        if (!tab || !document.getElementById('panel-' + tab)) {
-            tab = 'board';
+        if (!searchInput) return;
+
+        function filterApps() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            if (clearBtn) {
+                if (query.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+
+            cards.forEach(card => {
+                const searchData = (card.getAttribute('data-name') || '').toLowerCase();
+                const matches = searchData.includes(query);
+
+                if (matches) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            if (counterEl) {
+                counterEl.textContent = visibleCount;
+            }
+
+            if (noResults) {
+                if (visibleCount === 0 && query.length > 0) {
+                    noResults.classList.remove('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                }
+            }
         }
-        switchTab(tab);
+
+        searchInput.addEventListener('input', filterApps);
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                filterApps();
+                searchInput.focus();
+            });
+        }
+
+        // Keyboard Shortcut: press '/' to focus search input
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== searchInput && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
     });
 </script>
 @endsection
