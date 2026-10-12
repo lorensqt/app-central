@@ -406,7 +406,7 @@
     @endphp
 
     <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
-        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-4.5">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4.5">
             <div class="text-left">
                 <h4 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                     <i class="fa-solid fa-address-book text-purple-600 dark:text-purple-400 text-sm"></i>
@@ -422,13 +422,13 @@
                     <button type="button" onclick="setAnalyticsStatusFilter('all')" id="analytics-filter-btn-all" class="px-2.5 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 transition duration-150">
                         All ({{ $total }})
                     </button>
-                    <button type="button" onclick="setAnalyticsStatusFilter('approved')" id="analytics-filter-btn-approved" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                    <button type="button" onclick="setAnalyticsStatusFilter('approved')" id="analytics-filter-btn-approved" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition duration-150">
                         Approved ({{ $approved }})
                     </button>
-                    <button type="button" onclick="setAnalyticsStatusFilter('pending')" id="analytics-filter-btn-pending" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                    <button type="button" onclick="setAnalyticsStatusFilter('pending')" id="analytics-filter-btn-pending" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition duration-150">
                         Pending ({{ $pending }})
                     </button>
-                    <button type="button" onclick="setAnalyticsStatusFilter('declined')" id="analytics-filter-btn-declined" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150">
+                    <button type="button" onclick="setAnalyticsStatusFilter('declined')" id="analytics-filter-btn-declined" class="px-2.5 py-1 rounded-lg text-slate-550 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition duration-150">
                         Declined ({{ $declined }})
                     </button>
                 </div>
@@ -443,68 +443,152 @@
             </div>
         </div>
 
-        <!-- Shaded 4-Column Filters Grid -->
+        <!-- Shaded 4-Column Filters Grid with Custom Animated Dropdowns -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 dark:bg-slate-950 p-4.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-xs animate-fade-in">
             <!-- Search Filter -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 focus-within:border-purple-500 dark:focus-within:border-purple-400 focus-within:ring-4 focus-within:ring-purple-500/10 dark:focus-within:ring-purple-500/10 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition duration-200">
-                <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+            <div class="relative flex items-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 focus-within:border-purple-500 dark:focus-within:border-purple-400 focus-within:ring-4 focus-within:ring-purple-500/10 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition duration-200">
+                <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-slate-400 dark:text-slate-500">
                     <i class="fa-solid fa-magnifying-glass text-xs text-purple-600/80 dark:text-purple-400/80"></i>
                 </span>
-                <input type="text" id="analytics-search" oninput="filterAnalytics()" placeholder="Search attendees/responses..." class="w-full pl-10 pr-4 py-3 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400 dark:placeholder-slate-500">
+                <input type="text" id="analytics-search" oninput="onAnalyticsSearchInput()" placeholder="Search attendees/responses..."
+                    class="w-full pl-10 pr-9 py-2.5 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400 dark:placeholder-slate-500">
+                <button id="analytics-search-clear" type="button" onclick="clearAnalyticsSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" title="Clear search">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
 
-            <!-- Gender Filter -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 focus-within:border-purple-500 dark:focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-500/10 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition duration-200">
-                <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-venus-mars text-xs text-purple-600/80 dark:text-purple-400/80"></i>
-                </span>
-                <select id="analytics-filter-gender" onchange="filterAnalytics()" class="w-full pl-10 pr-8 py-3 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-white dark:bg-slate-900 appearance-none cursor-pointer">
-                    <option value="all" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">All Genders</option>
-                    <option value="Male" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Male</option>
-                    <option value="Female" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Female</option>
-                    <option value="LGBTQ+" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">LGBTQ+</option>
-                    <option value="Others" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Others</option>
-                </select>
-                <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                </span>
+            <!-- Custom Dropdown: Gender -->
+            <div class="relative custom-analytics-dropdown" id="dropdown-wrapper-analytics-gender">
+                <input type="hidden" id="analytics-filter-gender" value="all">
+                <button type="button" onclick="toggleAnalyticsDropdown('gender')"
+                    class="w-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3.5 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-venus-mars text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-analytics-gender" class="truncate font-medium">All Genders</span>
+                    </div>
+                    <svg id="chevron-analytics-gender" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-analytics-gender"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5">
+                    <button type="button" onclick="selectAnalyticsDropdown('gender', 'all', 'All Genders')"
+                        class="analytics-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span>All Genders</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('gender', 'Male', 'Male')"
+                        class="analytics-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Male">
+                        <span>Male</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('gender', 'Female', 'Female')"
+                        class="analytics-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Female">
+                        <span>Female</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('gender', 'LGBTQ+', 'LGBTQ+')"
+                        class="analytics-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="LGBTQ+">
+                        <span>LGBTQ+</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('gender', 'Others', 'Others')"
+                        class="analytics-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Others">
+                        <span>Others</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- Division Filter -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 focus-within:border-purple-500 dark:focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-500/10 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition duration-200">
-                <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-diagram-project text-xs text-purple-600/80 dark:text-purple-400/80"></i>
-                </span>
-                <select id="analytics-filter-division" onchange="filterAnalytics()" class="w-full pl-10 pr-8 py-3 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-white dark:bg-slate-900 appearance-none cursor-pointer">
-                    <option value="all" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">All Divisions</option>
+            <!-- Custom Dropdown: Division -->
+            <div class="relative custom-analytics-dropdown" id="dropdown-wrapper-analytics-division">
+                <input type="hidden" id="analytics-filter-division" value="all">
+                <button type="button" onclick="toggleAnalyticsDropdown('division')"
+                    class="w-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3.5 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-diagram-project text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-analytics-division" class="truncate font-medium">All Divisions</span>
+                    </div>
+                    <svg id="chevron-analytics-division" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-analytics-division"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5">
+                    <button type="button" onclick="selectAnalyticsDropdown('division', 'all', 'All Divisions')"
+                        class="analytics-opt-division w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span class="truncate">All Divisions</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
                     @foreach(array_keys($divisions) as $divName)
                         @if($divName !== 'Unspecified')
-                            <option value="{{ $divName }}" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">{{ $divName }}</option>
+                            <button type="button" onclick="selectAnalyticsDropdown('division', '{{ addslashes($divName) }}', '{{ addslashes($divName) }}')"
+                                class="analytics-opt-division w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="{{ $divName }}">
+                                <span class="truncate">{{ $divName }}</span>
+                                <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            </button>
                         @endif
                     @endforeach
-                    <option value="Unspecified" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Unspecified / Blank</option>
-                </select>
-                <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                </span>
+                    <button type="button" onclick="selectAnalyticsDropdown('division', 'Unspecified', 'Unspecified / Blank')"
+                        class="analytics-opt-division w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Unspecified">
+                        <span class="truncate">Unspecified / Blank</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- Age Filter -->
-            <div class="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800/80 focus-within:border-purple-500 dark:focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-500/10 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs transition duration-200">
-                <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-cake-candles text-xs text-purple-600/80 dark:text-purple-400/80"></i>
-                </span>
-                <select id="analytics-filter-age" onchange="filterAnalytics()" class="w-full pl-10 pr-8 py-3 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs focus:ring-0 focus:outline-none bg-white dark:bg-slate-900 appearance-none cursor-pointer">
-                    <option value="all" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">All Ages</option>
-                    <option value="kids" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Kids (< 12 yrs)</option>
-                    <option value="youth" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Youth (12-17 yrs)</option>
-                    <option value="young_adults" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Young Adults (18-30 yrs)</option>
-                    <option value="adults" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Adults (31-59 yrs)</option>
-                    <option value="seniors" class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">Seniors (60+ yrs)</option>
-                </select>
-                <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                </span>
+            <!-- Custom Dropdown: Age -->
+            <div class="relative custom-analytics-dropdown" id="dropdown-wrapper-analytics-age">
+                <input type="hidden" id="analytics-filter-age" value="all">
+                <button type="button" onclick="toggleAnalyticsDropdown('age')"
+                    class="w-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3.5 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-cake-candles text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-analytics-age" class="truncate font-medium">All Ages</span>
+                    </div>
+                    <svg id="chevron-analytics-age" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-analytics-age"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5">
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'all', 'All Ages')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span>All Ages</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'kids', 'Kids (< 12 yrs)')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="kids">
+                        <span>Kids (&lt; 12 yrs)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'youth', 'Youth (12-17 yrs)')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="youth">
+                        <span>Youth (12-17 yrs)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'young_adults', 'Young Adults (18-30 yrs)')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="young_adults">
+                        <span>Young Adults (18-30 yrs)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'adults', 'Adults (31-59 yrs)')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="adults">
+                        <span>Adults (31-59 yrs)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectAnalyticsDropdown('age', 'seniors', 'Seniors (60+ yrs)')"
+                        class="analytics-opt-age w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="seniors">
+                        <span>Seniors (60+ yrs)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1345,7 +1429,7 @@
                     if (st === status) {
                         btn.className = "px-2.5 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-500/20 transition duration-150";
                     } else {
-                        btn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-850 transition duration-150";
+                        btn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition duration-150";
                     }
                 }
             });
@@ -1353,6 +1437,99 @@
             // Run matching list update
             filterAnalytics();
         }
+
+        // --- CUSTOM ANIMATED DROPDOWNS FOR ANALYTICS FILTERS ---
+        function toggleAnalyticsDropdown(name) {
+            const menu = document.getElementById(`menu-analytics-${name}`);
+            const chevron = document.getElementById(`chevron-analytics-${name}`);
+            if (!menu) return;
+
+            const isHidden = menu.classList.contains('hidden');
+            closeAllAnalyticsDropdowns();
+
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    menu.classList.remove('opacity-0', 'scale-95');
+                    menu.classList.add('opacity-100', 'scale-100');
+                    if (chevron) chevron.classList.add('rotate-180');
+                });
+            }
+        }
+
+        function closeAllAnalyticsDropdowns() {
+            ['gender', 'division', 'age'].forEach(name => {
+                const menu = document.getElementById(`menu-analytics-${name}`);
+                const chevron = document.getElementById(`chevron-analytics-${name}`);
+                if (menu && !menu.classList.contains('hidden')) {
+                    menu.classList.remove('opacity-100', 'scale-100');
+                    menu.classList.add('opacity-0', 'scale-95');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                    setTimeout(() => menu.classList.add('hidden'), 200);
+                }
+            });
+        }
+
+        function selectAnalyticsDropdown(name, value, label) {
+            const input = document.getElementById(`analytics-filter-${name}`);
+            if (input) input.value = value;
+
+            const labelEl = document.getElementById(`label-analytics-${name}`);
+            if (labelEl) labelEl.textContent = label;
+
+            const options = document.querySelectorAll(`.analytics-opt-${name}`);
+            options.forEach(opt => {
+                const optVal = opt.getAttribute('data-value');
+                const checkIcon = opt.querySelector('.check-icon');
+                if (optVal === value) {
+                    opt.classList.add('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    opt.classList.remove('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (checkIcon) checkIcon.classList.remove('hidden');
+                } else {
+                    opt.classList.remove('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    opt.classList.add('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (checkIcon) checkIcon.classList.add('hidden');
+                }
+            });
+
+            closeAllAnalyticsDropdowns();
+            filterAnalytics();
+        }
+
+        function onAnalyticsSearchInput() {
+            const input = document.getElementById('analytics-search');
+            const clearBtn = document.getElementById('analytics-search-clear');
+            if (clearBtn && input) {
+                if (input.value.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+            filterAnalytics();
+        }
+
+        function clearAnalyticsSearch() {
+            const input = document.getElementById('analytics-search');
+            const clearBtn = document.getElementById('analytics-search-clear');
+            if (input) {
+                input.value = '';
+                if (clearBtn) clearBtn.classList.add('hidden');
+                filterAnalytics();
+            }
+        }
+
+        // Global dismiss for analytics dropdowns
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-analytics-dropdown')) {
+                closeAllAnalyticsDropdowns();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllAnalyticsDropdowns();
+            }
+        });
 
         function filterAnalytics() {
             const query = document.getElementById('analytics-search') ? document.getElementById('analytics-search').value.toLowerCase().trim() : '';

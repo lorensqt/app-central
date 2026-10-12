@@ -1,82 +1,200 @@
 <!-- TAB 1: REGISTRATION REQUESTS PANEL -->
 <div id="tab-panel-requests" class="space-y-6">
     <!-- Filter Actions Strip -->
-    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 shadow-sm">
+    <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-4 shadow-sm">
         <!-- Left Side: Live Search Box -->
-        <div class="relative flex-grow max-w-md bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_8px_rgba(15,23,42,0.01)] transition duration-200">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="relative flex items-center flex-grow max-w-md bg-white dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus-within:border-purple-500 dark:focus-within:border-purple-400 focus-within:ring-4 focus-within:ring-purple-500/10 shadow-xs transition duration-200">
+            <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-slate-400 dark:text-slate-500">
+                <svg class="w-4 h-4 text-purple-600/80 dark:text-purple-400/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </span>
-            <input type="text" id="applicant-search" oninput="filterApplicants()" placeholder="Search applicants by name or email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-0 text-slate-600 dark:text-slate-200 text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400">
+            <input type="text" id="applicant-search" oninput="onApplicantSearchInput()" placeholder="Search applicants by name or email..."
+                class="w-full pl-10 pr-9 py-2.5 rounded-xl border-0 text-slate-700 dark:text-slate-200 text-xs sm:text-sm focus:ring-0 focus:outline-none bg-transparent placeholder-slate-400 dark:placeholder-slate-500">
+            <button id="applicant-search-clear" type="button" onclick="clearApplicantSearch()"
+                class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" title="Clear search">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
 
-        <!-- Right Side: Filter Dropdowns designed elegantly -->
-        <div class="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-xl border border-slate-100 dark:border-slate-800/80 select-none">
-            <!-- Status Dropdown -->
-            <div class="relative min-w-[155px]">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-circle-check text-xs text-purple-600 dark:text-purple-400"></i>
-                </span>
-                <select id="filter-status" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
-                    <option value="all">All Statuses ({{ $event->registrations->count() }})</option>
-                    <option value="pending">Pending ({{ $event->registrations->where('status', 'pending')->count() }})</option>
-                    <option value="approved">Approved ({{ $event->registrations->where('status', 'approved')->count() }})</option>
-                    <option value="declined">Declined ({{ $event->registrations->where('status', 'declined')->count() }})</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        <!-- Right Side: Filter Dropdowns designed with unified custom styling -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-xl border border-slate-200/60 dark:border-slate-800/80 select-none">
+            <!-- Custom Dropdown: Status -->
+            <div class="relative custom-requests-dropdown" id="dropdown-wrapper-requests-status">
+                <input type="hidden" id="filter-status" value="all">
+                <button type="button" onclick="toggleRequestsDropdown('status')"
+                    class="w-full min-w-[155px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-circle-check text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-filter-status" class="truncate font-medium">All Statuses ({{ $event->registrations->count() }})</span>
+                    </div>
+                    <svg id="chevron-filter-status" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-filter-status"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5 min-w-[190px]">
+                    <button type="button" onclick="selectRequestsDropdown('status', 'all', 'All Statuses ({{ $event->registrations->count() }})')"
+                        class="requests-opt-status w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span class="opt-text truncate">All Statuses ({{ $event->registrations->count() }})</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('status', 'pending', 'Pending ({{ $event->registrations->where('status', 'pending')->count() }})')"
+                        class="requests-opt-status w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="pending">
+                        <span class="opt-text flex items-center gap-2 truncate">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                            Pending ({{ $event->registrations->where('status', 'pending')->count() }})
+                        </span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('status', 'approved', 'Approved ({{ $event->registrations->where('status', 'approved')->count() }})')"
+                        class="requests-opt-status w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="approved">
+                        <span class="opt-text flex items-center gap-2 truncate">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                            Approved ({{ $event->registrations->where('status', 'approved')->count() }})
+                        </span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('status', 'declined', 'Declined ({{ $event->registrations->where('status', 'declined')->count() }})')"
+                        class="requests-opt-status w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="declined">
+                        <span class="opt-text flex items-center gap-2 truncate">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                            Declined ({{ $event->registrations->where('status', 'declined')->count() }})
+                        </span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
                 </div>
             </div>
 
-            <!-- Request Type Dropdown (Individual vs Group) -->
-            <div class="relative min-w-[150px]">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-users text-xs text-purple-600 dark:text-purple-400"></i>
-                </span>
-                <select id="filter-type" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
-                    <option value="all">All Types</option>
-                    <option value="individual">Individual Only</option>
-                    <option value="group">Group Only</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+            <!-- Custom Dropdown: Request Type -->
+            <div class="relative custom-requests-dropdown" id="dropdown-wrapper-requests-type">
+                <input type="hidden" id="filter-type" value="all">
+                <button type="button" onclick="toggleRequestsDropdown('type')"
+                    class="w-full min-w-[140px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-users text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-filter-type" class="truncate font-medium">All Types</span>
+                    </div>
+                    <svg id="chevron-filter-type" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-filter-type"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5 min-w-[160px]">
+                    <button type="button" onclick="selectRequestsDropdown('type', 'all', 'All Types')"
+                        class="requests-opt-type w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span class="truncate">All Types</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('type', 'individual', 'Individual Only')"
+                        class="requests-opt-type w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="individual">
+                        <span class="truncate">Individual Only</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('type', 'group', 'Group Only')"
+                        class="requests-opt-type w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="group">
+                        <span class="truncate">Group Only</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
                 </div>
             </div>
 
-            <!-- Gender Dropdown -->
-            <div class="relative min-w-[150px]">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-venus-mars text-xs text-purple-600 dark:text-purple-400"></i>
-                </span>
-                <select id="filter-gender" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
-                    <option value="all">All Genders</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="lgbtq+">LGBTQ+</option>
-                    <option value="unspecified">Unspecified / Other</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+            <!-- Custom Dropdown: Gender -->
+            <div class="relative custom-requests-dropdown" id="dropdown-wrapper-requests-gender">
+                <input type="hidden" id="filter-gender" value="all">
+                <button type="button" onclick="toggleRequestsDropdown('gender')"
+                    class="w-full min-w-[140px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-venus-mars text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-filter-gender" class="truncate font-medium">All Genders</span>
+                    </div>
+                    <svg id="chevron-filter-gender" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-filter-gender"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5 min-w-[170px]">
+                    <button type="button" onclick="selectRequestsDropdown('gender', 'all', 'All Genders')"
+                        class="requests-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="all">
+                        <span class="truncate">All Genders</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('gender', 'male', 'Male')"
+                        class="requests-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="male">
+                        <span class="truncate">Male</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('gender', 'female', 'Female')"
+                        class="requests-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="female">
+                        <span class="truncate">Female</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('gender', 'lgbtq+', 'LGBTQ+')"
+                        class="requests-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="lgbtq+">
+                        <span class="truncate">LGBTQ+</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('gender', 'unspecified', 'Unspecified / Other')"
+                        class="requests-opt-gender w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="unspecified">
+                        <span class="truncate">Unspecified / Other</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
                 </div>
             </div>
 
-            <!-- Sort Dropdown -->
-            <div class="relative min-w-[190px]">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                    <i class="fa-solid fa-arrow-down-wide-short text-xs text-purple-600 dark:text-purple-400"></i>
-                </span>
-                <select id="filter-sort" onchange="filterApplicants()" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 py-2 pl-9 pr-8 text-slate-700 dark:text-slate-200 text-xs font-semibold focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-900 transition-all duration-200 cursor-pointer appearance-none">
-                    <option value="date-desc">Submission (Newest First)</option>
-                    <option value="date-asc">Submission (Oldest First)</option>
-                    <option value="name-asc">Name (A - Z)</option>
-                    <option value="name-desc">Name (Z - A)</option>
-                    <option value="age-asc">Age (Youngest First)</option>
-                    <option value="age-desc">Age (Oldest First)</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+            <!-- Custom Dropdown: Sort -->
+            <div class="relative custom-requests-dropdown" id="dropdown-wrapper-requests-sort">
+                <input type="hidden" id="filter-sort" value="date-desc">
+                <button type="button" onclick="toggleRequestsDropdown('sort')"
+                    class="w-full min-w-[175px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/50 dark:hover:border-purple-500/50 py-2.5 px-3 flex items-center justify-between gap-2 shadow-xs transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500/10">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-arrow-down-wide-short text-xs text-purple-600 dark:text-purple-400 shrink-0"></i>
+                        <span id="label-filter-sort" class="truncate font-medium">Newest First</span>
+                    </div>
+                    <svg id="chevron-filter-sort" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Animated Menu -->
+                <div id="menu-filter-sort"
+                    class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 pr-1 max-h-60 overflow-y-auto custom-scrollbar space-y-0.5 min-w-[190px]">
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'date-desc', 'Newest First')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 flex items-center justify-between transition" data-value="date-desc">
+                        <span class="truncate">Submission (Newest First)</span>
+                        <svg class="check-icon w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'date-asc', 'Oldest First')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="date-asc">
+                        <span class="truncate">Submission (Oldest First)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'name-asc', 'Name (A - Z)')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="name-asc">
+                        <span class="truncate">Name (A - Z)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'name-desc', 'Name (Z - A)')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="name-desc">
+                        <span class="truncate">Name (Z - A)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'age-asc', 'Age (Youngest First)')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="age-asc">
+                        <span class="truncate">Age (Youngest First)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="selectRequestsDropdown('sort', 'age-desc', 'Age (Oldest First)')"
+                        class="requests-opt-sort w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="age-desc">
+                        <span class="truncate">Age (Oldest First)</span>
+                        <svg class="check-icon hidden w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -467,3 +585,124 @@
         @endif
     </div>
 </div>
+
+<script>
+    function toggleRequestsDropdown(name) {
+        const menu = document.getElementById(`menu-filter-${name}`);
+        const chevron = document.getElementById(`chevron-filter-${name}`);
+        if (!menu) return;
+
+        const isHidden = menu.classList.contains('hidden');
+        closeAllRequestsDropdowns();
+
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+                if (chevron) chevron.classList.add('rotate-180');
+            });
+        }
+    }
+
+    function closeAllRequestsDropdowns() {
+        ['status', 'type', 'gender', 'sort'].forEach(name => {
+            const menu = document.getElementById(`menu-filter-${name}`);
+            const chevron = document.getElementById(`chevron-filter-${name}`);
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.remove('opacity-100', 'scale-100');
+                menu.classList.add('opacity-0', 'scale-95');
+                if (chevron) chevron.classList.remove('rotate-180');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        });
+    }
+
+    function selectRequestsDropdown(name, value, label) {
+        const input = document.getElementById(`filter-${name}`);
+        if (input) input.value = value;
+
+        const labelEl = document.getElementById(`label-filter-${name}`);
+        if (labelEl) labelEl.textContent = label;
+
+        const options = document.querySelectorAll(`.requests-opt-${name}`);
+        options.forEach(opt => {
+            const optVal = opt.getAttribute('data-value');
+            const checkIcon = opt.querySelector('.check-icon');
+            if (optVal === value) {
+                opt.classList.add('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                opt.classList.remove('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                if (checkIcon) checkIcon.classList.remove('hidden');
+            } else {
+                opt.classList.remove('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                opt.classList.add('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                if (checkIcon) checkIcon.classList.add('hidden');
+            }
+        });
+
+        closeAllRequestsDropdowns();
+        if (typeof filterApplicants === 'function') {
+            filterApplicants();
+        }
+    }
+
+    function updateRequestsStatusDropdownLabel(status) {
+        const opt = document.querySelector(`.requests-opt-status[data-value="${status}"]`);
+        if (opt) {
+            const text = opt.querySelector('.opt-text') ? opt.querySelector('.opt-text').textContent.trim() : opt.textContent.trim();
+            const labelEl = document.getElementById('label-filter-status');
+            if (labelEl) labelEl.textContent = text;
+            
+            document.querySelectorAll('.requests-opt-status').forEach(o => {
+                const check = o.querySelector('.check-icon');
+                if (o.getAttribute('data-value') === status) {
+                    o.classList.add('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    o.classList.remove('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (check) check.classList.remove('hidden');
+                } else {
+                    o.classList.remove('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    o.classList.add('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (check) check.classList.add('hidden');
+                }
+            });
+        }
+    }
+
+    function onApplicantSearchInput() {
+        const input = document.getElementById('applicant-search');
+        const clearBtn = document.getElementById('applicant-search-clear');
+        if (clearBtn && input) {
+            if (input.value.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+        if (typeof filterApplicants === 'function') {
+            filterApplicants();
+        }
+    }
+
+    function clearApplicantSearch() {
+        const input = document.getElementById('applicant-search');
+        const clearBtn = document.getElementById('applicant-search-clear');
+        if (input) {
+            input.value = '';
+            if (clearBtn) clearBtn.classList.add('hidden');
+            if (typeof filterApplicants === 'function') {
+                filterApplicants();
+            }
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-requests-dropdown')) {
+            closeAllRequestsDropdowns();
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAllRequestsDropdowns();
+        }
+    });
+</script>

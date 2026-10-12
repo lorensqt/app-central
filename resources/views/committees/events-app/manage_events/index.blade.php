@@ -704,6 +704,9 @@
         if (statusDropdown) {
             statusDropdown.value = status;
         }
+        if (typeof updateRequestsStatusDropdownLabel === 'function') {
+            updateRequestsStatusDropdownLabel(status);
+        }
         filterApplicants();
     }
 

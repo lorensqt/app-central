@@ -83,13 +83,23 @@ class ElectionController extends Controller
             ->withCount('votes')
             ->get();
             
-        $voters = $election->voters()->with('user')->get();
+        // Lightweight voter stats data to avoid loading 6000+ full models and user relations
+        $voterStats = $election->voters()
+            ->select('gender', 'age', 'voted_at')
+            ->get();
 
         $divisions = $election->voters()
             ->whereNotNull('division')
             ->where('division', '!=', '')
             ->distinct()
             ->pluck('division')
+            ->toArray();
+
+        $genders = $election->voters()
+            ->whereNotNull('gender')
+            ->where('gender', '!=', '')
+            ->distinct()
+            ->pluck('gender')
             ->toArray();
 
         // Calculate Demographic and Turnout Statistics
@@ -108,7 +118,7 @@ class ElectionController extends Controller
             '61+' => ['count' => 0, 'voted' => 0],
         ];
 
-        foreach ($voters as $voter) {
+        foreach ($voterStats as $voter) {
             $g = $voter->gender;
             $hasVoted = $voter->voted_at !== null;
 
@@ -149,20 +159,20 @@ class ElectionController extends Controller
             }
         }
 
-        $allAges = $voters->pluck('age')->filter()->toArray();
+        $allAges = $voterStats->pluck('age')->filter()->toArray();
         $avgAgeAll = count($allAges) > 0 ? round(array_sum($allAges) / count($allAges), 1) : 0;
 
-        $votedAges = $voters->whereNotNull('voted_at')->pluck('age')->filter()->toArray();
+        $votedAges = $voterStats->whereNotNull('voted_at')->pluck('age')->filter()->toArray();
         $avgAgeVoted = count($votedAges) > 0 ? round(array_sum($votedAges) / count($votedAges), 1) : 0;
 
-        $queuedAges = $voters->whereNull('voted_at')->pluck('age')->filter()->toArray();
+        $queuedAges = $voterStats->whereNull('voted_at')->pluck('age')->filter()->toArray();
         $avgAgeQueued = count($queuedAges) > 0 ? round(array_sum($queuedAges) / count($queuedAges), 1) : 0;
 
         $stats = [
-            'total_voters' => $voters->count(),
-            'voted_voters' => $voters->whereNotNull('voted_at')->count(),
-            'queued_voters' => $voters->whereNull('voted_at')->count(),
-            'turnout_rate' => $voters->count() > 0 ? round(($voters->whereNotNull('voted_at')->count() / $voters->count()) * 100, 1) : 0,
+            'total_voters' => $voterStats->count(),
+            'voted_voters' => $voterStats->whereNotNull('voted_at')->count(),
+            'queued_voters' => $voterStats->whereNull('voted_at')->count(),
+            'turnout_rate' => $voterStats->count() > 0 ? round(($voterStats->whereNotNull('voted_at')->count() / $voterStats->count()) * 100, 1) : 0,
             'gender' => $genderStats,
             'age' => $ageStats,
             'avg_age_all' => $avgAgeAll,
@@ -170,7 +180,14 @@ class ElectionController extends Controller
             'avg_age_queued' => $avgAgeQueued,
         ];
 
-        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions', 'stats'));
+        // Paginate initial voters list at 100 per page for fast rendering with 6000+ voters
+        $voters = $election->voters()
+            ->with('user')
+            ->orderBy('voted_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(100);
+
+        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions', 'genders', 'stats'));
     }
 
     /**
@@ -810,6 +827,11 @@ class ElectionController extends Controller
             $query->where('division', $request->input('division'));
         }
 
+        // Gender Filter
+        if ($request->filled('gender') && $request->input('gender') !== 'all') {
+            $query->where('gender', $request->input('gender'));
+        }
+
         // Status Filter (All, Voted, In Queue)
         if ($request->filled('status') && $request->input('status') !== 'all') {
             if ($request->input('status') === 'voted') {
@@ -825,15 +847,17 @@ class ElectionController extends Controller
             $sortOrder = 'desc';
         }
         
-        // Sort by voted_at first, then by created_at or id
+        // Sort by voted_at first, then by id
         $query->orderBy('voted_at', $sortOrder)
               ->orderBy('id', $sortOrder);
 
-        $voters = $query->get();
+        $perPage = 100;
+        $page = (int) $request->input('page', 1);
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
             'success' => true,
-            'voters' => $voters->map(function($voter) {
+            'voters' => $paginated->map(function($voter) {
                 return [
                     'id' => $voter->id,
                     'name' => $voter->user ? $voter->user->name : 'Anonymous Voter',
@@ -845,7 +869,15 @@ class ElectionController extends Controller
                     'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
                     'status' => $voter->voted_at ? 'Voted' : 'In Queue',
                 ];
-            })
+            }),
+            'pagination' => [
+                'total' => $paginated->total(),
+                'per_page' => $paginated->perPage(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'from' => $paginated->firstItem() ?? 0,
+                'to' => $paginated->lastItem() ?? 0,
+            ]
         ]);
     }
 

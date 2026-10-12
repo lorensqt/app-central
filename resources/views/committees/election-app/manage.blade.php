@@ -248,26 +248,47 @@
             </div>
         </div>
 
-        <!-- Segmented Navigation Controls -->
-        <div class="border-b border-slate-200 dark:border-slate-800">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button onclick="switchManageTab('structure')" id="tab-btn-structure"
-                    class="manage-tab-btn border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-400 font-bold border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap">
-                    Positions & Candidates
-                </button>
-                <button onclick="switchManageTab('results')" id="tab-btn-results"
-                    class="manage-tab-btn border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap">
-                    Election Results
-                </button>
-                <button onclick="switchManageTab('voters')" id="tab-btn-voters"
-                    class="manage-tab-btn border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap">
-                    Voters & Analytics
-                </button>
-                <button onclick="switchManageTab('statistics')" id="tab-btn-statistics"
-                    class="manage-tab-btn border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap">
-                    Reports & Statistics
-                </button>
-            </nav>
+        <!-- Premium Glassmorphic Segmented Tabs Navigation Row -->
+        <div id="manage-tabs-nav-container" class="relative flex items-center bg-slate-100/90 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/80 custom-scrollbar overflow-x-auto select-none w-full gap-1.5 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
+            <!-- Dynamic sliding active tab indicator -->
+            <div id="manage-tab-active-indicator" class="absolute bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-[0_4px_12px_rgba(15,23,42,0.06)] rounded-xl transition-all duration-300 ease-out z-0 pointer-events-none"></div>
+
+            <!-- Tab 1 Button: Positions & Candidates -->
+            <button onclick="switchManageTab('structure')" id="tab-btn-structure"
+                class="manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-purple-600 dark:text-purple-400 font-extrabold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-layer-group text-xs"></i>
+                <span>Positions & Candidates</span>
+                <span class="px-2 py-0.5 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 text-[10px] font-extrabold rounded-full transition duration-200">
+                    {{ $positions->count() }}
+                </span>
+            </button>
+
+            <!-- Tab 2 Button: Election Results -->
+            <button onclick="switchManageTab('results')" id="tab-btn-results"
+                class="manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-square-poll-vertical text-xs"></i>
+                <span>Election Results</span>
+                @if($election->status === 'active')
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                @endif
+            </button>
+
+            <!-- Tab 3 Button: Voters & Analytics -->
+            <button onclick="switchManageTab('voters')" id="tab-btn-voters"
+                class="manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-address-card text-xs"></i>
+                <span>Voters & Analytics</span>
+                <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-extrabold rounded-full transition duration-200">
+                    {{ number_format($voters->total()) }}
+                </span>
+            </button>
+
+            <!-- Tab 4 Button: Reports & Statistics -->
+            <button onclick="switchManageTab('statistics')" id="tab-btn-statistics"
+                class="manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
+                <i class="fa-solid fa-chart-pie text-xs"></i>
+                <span>Reports & Statistics</span>
+            </button>
         </div>
 
         <!-- Tab Contents Workspace -->
@@ -290,27 +311,37 @@
 
 @section('scripts')
     <script>
-        // --- VOTERS AJAX FILTERING ---
+        // --- VOTERS AJAX FILTERING, PAGINATION & CUSTOM DROPDOWNS ---
         let fetchVotersTimeout = null;
+        let currentVoterPage = 1;
 
-        function fetchFilteredVoters() {
+        function fetchFilteredVoters(page = 1) {
+            currentVoterPage = page;
             clearTimeout(fetchVotersTimeout);
             fetchVotersTimeout = setTimeout(() => {
-                const search = document.getElementById('voter-filter-search').value;
-                const division = document.getElementById('voter-filter-division').value;
-                const status = document.getElementById('voter-filter-status').value;
-                const sort = document.getElementById('voter-filter-sort').value;
+                const searchInput = document.getElementById('voter-filter-search');
+                const search = searchInput ? searchInput.value.trim() : '';
+                const division = document.getElementById('voter-filter-division') ? document.getElementById('voter-filter-division').value : 'all';
+                const gender = document.getElementById('voter-filter-gender') ? document.getElementById('voter-filter-gender').value : 'all';
+                const status = document.getElementById('voter-filter-status') ? document.getElementById('voter-filter-status').value : 'all';
+                const sort = document.getElementById('voter-filter-sort') ? document.getElementById('voter-filter-sort').value : 'desc';
 
                 const url = new URL(`/committees/election-app/{{ $election->id }}/voters`, window.location.origin);
                 if (search) url.searchParams.append('search', search);
-                if (division) url.searchParams.append('division', division);
-                if (status) url.searchParams.append('status', status);
+                if (division && division !== 'all') url.searchParams.append('division', division);
+                if (gender && gender !== 'all') url.searchParams.append('gender', gender);
+                if (status && status !== 'all') url.searchParams.append('status', status);
                 if (sort) url.searchParams.append('sort', sort);
+                url.searchParams.append('page', currentVoterPage);
 
                 const tbody = document.getElementById('voters-table-body');
                 const countDisplay = document.getElementById('voter-count-display');
+                const pageFrom = document.getElementById('voters-page-from');
+                const pageTo = document.getElementById('voters-page-to');
+                const pageTotal = document.getElementById('voters-page-total');
+                const tableCard = document.getElementById('voters-table-card');
 
-                tbody.classList.add('opacity-40');
+                if (tbody) tbody.classList.add('opacity-40');
 
                 fetch(url, {
                         headers: {
@@ -320,80 +351,321 @@
                     })
                     .then(response => response.json())
                     .then(res => {
-                        tbody.classList.remove('opacity-40');
+                        if (tbody) tbody.classList.remove('opacity-40');
                         if (res.success) {
-                            countDisplay.textContent = res.voters.length;
+                            const total = res.pagination ? res.pagination.total : res.voters.length;
+                            if (countDisplay) countDisplay.textContent = total.toLocaleString();
+                            if (pageFrom) pageFrom.textContent = res.pagination ? (res.pagination.from || 0).toLocaleString() : (res.voters.length > 0 ? '1' : '0');
+                            if (pageTo) pageTo.textContent = res.pagination ? (res.pagination.to || 0).toLocaleString() : res.voters.length.toLocaleString();
+                            if (pageTotal) pageTotal.textContent = total.toLocaleString();
 
                             if (res.voters.length === 0) {
                                 tbody.innerHTML = `
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-slate-400 italic">
-                                    No voters match the specified criteria.
-                                </td>
-                            </tr>
-                        `;
-                                return;
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center text-slate-400 dark:text-slate-500 italic">
+                                            No voters match the specified criteria.
+                                        </td>
+                                    </tr>
+                                `;
+                            } else {
+                                tbody.innerHTML = res.voters.map(voter => {
+                                    const badgeClass = voter.status === 'Voted' ?
+                                        'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                                        'bg-amber-500/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400';
+
+                                    return `
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
+                                            <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
+                                                ${voter.name}
+                                            </td>
+                                            <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
+                                                ${voter.email}
+                                            </td>
+                                            <td class="px-6 py-4.5">
+                                                ${voter.division}
+                                            </td>
+                                            <td class="px-6 py-4.5">
+                                                ${voter.gender}
+                                            </td>
+                                            <td class="px-6 py-4.5">
+                                                ${voter.age}
+                                            </td>
+                                            <td class="px-6 py-4.5">
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+                                                    ${voter.status}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4.5 text-xs text-slate-400 dark:text-slate-500">
+                                                ${voter.voted_at_formatted}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('');
                             }
 
-                            tbody.innerHTML = res.voters.map(voter => {
-                                const badgeClass = voter.status === 'Voted' ?
-                                    'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
-                                    'bg-amber-500/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400';
+                            if (res.pagination) {
+                                renderPaginationButtons(res.pagination);
+                            }
 
-                                return `
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
-                                <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
-                                    ${voter.name}
-                                </td>
-                                <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
-                                    ${voter.email}
-                                </td>
-                                <td class="px-6 py-4.5">
-                                    ${voter.division}
-                                </td>
-                                <td class="px-6 py-4.5">
-                                    ${voter.gender}
-                                </td>
-                                <td class="px-6 py-4.5">
-                                    ${voter.age}
-                                </td>
-                                <td class="px-6 py-4.5">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
-                                        ${voter.status}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4.5 text-xs text-slate-400">
-                                    ${voter.voted_at_formatted}
-                                </td>
-                            </tr>
-                        `;
-                            }).join('');
+                            if (currentVoterPage > 1 && tableCard) {
+                                tableCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
                         } else {
                             window.showToast('Failed to fetch voter list.', 'error');
                         }
                     })
                     .catch(err => {
-                        tbody.classList.remove('opacity-40');
+                        if (tbody) tbody.classList.remove('opacity-40');
                         console.error(err);
                         window.showToast('Connection error while fetching voters.', 'error');
                     });
-            }, 300);
+            }, 250);
         }
 
-        // --- TAB UTILS ---
-        function switchManageTab(tabId) {
-            document.querySelectorAll('.manage-tab-panel').forEach(panel => {
-                panel.classList.add('hidden');
+        function renderPaginationButtons(pagination) {
+            currentVoterPage = pagination.current_page;
+            const totalPages = pagination.last_page;
+            const container = document.getElementById('voters-pagination-buttons');
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Previous Button
+            const prevDisabled = currentVoterPage <= 1;
+            html += `
+                <button type="button" onclick="fetchFilteredVoters(${currentVoterPage - 1})" ${prevDisabled ? 'disabled' : ''}
+                    class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${prevDisabled ? 'opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-white dark:bg-slate-900' : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400'}">
+                    <i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Prev
+                </button>
+            `;
+
+            // Smart window calculation
+            const delta = 2;
+            const range = [];
+            const rangeWithDots = [];
+            let l;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentVoterPage - delta && i <= currentVoterPage + delta)) {
+                    range.push(i);
+                }
+            }
+
+            for (let i of range) {
+                if (l) {
+                    if (i - l === 2) {
+                        rangeWithDots.push(l + 1);
+                    } else if (i - l !== 1) {
+                        rangeWithDots.push('...');
+                    }
+                }
+                rangeWithDots.push(i);
+                l = i;
+            }
+
+            for (let p of rangeWithDots) {
+                if (p === '...') {
+                    html += `<span class="px-2 py-1 text-xs text-slate-400 dark:text-slate-600 select-none">...</span>`;
+                } else {
+                    const isActive = p === currentVoterPage;
+                    html += `
+                        <button type="button" onclick="fetchFilteredVoters(${p})"
+                            class="min-w-[32px] h-8 px-2 rounded-xl text-xs font-bold border transition ${isActive ? 'bg-purple-600 dark:bg-purple-600 text-white border-purple-600 shadow-sm shadow-purple-500/20' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400'}">
+                            ${p}
+                        </button>
+                    `;
+                }
+            }
+
+            // Next Button
+            const nextDisabled = currentVoterPage >= totalPages;
+            html += `
+                <button type="button" onclick="fetchFilteredVoters(${currentVoterPage + 1})" ${nextDisabled ? 'disabled' : ''}
+                    class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${nextDisabled ? 'opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 bg-white dark:bg-slate-900' : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400'}">
+                    Next <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // --- CUSTOM ANIMATED DROPDOWNS LOGIC ---
+        function toggleVoterDropdown(name) {
+            const menu = document.getElementById(`menu-filter-${name}`);
+            const chevron = document.getElementById(`chevron-filter-${name}`);
+            if (!menu) return;
+
+            const isHidden = menu.classList.contains('hidden');
+            closeAllVoterDropdowns();
+
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    menu.classList.remove('opacity-0', 'scale-95');
+                    menu.classList.add('opacity-100', 'scale-100');
+                    if (chevron) chevron.classList.add('rotate-180');
+                });
+            }
+        }
+
+        function closeAllVoterDropdowns() {
+            ['division', 'gender', 'status', 'sort'].forEach(name => {
+                const menu = document.getElementById(`menu-filter-${name}`);
+                const chevron = document.getElementById(`chevron-filter-${name}`);
+                if (menu && !menu.classList.contains('hidden')) {
+                    menu.classList.remove('opacity-100', 'scale-100');
+                    menu.classList.add('opacity-0', 'scale-95');
+                    if (chevron) chevron.classList.remove('rotate-180');
+                    setTimeout(() => menu.classList.add('hidden'), 200);
+                }
             });
-            document.querySelectorAll('.manage-tab-btn').forEach(btn => {
-                btn.className =
-                    "manage-tab-btn border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap";
+        }
+
+        function selectVoterDropdownOption(name, value, label) {
+            const input = document.getElementById(`voter-filter-${name}`);
+            if (input) input.value = value;
+
+            const labelEl = document.getElementById(`label-filter-${name}`);
+            if (labelEl) labelEl.textContent = label;
+
+            const options = document.querySelectorAll(`.voter-opt-${name}`);
+            options.forEach(opt => {
+                const optVal = opt.getAttribute('data-value');
+                const checkIcon = opt.querySelector('.check-icon');
+                if (optVal === value) {
+                    opt.classList.add('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    opt.classList.remove('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (checkIcon) checkIcon.classList.remove('hidden');
+                } else {
+                    opt.classList.remove('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                    opt.classList.add('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                    if (checkIcon) checkIcon.classList.add('hidden');
+                }
             });
 
-            document.getElementById('panel-' + tabId).classList.remove('hidden');
-            document.getElementById('tab-btn-' + tabId).className =
-                "manage-tab-btn border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-400 font-bold border-b-2 py-4 px-1 text-sm focus:outline-none whitespace-nowrap";
+            closeAllVoterDropdowns();
+            fetchFilteredVoters(1);
         }
+
+        // --- SEARCH INPUT HELPERS ---
+        function onVoterSearchInput() {
+            const input = document.getElementById('voter-filter-search');
+            const clearBtn = document.getElementById('voter-search-clear-btn');
+            if (clearBtn && input) {
+                if (input.value.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+            fetchFilteredVoters(1);
+        }
+
+        function clearVoterSearch() {
+            const input = document.getElementById('voter-filter-search');
+            const clearBtn = document.getElementById('voter-search-clear-btn');
+            if (input) {
+                input.value = '';
+                if (clearBtn) clearBtn.classList.add('hidden');
+                fetchFilteredVoters(1);
+            }
+        }
+
+        // --- BACK TO TOP LOGIC ---
+        function scrollVotersToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('voters-back-to-top');
+            if (!btn) return;
+            if (window.scrollY > 350) {
+                btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                btn.classList.add('opacity-100', 'translate-y-0');
+            } else {
+                btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                btn.classList.remove('opacity-100', 'translate-y-0');
+            }
+        });
+
+        // Close dropdowns on click outside or escape key
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-voter-dropdown')) {
+                closeAllVoterDropdowns();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllVoterDropdowns();
+            }
+        });
+
+        // --- ANIMATED SEGMENTED TAB SWITCHING LOGIC ---
+        let currentManageTab = 'structure';
+
+        function positionActiveManageTabIndicator(targetTab = null) {
+            const activeTab = targetTab || currentManageTab;
+            const activeBtn = document.getElementById('tab-btn-' + activeTab);
+            const indicator = document.getElementById('manage-tab-active-indicator');
+            const container = document.getElementById('manage-tabs-nav-container');
+
+            if (activeBtn && indicator && container) {
+                const containerRect = container.getBoundingClientRect();
+                const btnRect = activeBtn.getBoundingClientRect();
+
+                indicator.style.left = (btnRect.left - containerRect.left + container.scrollLeft) + 'px';
+                indicator.style.width = btnRect.width + 'px';
+                indicator.style.height = btnRect.height + 'px';
+                indicator.style.top = (btnRect.top - containerRect.top) + 'px';
+            }
+        }
+
+        function switchManageTab(targetTab) {
+            const tabs = ['structure', 'results', 'voters', 'statistics'];
+
+            tabs.forEach(tabId => {
+                const panel = document.getElementById('panel-' + tabId);
+                const btn = document.getElementById('tab-btn-' + tabId);
+                if (panel) panel.classList.add('hidden');
+                if (btn) {
+                    btn.className = "manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap";
+                }
+            });
+
+            const activePanel = document.getElementById('panel-' + targetTab);
+            const activeBtn = document.getElementById('tab-btn-' + targetTab);
+
+            if (activePanel) activePanel.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.className = "manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-purple-600 dark:text-purple-400 font-extrabold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap";
+            }
+
+            // Sync URL query param without reload
+            const url = new URL(window.location);
+            url.searchParams.set('tab', targetTab);
+            window.history.replaceState({}, '', url);
+
+            currentManageTab = targetTab;
+            positionActiveManageTabIndicator(targetTab);
+        }
+
+        window.addEventListener('resize', () => positionActiveManageTabIndicator());
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab && ['structure', 'results', 'voters', 'statistics'].includes(tab)) {
+                switchManageTab(tab);
+            } else {
+                switchManageTab('structure');
+            }
+            setTimeout(() => positionActiveManageTabIndicator(), 80);
+        });
 
         // --- POSITION MODALS ---
         function openCreatePositionModal() {

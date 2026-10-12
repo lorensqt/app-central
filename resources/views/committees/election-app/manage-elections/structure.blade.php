@@ -43,11 +43,23 @@
                     @forelse($position->candidates as $candidate)
                         <div class="relative group/card bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 flex items-center justify-between hover:shadow-sm transition" id="candidate-card-{{ $candidate->id }}">
                             <div class="flex items-center gap-3.5 min-w-0">
-                                <!-- Avatar -->
+                                <!-- Avatar Container (Square & Click to Preview) -->
                                 @if($candidate->avatar_path)
-                                    <img src="{{ $candidate->avatar_path }}" alt="{{ $candidate->name }}" class="w-11 h-11 rounded-full object-cover shrink-0 border border-slate-200 dark:border-slate-850">
+                                    <button type="button"
+                                        onclick="openCandidateImageViewer('{{ addslashes($candidate->avatar_path) }}', '{{ addslashes($candidate->name) }}', '{{ addslashes($candidate->party_affiliation ?? 'Independent') }}')"
+                                        class="group/avatar relative w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700/80 hover:border-purple-500/60 dark:hover:border-purple-400/60 hover:ring-2 hover:ring-purple-500/20 dark:hover:ring-purple-400/20 transition-all duration-200 cursor-pointer shadow-xs focus:outline-none"
+                                        title="Click to view full photo">
+                                        <img src="{{ $candidate->avatar_path }}" alt="{{ $candidate->name }}"
+                                            class="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-200">
+                                        <!-- Hover zoom indicator overlay -->
+                                        <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                                            <svg class="w-4 h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
                                 @else
-                                    <div class="w-11 h-11 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 font-bold flex items-center justify-center shrink-0 border border-purple-100/30 text-sm uppercase">
+                                    <div class="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold flex items-center justify-center shrink-0 border border-purple-200/60 dark:border-purple-800/50 text-sm uppercase shadow-xs">
                                         {{ substr($candidate->name, 0, 2) }}
                                     </div>
                                 @endif
@@ -93,3 +105,114 @@
         @endforelse
     </div>
 </div>
+
+<!-- CANDIDATE PHOTO PREVIEW MODAL -->
+<div id="candidate-image-viewer-modal"
+    onclick="if (event.target === this) closeCandidateImageViewer()"
+    class="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0"
+    role="dialog" aria-modal="true" aria-labelledby="candidate-viewer-name">
+    <div class="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[90vh]"
+        id="candidate-image-viewer-content">
+
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40 shrink-0">
+            <div class="min-w-0 pr-3">
+                <h3 id="candidate-viewer-name" class="font-bold text-slate-900 dark:text-white text-base sm:text-lg truncate leading-tight">
+                    Candidate Photo
+                </h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="candidate-viewer-party" class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/40 truncate">
+                        Party Affiliation
+                    </span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1 shrink-0">
+                <a id="candidate-viewer-link" href="#" target="_blank" rel="noopener noreferrer"
+                    class="p-2 text-slate-400 hover:text-purple-600 dark:text-slate-500 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
+                    title="Open original image">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+                <button type="button" onclick="closeCandidateImageViewer()"
+                    class="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
+                    title="Close preview">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Image Viewing Area -->
+        <div class="p-4 sm:p-6 bg-slate-100/60 dark:bg-slate-950/70 flex items-center justify-center overflow-hidden flex-1 min-h-[220px]">
+            <img id="candidate-viewer-image" src="" alt="Candidate Portrait"
+                class="max-h-[60vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300">
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
+            <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Candidate Profile Picture</span>
+            <button type="button" onclick="closeCandidateImageViewer()"
+                class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCandidateImageViewer(url, name, party) {
+        const modal = document.getElementById('candidate-image-viewer-modal');
+        const content = document.getElementById('candidate-image-viewer-content');
+        const img = document.getElementById('candidate-viewer-image');
+        const nameEl = document.getElementById('candidate-viewer-name');
+        const partyEl = document.getElementById('candidate-viewer-party');
+        const linkEl = document.getElementById('candidate-viewer-link');
+
+        if (!modal || !img) return;
+
+        img.src = url;
+        img.alt = name ? name + ' photo' : 'Candidate photo';
+        if (nameEl) nameEl.textContent = name || 'Candidate Photo';
+        if (partyEl) partyEl.textContent = party || 'Independent';
+        if (linkEl) linkEl.href = url;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        requestAnimationFrame(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        });
+    }
+
+    function closeCandidateImageViewer() {
+        const modal = document.getElementById('candidate-image-viewer-modal');
+        const content = document.getElementById('candidate-image-viewer-content');
+        if (!modal) return;
+
+        if (content) {
+            content.classList.add('scale-95', 'opacity-0');
+        }
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const img = document.getElementById('candidate-viewer-image');
+            if (img) img.src = '';
+        }, 300);
+    }
+
+    // Dismiss on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('candidate-image-viewer-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeCandidateImageViewer();
+            }
+        }
+    });
+</script>
