@@ -58,14 +58,36 @@
                                 </svg>
                             </span>
 
-                            <!-- Profile Picture -->
-                            @if($candidate->avatar_path)
-                                <img src="{{ $candidate->avatar_path }}" alt="{{ $candidate->name }}" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mb-3 sm:mb-4 border border-slate-200/60 dark:border-slate-850 shadow-sm shrink-0">
-                            @else
-                                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 font-extrabold flex items-center justify-center mb-3 sm:mb-4 shrink-0 border border-purple-100/30 text-base sm:text-lg uppercase shadow-sm">
-                                    {{ substr($candidate->name, 0, 2) }}
-                                </div>
-                            @endif
+                            <!-- Profile Picture Container -->
+                            <div class="relative mb-3 sm:mb-4 group/avatar shrink-0">
+                                @if($candidate->avatar_path)
+                                    <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+                                        <img src="{{ $candidate->avatar_path }}" alt="{{ $candidate->name }}" class="w-full h-full object-cover">
+                                        <!-- Hover Inspect Button Overlay -->
+                                        <button type="button"
+                                            onclick="event.stopPropagation(); viewBallotCandidateImage('{{ addslashes($candidate->avatar_path) }}', '{{ addslashes($candidate->name) }}', '{{ addslashes($candidate->party_affiliation ?? 'Independent') }}', '{{ addslashes($position->name) }}')"
+                                            class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-200 cursor-zoom-in"
+                                            title="Click to view photo">
+                                            <svg class="w-4 h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <!-- Zoom Icon Badge (Mobile & Desktop Accessible) -->
+                                    <button type="button"
+                                        onclick="event.stopPropagation(); viewBallotCandidateImage('{{ addslashes($candidate->avatar_path) }}', '{{ addslashes($candidate->name) }}', '{{ addslashes($candidate->party_affiliation ?? 'Independent') }}', '{{ addslashes($position->name) }}')"
+                                        class="absolute -bottom-1.5 -right-1.5 p-1 bg-white dark:bg-slate-800 rounded-lg shadow-xs border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-400 transition"
+                                        title="View Full Photo">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                        </svg>
+                                    </button>
+                                @else
+                                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-extrabold flex items-center justify-center shrink-0 border border-purple-200/60 dark:border-purple-800/50 text-base sm:text-lg uppercase shadow-xs">
+                                        {{ substr($candidate->name, 0, 2) }}
+                                    </div>
+                                @endif
+                            </div>
 
                             <!-- Name & Party -->
                             <h3 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate max-w-full leading-snug">
@@ -283,5 +305,111 @@
             }
         );
     }
+
+    // --- BALLOT CANDIDATE PHOTO VIEWER MODAL LOGIC ---
+    function viewBallotCandidateImage(url, name, party, positionName) {
+        const modal = document.getElementById('ballot-candidate-photo-modal');
+        const content = document.getElementById('ballot-candidate-photo-content');
+        const img = document.getElementById('ballot-candidate-viewer-img');
+        const nameEl = document.getElementById('ballot-candidate-viewer-name');
+        const partyEl = document.getElementById('ballot-candidate-viewer-party');
+        const posEl = document.getElementById('ballot-candidate-viewer-position');
+
+        if (!modal || !img) return;
+
+        img.src = url;
+        img.alt = name ? name + ' photo' : 'Candidate photo';
+        if (nameEl) nameEl.textContent = name || 'Candidate Photo';
+        if (partyEl) partyEl.textContent = party || 'Independent';
+        if (posEl) posEl.textContent = positionName || 'Candidate';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        requestAnimationFrame(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        });
+    }
+
+    function closeBallotCandidateImage() {
+        const modal = document.getElementById('ballot-candidate-photo-modal');
+        const content = document.getElementById('ballot-candidate-photo-content');
+        if (!modal) return;
+
+        if (content) {
+            content.classList.add('scale-95', 'opacity-0');
+        }
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const img = document.getElementById('ballot-candidate-viewer-img');
+            if (img) img.src = '';
+        }, 300);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('ballot-candidate-photo-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeBallotCandidateImage();
+            }
+        }
+    });
 </script>
+
+<!-- BALLOT CANDIDATE PHOTO PREVIEW MODAL -->
+<div id="ballot-candidate-photo-modal"
+    onclick="if (event.target === this) closeBallotCandidateImage()"
+    class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-4 sm:p-6 transition-all duration-300 opacity-0"
+    role="dialog" aria-modal="true" aria-labelledby="ballot-candidate-viewer-name">
+    <div class="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 max-w-lg sm:max-w-xl w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[90vh]"
+        id="ballot-candidate-photo-content">
+
+        <!-- Spacious Modal Header -->
+        <div class="px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-4 bg-slate-50/60 dark:bg-slate-950/40 shrink-0">
+            <div class="min-w-0 pr-2 space-y-1">
+                <span class="text-[10px] sm:text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block">
+                    Candidate Profile
+                </span>
+                <h3 id="ballot-candidate-viewer-name" class="font-extrabold text-slate-900 dark:text-white text-lg sm:text-xl truncate leading-snug">
+                    Candidate Photo
+                </h3>
+                <div class="flex items-center gap-2 pt-1 flex-wrap">
+                    <span id="ballot-candidate-viewer-position" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wide">
+                        Position
+                    </span>
+                    <span id="ballot-candidate-viewer-party" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+                        Party Affiliation
+                    </span>
+                </div>
+            </div>
+            
+            <button type="button" onclick="closeBallotCandidateImage()"
+                class="p-2.5 text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition shrink-0 -mr-1"
+                title="Close preview">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Image Viewing Area -->
+        <div class="p-5 sm:p-8 bg-slate-100/60 dark:bg-slate-950/70 flex items-center justify-center overflow-hidden flex-1 min-h-[240px]">
+            <img id="ballot-candidate-viewer-img" src="" alt="Candidate Portrait"
+                class="max-h-[58vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300">
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Candidate Profile Picture</span>
+            <button type="button" onclick="closeBallotCandidateImage()"
+                class="px-5 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
 @endsection

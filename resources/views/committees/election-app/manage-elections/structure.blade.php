@@ -109,34 +109,37 @@
 <!-- CANDIDATE PHOTO PREVIEW MODAL -->
 <div id="candidate-image-viewer-modal"
     onclick="if (event.target === this) closeCandidateImageViewer()"
-    class="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-[6px] z-50 hidden items-center justify-center p-4 transition-all duration-300 opacity-0"
+    class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-4 sm:p-6 transition-all duration-300 opacity-0"
     role="dialog" aria-modal="true" aria-labelledby="candidate-viewer-name">
-    <div class="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[90vh]"
+    <div class="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 max-w-lg sm:max-w-xl w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[90vh]"
         id="candidate-image-viewer-content">
 
-        <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40 shrink-0">
-            <div class="min-w-0 pr-3">
-                <h3 id="candidate-viewer-name" class="font-bold text-slate-900 dark:text-white text-base sm:text-lg truncate leading-tight">
+        <!-- Spacious Modal Header -->
+        <div class="px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-4 bg-slate-50/60 dark:bg-slate-950/40 shrink-0">
+            <div class="min-w-0 pr-2 space-y-1">
+                <span class="text-[10px] sm:text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block">
+                    Candidate Profile
+                </span>
+                <h3 id="candidate-viewer-name" class="font-extrabold text-slate-900 dark:text-white text-lg sm:text-xl truncate leading-snug">
                     Candidate Photo
                 </h3>
-                <div class="flex items-center gap-2 mt-1">
-                    <span id="candidate-viewer-party" class="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/40 truncate">
+                <div class="flex items-center gap-2 pt-1 flex-wrap">
+                    <span id="candidate-viewer-party" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/40 truncate">
                         Party Affiliation
                     </span>
                 </div>
             </div>
             
-            <div class="flex items-center gap-1 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0 -mr-1">
                 <a id="candidate-viewer-link" href="#" target="_blank" rel="noopener noreferrer"
-                    class="p-2 text-slate-400 hover:text-purple-600 dark:text-slate-500 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
+                    class="p-2.5 text-slate-400 hover:text-purple-600 dark:text-slate-500 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                     title="Open original image">
                     <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                 </a>
                 <button type="button" onclick="closeCandidateImageViewer()"
-                    class="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
+                    class="p-2.5 text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                     title="Close preview">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
@@ -146,16 +149,16 @@
         </div>
 
         <!-- Image Viewing Area -->
-        <div class="p-4 sm:p-6 bg-slate-100/60 dark:bg-slate-950/70 flex items-center justify-center overflow-hidden flex-1 min-h-[220px]">
+        <div class="p-5 sm:p-8 bg-slate-100/60 dark:bg-slate-950/70 flex items-center justify-center overflow-hidden flex-1 min-h-[240px]">
             <img id="candidate-viewer-image" src="" alt="Candidate Portrait"
-                class="max-h-[60vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300">
+                class="max-h-[58vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300">
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
-            <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Candidate Profile Picture</span>
+        <div class="px-6 sm:px-8 py-4 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
+            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Candidate Profile Picture</span>
             <button type="button" onclick="closeCandidateImageViewer()"
-                class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+                class="px-5 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
                 Close
             </button>
         </div>

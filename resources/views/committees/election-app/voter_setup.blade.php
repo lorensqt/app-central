@@ -142,27 +142,52 @@
                         </div>
                     </div>
 
-                    <!-- Gender Input -->
+                    <!-- Gender Input (Custom Animated Dropdown) -->
                     <div class="space-y-1.5">
                         <label for="gender" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gender</label>
-                        <div class="relative rounded-xl shadow-sm">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                            <select name="gender" id="gender" required onchange="toggleGenderOther()"
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 sm:py-3 pl-11 pr-10 text-slate-800 dark:text-slate-200 text-base sm:text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700/85 shadow-sm transition appearance-none">
-                                <option value="" disabled selected>Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="LGBTQ">LGBTQ</option>
-                                <option value="Others">Others</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="relative custom-setup-dropdown" id="dropdown-wrapper-gender">
+                            <!-- Hidden input for standard form submission & validation -->
+                            <input type="hidden" name="gender" id="gender" value="" required>
+
+                            <!-- Trigger Button -->
+                            <button type="button" id="gender-trigger-btn" onclick="toggleGenderDropdown()"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 sm:py-3 pl-11 pr-4 text-left text-base sm:text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950/60 hover:border-slate-300 dark:hover:border-slate-700/85 shadow-sm transition flex items-center justify-between">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <span id="label-gender" class="text-slate-400 dark:text-slate-500 font-normal truncate">
+                                    Select Gender
+                                </span>
+                                <svg id="chevron-gender" class="w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 9l-7 7-7-7" />
                                 </svg>
+                            </button>
+
+                            <!-- Animated Options Menu -->
+                            <div id="menu-gender"
+                                class="hidden opacity-0 scale-95 transition-all duration-200 ease-out origin-top absolute left-0 right-0 mt-2 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 space-y-0.5">
+                                <button type="button" onclick="selectGenderOption('Male', 'Male')"
+                                    class="setup-gender-opt w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Male">
+                                    <span>Male</span>
+                                    <svg class="check-icon hidden w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                                <button type="button" onclick="selectGenderOption('Female', 'Female')"
+                                    class="setup-gender-opt w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Female">
+                                    <span>Female</span>
+                                    <svg class="check-icon hidden w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                                <button type="button" onclick="selectGenderOption('LGBTQ', 'LGBTQ')"
+                                    class="setup-gender-opt w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="LGBTQ">
+                                    <span>LGBTQ</span>
+                                    <svg class="check-icon hidden w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                                <button type="button" onclick="selectGenderOption('Others', 'Others')"
+                                    class="setup-gender-opt w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-between transition" data-value="Others">
+                                    <span>Others</span>
+                                    <svg class="check-icon hidden w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -245,19 +270,116 @@
         });
     }
 
+    function toggleGenderDropdown() {
+        const menu = document.getElementById('menu-gender');
+        const chevron = document.getElementById('chevron-gender');
+        if (!menu) return;
+
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+                if (chevron) chevron.classList.add('rotate-180');
+            });
+        } else {
+            closeGenderDropdown();
+        }
+    }
+
+    function closeGenderDropdown() {
+        const menu = document.getElementById('menu-gender');
+        const chevron = document.getElementById('chevron-gender');
+        if (menu && !menu.classList.contains('hidden')) {
+            menu.classList.remove('opacity-100', 'scale-100');
+            menu.classList.add('opacity-0', 'scale-95');
+            if (chevron) chevron.classList.remove('rotate-180');
+            setTimeout(() => menu.classList.add('hidden'), 200);
+        }
+    }
+
+    function selectGenderOption(value, label) {
+        const input = document.getElementById('gender');
+        const labelEl = document.getElementById('label-gender');
+        const trigger = document.getElementById('gender-trigger-btn');
+
+        if (input) input.value = value;
+        if (labelEl) {
+            labelEl.textContent = label;
+            labelEl.classList.remove('text-slate-400', 'dark:text-slate-500');
+            labelEl.classList.add('text-slate-800', 'dark:text-slate-200', 'font-medium');
+        }
+        if (trigger) {
+            trigger.classList.remove('border-red-500', 'ring-4', 'ring-red-500/10');
+        }
+
+        const options = document.querySelectorAll('.setup-gender-opt');
+        options.forEach(opt => {
+            const optVal = opt.getAttribute('data-value');
+            const check = opt.querySelector('.check-icon');
+            if (optVal === value) {
+                opt.classList.add('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                opt.classList.remove('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                if (check) check.classList.remove('hidden');
+            } else {
+                opt.classList.remove('bg-purple-50/70', 'dark:bg-purple-950/40', 'text-purple-600', 'dark:text-purple-400', 'font-semibold');
+                opt.classList.add('text-slate-700', 'dark:text-slate-300', 'font-medium');
+                if (check) check.classList.add('hidden');
+            }
+        });
+
+        closeGenderDropdown();
+        toggleGenderOther();
+    }
+
     function toggleGenderOther() {
-        const genderSelect = document.getElementById('gender');
+        const genderInput = document.getElementById('gender');
         const otherContainer = document.getElementById('gender_other_container');
         const otherInput = document.getElementById('gender_other');
 
-        if (genderSelect.value === 'Others') {
+        if (genderInput && genderInput.value === 'Others') {
             otherContainer.classList.remove('hidden');
             otherInput.setAttribute('required', 'true');
+            otherInput.focus();
         } else {
             otherContainer.classList.add('hidden');
             otherInput.removeAttribute('required');
             otherInput.value = '';
         }
     }
+
+    // Dismiss on click outside or Escape
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-setup-dropdown')) {
+            closeGenderDropdown();
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeGenderDropdown();
+        }
+    });
+
+    // Form submit validation for custom gender dropdown
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                const genderInput = document.getElementById('gender');
+                if (!genderInput || !genderInput.value) {
+                    e.preventDefault();
+                    const trigger = document.getElementById('gender-trigger-btn');
+                    if (trigger) {
+                        trigger.classList.add('border-red-500', 'ring-4', 'ring-red-500/10');
+                        trigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    if (window.showToast) {
+                        window.showToast('Please select your gender before proceeding.', 'warning');
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endsection
