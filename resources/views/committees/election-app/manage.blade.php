@@ -278,7 +278,7 @@
                 class="manage-tab-btn relative z-10 px-5 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-900/40 font-semibold text-xs transition duration-200 flex items-center gap-2.5 focus:outline-none whitespace-nowrap">
                 <i class="fa-solid fa-address-card text-xs"></i>
                 <span>Voters & Analytics</span>
-                <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-extrabold rounded-full transition duration-200">
+                <span id="tab-voters-badge-count" class="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-extrabold rounded-full transition duration-200">
                     {{ number_format($voters->total()) }}
                 </span>
             </button>
@@ -306,6 +306,9 @@
     @include('committees.election-app.components.create_candidate_modal')
     @include('committees.election-app.components.edit_candidate_modal')
     @include('committees.election-app.components.edit_modal')
+    @include('committees.election-app.components.create_voter_modal')
+    @include('committees.election-app.components.edit_voter_modal')
+    @include('committees.election-app.components.view_voter_modal')
 
 @endsection
 
@@ -355,6 +358,8 @@
                         if (res.success) {
                             const total = res.pagination ? res.pagination.total : res.voters.length;
                             if (countDisplay) countDisplay.textContent = total.toLocaleString();
+                            const tabBadge = document.getElementById('tab-voters-badge-count');
+                            if (tabBadge) tabBadge.textContent = total.toLocaleString();
                             if (pageFrom) pageFrom.textContent = res.pagination ? (res.pagination.from || 0).toLocaleString() : (res.voters.length > 0 ? '1' : '0');
                             if (pageTo) pageTo.textContent = res.pagination ? (res.pagination.to || 0).toLocaleString() : res.voters.length.toLocaleString();
                             if (pageTotal) pageTotal.textContent = total.toLocaleString();
@@ -373,13 +378,36 @@
                                         'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
                                         'bg-amber-500/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400';
 
+                                    const safeVoter = {
+                                        id: voter.id,
+                                        name: voter.name,
+                                        raw_name: voter.raw_name,
+                                        email: voter.email,
+                                        division: voter.raw_division || (voter.division !== '-' ? voter.division : ''),
+                                        gender: voter.raw_gender || (voter.gender !== '-' ? voter.gender : ''),
+                                        age: voter.raw_age || (voter.age !== '-' ? voter.age : ''),
+                                        status: voter.is_voted ? 'voted' : 'in_queue'
+                                    };
+                                    const voterJson = JSON.stringify(safeVoter).replace(/"/g, '&quot;');
+                                    const safeName = (voter.name || '').replace(/'/g, "\\'");
+                                    const initials = (voter.name || 'V').substring(0, 2).toUpperCase();
+
                                     return `
-                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
-                                            <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
-                                                ${voter.name}
-                                            </td>
-                                            <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
-                                                ${voter.email}
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150" id="voter-row-${voter.id}">
+                                            <td class="px-6 py-4.5 font-semibold text-slate-800 dark:text-slate-200">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
+                                                        ${initials}
+                                                    </span>
+                                                    <div class="text-left min-w-0">
+                                                        <span class="block text-slate-900 dark:text-white font-bold text-xs leading-tight truncate">
+                                                            ${voter.name}
+                                                        </span>
+                                                        <span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5 leading-none truncate">
+                                                            ${voter.email}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4.5">
                                                 ${voter.division}
@@ -397,6 +425,30 @@
                                             </td>
                                             <td class="px-6 py-4.5 text-xs text-slate-400 dark:text-slate-500">
                                                 ${voter.voted_at_formatted}
+                                            </td>
+                                            <td class="px-6 py-4.5 text-right whitespace-nowrap">
+                                                <div class="flex items-center justify-end gap-1.5">
+                                                    <button type="button" onclick="openViewVoterModal(${voter.id})"
+                                                        class="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-white dark:hover:text-slate-900 hover:bg-purple-600 dark:hover:bg-purple-600 bg-purple-500/5 dark:bg-purple-400/10 border border-purple-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                                        title="View Voter Details & Ballot Audit">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                        <span>View</span>
+                                                    </button>
+
+                                                    <button type="button" onclick="openEditVoterModal(${voterJson})"
+                                                        class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-white dark:hover:text-slate-900 hover:bg-amber-500 dark:hover:bg-amber-500 bg-amber-500/5 dark:bg-amber-400/10 border border-amber-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                                        title="Edit Voter">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                        <span>Edit</span>
+                                                    </button>
+
+                                                    <button type="button" onclick="deleteVoter(${voter.id}, '${safeName}')"
+                                                        class="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-600 bg-rose-500/5 dark:bg-rose-400/10 border border-rose-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                                        title="Delete Voter">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                        <span>Delete</span>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     `;
@@ -815,6 +867,24 @@
         document.getElementById('edit-election-modal').onclick = function(e) {
             if (e.target === this) closeEditModal();
         };
+        const createVoterModalEl = document.getElementById('create-voter-modal');
+        if (createVoterModalEl) {
+            createVoterModalEl.onclick = function(e) {
+                if (e.target === this) closeCreateVoterModal();
+            };
+        }
+        const editVoterModalEl = document.getElementById('edit-voter-modal');
+        if (editVoterModalEl) {
+            editVoterModalEl.onclick = function(e) {
+                if (e.target === this) closeEditVoterModal();
+            };
+        }
+        const viewVoterModalEl = document.getElementById('view-voter-modal');
+        if (viewVoterModalEl) {
+            viewVoterModalEl.onclick = function(e) {
+                if (e.target === this) closeViewVoterModal();
+            };
+        }
 
         // --- POSITIONS AJAX ACTIONS ---
         function submitCreatePosition(event) {
@@ -1271,6 +1341,327 @@
                 'This will compile the active election results, vote totals, and share percentages, and download a secure spreadsheet file to your device.',
                 () => {
                     window.location.href = "{{ route('committees.election.export', $election->id) }}";
+                }
+            );
+        }
+
+        // --- VOTER CRUD ACTIONS & MODALS ---
+        let currentViewVoter = null;
+
+        function openCreateVoterModal() {
+            const modal = document.getElementById('create-voter-modal');
+            const content = document.getElementById('create-voter-modal-content');
+            const form = document.getElementById('create-voter-form');
+            if (form) form.reset();
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeCreateVoterModal() {
+            const modal = document.getElementById('create-voter-modal');
+            const content = document.getElementById('create-voter-modal-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                const form = document.getElementById('create-voter-form');
+                if (form) form.reset();
+            }, 300);
+        }
+
+        function submitCreateVoter(event) {
+            event.preventDefault();
+            const form = event.target;
+            const submitBtn = document.getElementById('btn-submit-create-voter');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i> Enrolling...';
+
+            const formData = new FormData(form);
+
+            fetch(`/committees/election-app/{{ $election->id }}/voters`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200 || body.success) {
+                    window.showToast(body.message || 'Voter enrolled successfully!', 'success');
+                    closeCreateVoterModal();
+                    fetchFilteredVoters(currentVoterPage);
+                } else {
+                    let errMsg = body.message || 'Validation failed.';
+                    if (body.errors) {
+                        const firstKey = Object.keys(body.errors)[0];
+                        errMsg = body.errors[firstKey][0];
+                    }
+                    window.showToast(errMsg, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                window.showToast('Network error while enrolling voter.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+
+        function openEditVoterModal(voter) {
+            const modal = document.getElementById('edit-voter-modal');
+            const content = document.getElementById('edit-voter-modal-content');
+
+            document.getElementById('edit_voter_id').value = voter.id;
+            document.getElementById('edit_voter_name').value = voter.raw_name || voter.name || '';
+            document.getElementById('edit_voter_email').value = voter.email || '';
+            document.getElementById('edit_voter_division').value = voter.raw_division || (voter.division !== '-' ? voter.division : '') || '';
+            document.getElementById('edit_voter_gender').value = voter.raw_gender || (voter.gender !== '-' ? voter.gender : '') || '';
+            document.getElementById('edit_voter_age').value = voter.raw_age || (voter.age !== '-' ? voter.age : '') || '';
+            
+            const statusSelect = document.getElementById('edit_voter_status');
+            const statusValue = (voter.status === 'voted' || voter.status === 'Voted' || voter.is_voted) ? 'voted' : 'in_queue';
+            statusSelect.value = statusValue;
+            onEditVoterStatusChange(statusValue);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeEditVoterModal() {
+            const modal = document.getElementById('edit-voter-modal');
+            const content = document.getElementById('edit-voter-modal-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                const form = document.getElementById('edit-voter-form');
+                if (form) form.reset();
+            }, 300);
+        }
+
+        function onEditVoterStatusChange(value) {
+            const warning = document.getElementById('edit-voter-reset-warning');
+            if (!warning) return;
+            if (value === 'in_queue') {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        function submitEditVoter(event) {
+            event.preventDefault();
+            const form = event.target;
+            const voterId = document.getElementById('edit_voter_id').value;
+            const submitBtn = document.getElementById('btn-submit-edit-voter');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i> Saving...';
+
+            const formData = new FormData(form);
+
+            fetch(`/committees/election-app/voters/${voterId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200 || body.success) {
+                    window.showToast(body.message || 'Voter updated successfully!', 'success');
+                    closeEditVoterModal();
+                    fetchFilteredVoters(currentVoterPage);
+                } else {
+                    let errMsg = body.message || 'Validation failed.';
+                    if (body.errors) {
+                        const firstKey = Object.keys(body.errors)[0];
+                        errMsg = body.errors[firstKey][0];
+                    }
+                    window.showToast(errMsg, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                window.showToast('Network error while updating voter.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+
+        function openViewVoterModal(voterId) {
+            const modal = document.getElementById('view-voter-modal');
+            const content = document.getElementById('view-voter-modal-content');
+            const loading = document.getElementById('view-voter-loading');
+            const body = document.getElementById('view-voter-body');
+
+            loading.classList.remove('hidden');
+            body.classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+
+            fetch(`/committees/election-app/voters/${voterId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.success && res.voter) {
+                    const voter = res.voter;
+                    currentViewVoter = voter;
+
+                    document.getElementById('view-voter-name').textContent = voter.name;
+                    document.getElementById('view-voter-email').textContent = voter.email;
+                    document.getElementById('view-voter-division-badge').textContent = voter.division !== '-' ? voter.division : 'General';
+
+                    const statusBadge = document.getElementById('view-voter-status-badge');
+                    if (voter.is_voted) {
+                        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400';
+                        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Voted';
+                    } else {
+                        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400';
+                        statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> In Queue';
+                    }
+
+                    document.getElementById('view-voter-gender').textContent = voter.gender !== '-' ? voter.gender : 'Unspecified';
+                    document.getElementById('view-voter-age').textContent = voter.age !== '-' ? `${voter.age} yrs old` : 'Unspecified';
+                    document.getElementById('view-voter-created-at').textContent = voter.created_at || 'Registered';
+                    document.getElementById('view-voter-voted-at').textContent = voter.voted_at || 'Not yet cast';
+
+                    const votesCount = document.getElementById('view-voter-votes-count');
+                    const votesList = document.getElementById('view-voter-votes-list');
+
+                    if (voter.votes && voter.votes.length > 0) {
+                        votesCount.textContent = `${voter.votes.length} selection(s) recorded`;
+                        votesList.innerHTML = voter.votes.map(v => `
+                            <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-3 text-xs">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider font-bold text-purple-600 dark:text-purple-400 block">${v.position}</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200">${v.candidate}</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    Confirmed
+                                </span>
+                            </div>
+                        `).join('');
+                    } else {
+                        votesCount.textContent = '0 selections';
+                        votesList.innerHTML = `
+                            <div class="py-6 text-center text-slate-400 dark:text-slate-500 text-xs italic bg-white dark:bg-slate-900 rounded-xl border border-slate-200/40 dark:border-slate-800/60">
+                                ${voter.is_voted ? 'Voter marked as voted (no selections logged).' : 'No ballot cast yet. Voter is eligible and in queue.'}
+                            </div>
+                        `;
+                    }
+
+                    loading.classList.add('hidden');
+                    body.classList.remove('hidden');
+                } else {
+                    window.showToast('Failed to load voter details.', 'error');
+                    closeViewVoterModal();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                window.showToast('Connection error.', 'error');
+                closeViewVoterModal();
+            });
+        }
+
+        function closeViewVoterModal() {
+            const modal = document.getElementById('view-voter-modal');
+            const content = document.getElementById('view-voter-modal-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function switchToEditFromView() {
+            if (!currentViewVoter) return;
+            const voterToEdit = currentViewVoter;
+            closeViewVoterModal();
+            setTimeout(() => {
+                openEditVoterModal(voterToEdit);
+            }, 300);
+        }
+
+        function deleteVoter(id, name) {
+            window.showConfirmModal(
+                'Remove Voter',
+                `Are you sure you want to remove "${name}" from the voter registry?`,
+                'This will permanently delete this voter record. If this voter has already cast votes, their ballots will also be removed from the election results.',
+                () => {
+                    fetch(`/committees/election-app/voters/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success) {
+                            window.showToast(res.message || 'Voter removed successfully!', 'success');
+                            const row = document.getElementById(`voter-row-${id}`);
+                            if (row) row.remove();
+                            fetchFilteredVoters(currentVoterPage);
+                        } else {
+                            window.showToast(res.message || 'Failed to remove voter.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        window.showToast('Connection error.', 'error');
+                    });
                 }
             );
         }

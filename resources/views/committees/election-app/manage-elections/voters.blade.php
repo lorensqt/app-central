@@ -7,6 +7,10 @@
         </div>
         
         <div class="flex items-center gap-3">
+            <button type="button" onclick="openCreateVoterModal()" class="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                Enroll Voter
+            </button>
             <button type="button" onclick="confirmVoterCSVDownload()" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Export Voters CSV
@@ -185,23 +189,32 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
-                        <th class="px-6 py-4.5">Voter Name</th>
-                        <th class="px-6 py-4.5">Email Account</th>
+                        <th class="px-6 py-4.5">Voter / Account</th>
                         <th class="px-6 py-4.5">Division / Workplace</th>
                         <th class="px-6 py-4.5">Gender</th>
                         <th class="px-6 py-4.5">Age</th>
                         <th class="px-6 py-4.5">Voted Status</th>
                         <th class="px-6 py-4.5">Submission Time</th>
+                        <th class="px-6 py-4.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm text-slate-700 dark:text-slate-300 transition-opacity duration-150" id="voters-table-body">
                     @forelse($voters as $voter)
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150">
-                            <td class="px-6 py-4.5 font-semibold text-slate-900 dark:text-white">
-                                {{ $voter->user ? $voter->user->name : 'Anonymous Voter' }}
-                            </td>
-                            <td class="px-6 py-4.5 text-slate-500 dark:text-slate-400">
-                                {{ $voter->email }}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition duration-150" id="voter-row-{{ $voter->id }}">
+                            <td class="px-6 py-4.5 font-semibold text-slate-800 dark:text-slate-200">
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold text-xs uppercase shrink-0">
+                                        {{ strtoupper(substr($voter->display_name, 0, 2)) }}
+                                    </span>
+                                    <div class="text-left min-w-0">
+                                        <span class="block text-slate-900 dark:text-white font-bold text-xs leading-tight truncate">
+                                            {{ $voter->display_name }}
+                                        </span>
+                                        <span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5 leading-none truncate">
+                                            {{ $voter->email }}
+                                        </span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4.5">
                                 {{ $voter->division ?? '-' }}
@@ -225,6 +238,39 @@
                             </td>
                             <td class="px-6 py-4.5 text-xs text-slate-400 dark:text-slate-500">
                                 {{ $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-' }}
+                            </td>
+                            <td class="px-6 py-4.5 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button type="button" onclick="openViewVoterModal({{ $voter->id }})"
+                                        class="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-white dark:hover:text-slate-900 hover:bg-purple-600 dark:hover:bg-purple-600 bg-purple-500/5 dark:bg-purple-400/10 border border-purple-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                        title="View Voter Details & Ballot Audit">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>View</span>
+                                    </button>
+
+                                    <button type="button" onclick="openEditVoterModal({{ json_encode([
+                                        'id' => $voter->id,
+                                        'name' => $voter->display_name,
+                                        'raw_name' => $voter->name ?? ($voter->user ? $voter->user->name : ''),
+                                        'email' => $voter->email,
+                                        'division' => $voter->division ?? '',
+                                        'gender' => $voter->gender ?? '',
+                                        'age' => $voter->age ?? '',
+                                        'status' => $voter->voted_at ? 'voted' : 'in_queue',
+                                    ]) }})"
+                                        class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-white dark:hover:text-slate-900 hover:bg-amber-500 dark:hover:bg-amber-500 bg-amber-500/5 dark:bg-amber-400/10 border border-amber-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                        title="Edit Voter">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <span>Edit</span>
+                                    </button>
+
+                                    <button type="button" onclick="deleteVoter({{ $voter->id }}, '{{ addslashes($voter->display_name) }}')"
+                                        class="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-600 bg-rose-500/5 dark:bg-rose-400/10 border border-rose-500/20 px-2.5 py-1.5 rounded-xl transition duration-150 active:scale-95 flex items-center gap-1 shadow-2xs"
+                                        title="Delete Voter">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty

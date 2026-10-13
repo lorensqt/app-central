@@ -112,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/committees/election-app/{election}/export', [\App\Http\Controllers\ElectionController::class, 'exportResults'])->name('committees.election.export');
             Route::get('/committees/election-app/{election}/export-voters', [\App\Http\Controllers\ElectionController::class, 'exportVoters'])->name('committees.election.export_voters');
             Route::get('/committees/election-app/{election}/export-pdf', [\App\Http\Controllers\ElectionController::class, 'exportPDF'])->name('committees.election.export_pdf');
+            Route::get('/committees/election-app/{election}/export-statistics-pdf', [\App\Http\Controllers\ElectionController::class, 'exportStatisticsPDF'])->name('committees.election.export_statistics_pdf');
             Route::put('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'update'])->name('committees.election.update');
             Route::delete('/committees/election-app/{election}', [\App\Http\Controllers\ElectionController::class, 'destroy'])->name('committees.election.destroy');
 
@@ -124,6 +125,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/committees/election-app/positions/{position}/candidates', [\App\Http\Controllers\ElectionController::class, 'storeCandidate'])->name('committees.election.candidates.store');
             Route::put('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'updateCandidate'])->name('committees.election.candidates.update');
             Route::delete('/committees/election-app/candidates/{candidate}', [\App\Http\Controllers\ElectionController::class, 'destroyCandidate'])->name('committees.election.candidates.destroy');
+
+            // Voters Management
+            Route::post('/committees/election-app/{election}/voters', [\App\Http\Controllers\ElectionController::class, 'storeVoter'])->name('committees.election.voters.store');
+            Route::get('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'showVoter'])->name('committees.election.voters.show');
+            Route::put('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'updateVoter'])->name('committees.election.voters.update');
+            Route::delete('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'destroyVoter'])->name('committees.election.voters.destroy');
         });
 
         // Whitelisted Super Admin Operations

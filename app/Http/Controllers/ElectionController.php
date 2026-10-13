@@ -7,9 +7,11 @@ use App\Models\ElectionPosition;
 use App\Models\ElectionCandidate;
 use App\Models\ElectionVoter;
 use App\Models\ElectionVote;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ElectionController extends Controller
 {
@@ -82,11 +84,6 @@ class ElectionController extends Controller
             }])
             ->withCount('votes')
             ->get();
-            
-        // Lightweight voter stats data to avoid loading 6000+ full models and user relations
-        $voterStats = $election->voters()
-            ->select('gender', 'age', 'voted_at')
-            ->get();
 
         $divisions = $election->voters()
             ->whereNotNull('division')
@@ -101,6 +98,28 @@ class ElectionController extends Controller
             ->distinct()
             ->pluck('gender')
             ->toArray();
+
+        $stats = $this->calculateElectionStats($election);
+
+        // Paginate initial voters list at 100 per page for fast rendering with 6000+ voters
+        $voters = $election->voters()
+            ->with('user')
+            ->orderBy('voted_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(100);
+
+        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions', 'genders', 'stats'));
+    }
+
+    /**
+     * Calculate comprehensive statistics and regional breakdown for an election.
+     */
+    private function calculateElectionStats(Election $election)
+    {
+        // Lightweight voter stats data to avoid loading 6000+ full models and user relations
+        $voterStats = $election->voters()
+            ->select('gender', 'age', 'voted_at', 'division')
+            ->get();
 
         // Calculate Demographic and Turnout Statistics
         $genderStats = [
@@ -168,7 +187,89 @@ class ElectionController extends Controller
         $queuedAges = $voterStats->whereNull('voted_at')->pluck('age')->filter()->toArray();
         $avgAgeQueued = count($queuedAges) > 0 ? round(array_sum($queuedAges) / count($queuedAges), 1) : 0;
 
-        $stats = [
+        // Group voters by Division / Workplace
+        $divisionMap = [];
+        foreach ($voterStats as $voter) {
+            $div = trim((string)$voter->division);
+            if ($div === '') {
+                $div = 'General / Unassigned';
+            }
+
+            if (!isset($divisionMap[$div])) {
+                $divisionMap[$div] = [
+                    'division' => $div,
+                    'total' => 0,
+                    'voted' => 0,
+                    'queued' => 0,
+                    'turnout_rate' => 0.0,
+                    'status' => 'inactive',
+                ];
+            }
+
+            $divisionMap[$div]['total']++;
+            if ($voter->voted_at !== null) {
+                $divisionMap[$div]['voted']++;
+            } else {
+                $divisionMap[$div]['queued']++;
+            }
+        }
+
+        // Calculate rates & status per division
+        $divisionItems = [];
+        $activeDivisionsCount = 0;
+        $completedDivisionsCount = 0;
+
+        foreach ($divisionMap as $divName => $item) {
+            $turnout = $item['total'] > 0 ? round(($item['voted'] / $item['total']) * 100, 1) : 0.0;
+            $item['turnout_rate'] = $turnout;
+
+            if ($turnout >= 100.0) {
+                $item['status'] = 'completed';
+                $completedDivisionsCount++;
+            } elseif ($turnout >= 75.0) {
+                $item['status'] = 'high';
+            } elseif ($turnout >= 40.0) {
+                $item['status'] = 'moderate';
+            } elseif ($turnout > 0) {
+                $item['status'] = 'low';
+            } else {
+                $item['status'] = 'inactive';
+            }
+
+            if ($item['voted'] > 0) {
+                $activeDivisionsCount++;
+            }
+
+            $divisionItems[] = $item;
+        }
+
+        // Sort divisions by turnout rate descending, then total voters descending
+        usort($divisionItems, function($a, $b) {
+            if ($b['turnout_rate'] != $a['turnout_rate']) {
+                return $b['turnout_rate'] <=> $a['turnout_rate'];
+            }
+            return $b['total'] <=> $a['total'];
+        });
+
+        // Determine top and lowest performing divisions
+        $activeOnly = array_values(array_filter($divisionItems, fn($d) => $d['total'] > 0));
+        $topDivision = !empty($activeOnly) ? $activeOnly[0] : null;
+        $lowestDivision = !empty($activeOnly) ? end($activeOnly) : null;
+
+        $totalDivisionsCount = count($divisionItems);
+        $avgDivisionTurnout = $totalDivisionsCount > 0 ? round(array_sum(array_column($divisionItems, 'turnout_rate')) / $totalDivisionsCount, 1) : 0;
+
+        $divisionStats = [
+            'items' => $divisionItems,
+            'total_divisions' => $totalDivisionsCount,
+            'active_divisions' => $activeDivisionsCount,
+            'completed_divisions' => $completedDivisionsCount,
+            'top_division' => $topDivision,
+            'lowest_division' => $lowestDivision,
+            'avg_division_turnout' => $avgDivisionTurnout,
+        ];
+
+        return [
             'total_voters' => $voterStats->count(),
             'voted_voters' => $voterStats->whereNotNull('voted_at')->count(),
             'queued_voters' => $voterStats->whereNull('voted_at')->count(),
@@ -178,16 +279,8 @@ class ElectionController extends Controller
             'avg_age_all' => $avgAgeAll,
             'avg_age_voted' => $avgAgeVoted,
             'avg_age_queued' => $avgAgeQueued,
+            'divisions' => $divisionStats,
         ];
-
-        // Paginate initial voters list at 100 per page for fast rendering with 6000+ voters
-        $voters = $election->voters()
-            ->with('user')
-            ->orderBy('voted_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->paginate(100);
-
-        return view('committees.election-app.manage', compact('election', 'positions', 'voters', 'divisions', 'genders', 'stats'));
     }
 
     /**
@@ -802,6 +895,35 @@ class ElectionController extends Controller
     }
 
     /**
+     * Export the election statistics & division audit report as a clean downloadable PDF.
+     */
+    public function exportStatisticsPDF(Election $election)
+    {
+        $email = $this->getVoterEmail();
+        if (!$email) {
+            abort(401, 'Unauthenticated session.');
+        }
+
+        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
+        $superAdminEmail = config('app.super_admin_email');
+        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
+        if (!$isMlhuillier && !$isSuperAdmin) {
+            abort(403, 'Access Denied: An authorized email domain is required.');
+        }
+
+        $stats = $this->calculateElectionStats($election);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'committees.election-app.pdf_formats.clean_statistics_pdf',
+            compact('election', 'stats')
+        );
+
+        $filename = "election_audit_report_" . str_replace(' ', '_', strtolower($election->title)) . ".pdf";
+
+        return $pdf->stream($filename);
+    }
+
+    /**
      * Get voters for an election with AJAX filtering, searching, and sorting.
      */
     public function getVoters(Request $request, Election $election)
@@ -812,7 +934,8 @@ class ElectionController extends Controller
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
-                $q->where('email', 'like', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('division', 'like', "%{$search}%")
                   ->orWhere('gender', 'like', "%{$search}%")
                   ->orWhere('age', 'like', "%{$search}%")
@@ -860,14 +983,19 @@ class ElectionController extends Controller
             'voters' => $paginated->map(function($voter) {
                 return [
                     'id' => $voter->id,
-                    'name' => $voter->user ? $voter->user->name : 'Anonymous Voter',
+                    'name' => $voter->display_name,
+                    'raw_name' => $voter->name ?? ($voter->user ? $voter->user->name : ''),
                     'email' => $voter->email,
                     'division' => $voter->division ?? '-',
+                    'raw_division' => $voter->division ?? '',
                     'gender' => $voter->gender ?? '-',
+                    'raw_gender' => $voter->gender ?? '',
                     'age' => $voter->age ?? '-',
+                    'raw_age' => $voter->age ?? '',
                     'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
                     'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
                     'status' => $voter->voted_at ? 'Voted' : 'In Queue',
+                    'is_voted' => $voter->voted_at !== null,
                 ];
             }),
             'pagination' => [
@@ -878,6 +1006,164 @@ class ElectionController extends Controller
                 'from' => $paginated->firstItem() ?? 0,
                 'to' => $paginated->lastItem() ?? 0,
             ]
+        ]);
+    }
+
+    /**
+     * Store a newly created voter under an election.
+     */
+    public function storeVoter(Request $request, Election $election)
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('election_voters')->where(function ($query) use ($election) {
+                    return $query->where('election_id', $election->id);
+                }),
+            ],
+            'division' => 'nullable|string|max:255',
+            'gender' => 'nullable|string|max:255',
+            'age' => 'nullable|integer|min:18|max:120',
+            'status' => 'nullable|string|in:in_queue,voted',
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+        $votedAt = ($request->input('status') === 'voted') ? now() : null;
+
+        $voter = $election->voters()->create([
+            'user_id' => $user ? $user->id : null,
+            'name' => $validated['name'] ?? ($user ? $user->name : null),
+            'email' => strtolower($validated['email']),
+            'division' => $validated['division'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'age' => $validated['age'] ?? null,
+            'voted_at' => $votedAt,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Voter enrolled successfully!',
+            'voter' => [
+                'id' => $voter->id,
+                'name' => $voter->display_name,
+                'email' => $voter->email,
+                'division' => $voter->division ?? '-',
+                'gender' => $voter->gender ?? '-',
+                'age' => $voter->age ?? '-',
+                'status' => $voter->voted_at ? 'Voted' : 'In Queue',
+                'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
+            ]
+        ]);
+    }
+
+    /**
+     * Display the specified voter and their ballot audit information.
+     */
+    public function showVoter(ElectionVoter $voter)
+    {
+        $voter->load(['user', 'votes.position', 'votes.candidate']);
+
+        return response()->json([
+            'success' => true,
+            'voter' => [
+                'id' => $voter->id,
+                'name' => $voter->display_name,
+                'raw_name' => $voter->name ?? ($voter->user ? $voter->user->name : ''),
+                'email' => $voter->email,
+                'division' => $voter->division ?? '-',
+                'raw_division' => $voter->division ?? '',
+                'gender' => $voter->gender ?? '-',
+                'raw_gender' => $voter->gender ?? '',
+                'age' => $voter->age ?? '-',
+                'raw_age' => $voter->age ?? '',
+                'status' => $voter->voted_at ? 'Voted' : 'In Queue',
+                'is_voted' => $voter->voted_at !== null,
+                'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
+                'created_at' => $voter->created_at ? $voter->created_at->format('M d, Y • h:i A') : null,
+                'votes' => $voter->votes->map(function ($vote) {
+                    return [
+                        'position' => $vote->position ? $vote->position->name : 'Unknown Position',
+                        'candidate' => $vote->candidate ? $vote->candidate->name : 'Unknown Candidate',
+                    ];
+                }),
+            ]
+        ]);
+    }
+
+    /**
+     * Update the specified voter in storage.
+     */
+    public function updateVoter(Request $request, ElectionVoter $voter)
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('election_voters')->where(function ($query) use ($voter) {
+                    return $query->where('election_id', $voter->election_id);
+                })->ignore($voter->id),
+            ],
+            'division' => 'nullable|string|max:255',
+            'gender' => 'nullable|string|max:255',
+            'age' => 'nullable|integer|min:18|max:120',
+            'status' => 'required|string|in:in_queue,voted',
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        $data = [
+            'name' => $validated['name'] ?? ($user ? $user->name : null),
+            'email' => strtolower($validated['email']),
+            'division' => $validated['division'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'age' => $validated['age'] ?? null,
+            'user_id' => $user ? $user->id : $voter->user_id,
+        ];
+
+        // Handle Status Transition
+        if ($validated['status'] === 'in_queue') {
+            // Reset voting timestamp and clear any recorded votes so they can cast again
+            $data['voted_at'] = null;
+            $voter->votes()->delete();
+        } elseif ($validated['status'] === 'voted' && $voter->voted_at === null) {
+            $data['voted_at'] = now();
+        }
+
+        $voter->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Voter updated successfully!',
+            'voter' => [
+                'id' => $voter->id,
+                'name' => $voter->display_name,
+                'email' => $voter->email,
+                'division' => $voter->division ?? '-',
+                'gender' => $voter->gender ?? '-',
+                'age' => $voter->age ?? '-',
+                'status' => $voter->voted_at ? 'Voted' : 'In Queue',
+                'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
+            ]
+        ]);
+    }
+
+    /**
+     * Remove the specified voter from storage.
+     */
+    public function destroyVoter(ElectionVoter $voter)
+    {
+        // Delete any associated cast votes
+        $voter->votes()->delete();
+        $voter->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Voter deleted successfully!'
         ]);
     }
 
@@ -918,7 +1204,7 @@ class ElectionController extends Controller
 
             foreach ($voters as $voter) {
                 fputcsv($file, [
-                    $voter->user ? $voter->user->name : 'Anonymous Voter',
+                    $voter->display_name,
                     $voter->email,
                     $voter->division ?? '-',
                     $voter->gender ?? '-',
