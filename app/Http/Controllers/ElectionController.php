@@ -871,7 +871,7 @@ class ElectionController extends Controller
     }
 
     /**
-     * Export the election results as a downloadable PDF using DomPDF.
+     * Export the official election results as a clean, print-ready PDF using DomPDF.
      */
     public function exportPDF(Election $election)
     {
@@ -889,17 +889,25 @@ class ElectionController extends Controller
 
         $positions = $election->positions()
             ->with(['candidates' => function($q) {
-                $q->withCount('votes')->orderByDesc('votes_count');
+                $q->withCount('votes')->orderByDesc('votes_count')->orderBy('id');
             }])
             ->withCount('votes')
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->get();
 
-        $voterCount = $election->voters()->count();
+        $totalMasterlistVoters = $election->voters()->count();
+        $totalVotesCast = $election->voters()->whereNotNull('voted_at')->count();
+        $turnoutPercentage = $totalMasterlistVoters > 0
+            ? round(($totalVotesCast / $totalMasterlistVoters) * 100, 1)
+            : 0;
 
-        // Load premium print-ready PDF template with election data
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('committees.election-app.results_pdf', compact('election', 'positions', 'voterCount'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'committees.election-app.pdf_formats.clean_results_pdf',
+            compact('election', 'positions', 'totalMasterlistVoters', 'totalVotesCast', 'turnoutPercentage')
+        );
 
-        $filename = "election_results_" . str_replace(' ', '_', strtolower($election->title)) . ".pdf";
+        $filename = "official_election_results_" . str_replace(' ', '_', strtolower($election->title)) . ".pdf";
 
         return $pdf->stream($filename);
     }
