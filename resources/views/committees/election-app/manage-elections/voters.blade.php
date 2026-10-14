@@ -6,14 +6,18 @@
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total registered or queued participants in this election.</p>
         </div>
         
-        <div class="flex items-center gap-3">
-            <button type="button" onclick="openCreateVoterModal()" class="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <button type="button" onclick="openCreateVoterModal()" class="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-semibold text-xs px-3.5 sm:px-4 py-2.5 rounded-xl shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                Enroll Voter
+                <span>Enroll Voter</span>
             </button>
-            <button type="button" onclick="confirmVoterCSVDownload()" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm transition">
+            <button type="button" onclick="openImportVoterModal()" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold text-xs px-3.5 sm:px-4 py-2.5 rounded-xl shadow-sm transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Import Masterlist CSV</span>
+            </button>
+            <button type="button" onclick="confirmVoterCSVDownload()" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold text-xs px-3.5 sm:px-4 py-2.5 rounded-xl shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Export Voters CSV
+                <span>Export Voters CSV</span>
             </button>
             <div class="text-xs font-bold px-3.5 py-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 Total Voters: <span id="voter-count-display">{{ number_format($voters->total()) }}</span>

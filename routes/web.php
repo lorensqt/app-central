@@ -129,6 +129,8 @@ Route::middleware(['auth'])->group(function () {
 
             // Voters Management
             Route::post('/committees/election-app/{election}/voters', [\App\Http\Controllers\ElectionController::class, 'storeVoter'])->name('committees.election.voters.store');
+            Route::post('/committees/election-app/{election}/voters/import', [\App\Http\Controllers\ElectionController::class, 'importVoters'])->name('committees.election.voters.import');
+            Route::get('/committees/election-app/{election}/voters/sample-csv', [\App\Http\Controllers\ElectionController::class, 'downloadSampleVotersCsv'])->name('committees.election.voters.sample_csv');
             Route::get('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'showVoter'])->name('committees.election.voters.show');
             Route::put('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'updateVoter'])->name('committees.election.voters.update');
             Route::delete('/committees/election-app/voters/{voter}', [\App\Http\Controllers\ElectionController::class, 'destroyVoter'])->name('committees.election.voters.destroy');

@@ -307,6 +307,7 @@
     @include('committees.election-app.components.edit_candidate_modal')
     @include('committees.election-app.components.edit_modal')
     @include('committees.election-app.components.create_voter_modal')
+    @include('committees.election-app.components.import_voter_modal')
     @include('committees.election-app.components.edit_voter_modal')
     @include('committees.election-app.components.view_voter_modal')
 
@@ -874,6 +875,12 @@
                 if (e.target === this) closeCreateVoterModal();
             };
         }
+        const importVoterModalEl = document.getElementById('import-voter-modal');
+        if (importVoterModalEl) {
+            importVoterModalEl.onclick = function(e) {
+                if (e.target === this) closeImportVoterModal();
+            };
+        }
         const editVoterModalEl = document.getElementById('edit-voter-modal');
         if (editVoterModalEl) {
             editVoterModalEl.onclick = function(e) {
@@ -1423,6 +1430,169 @@
             .finally(() => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
+            });
+        }
+
+        // --- IMPORT VOTER MASTERLIST CSV MODAL & UPLOAD LOGIC ---
+        function openImportVoterModal() {
+            const modal = document.getElementById('import-voter-modal');
+            const content = document.getElementById('import-voter-modal-content');
+            clearSelectedCsvFile();
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function closeImportVoterModal() {
+            const modal = document.getElementById('import-voter-modal');
+            const content = document.getElementById('import-voter-modal-content');
+            if (!modal || !content) return;
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                clearSelectedCsvFile();
+            }, 300);
+        }
+
+        function onCsvFileSelected(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('csv-dropzone-prompt').classList.add('hidden');
+            const selectedInfo = document.getElementById('csv-dropzone-selected');
+            selectedInfo.classList.remove('hidden');
+            selectedInfo.classList.add('flex');
+
+            document.getElementById('csv-file-name').textContent = file.name;
+            const sizeInKb = (file.size / 1024).toFixed(1);
+            document.getElementById('csv-file-size').textContent = sizeInKb + ' KB';
+        }
+
+        function clearSelectedCsvFile() {
+            const input = document.getElementById('import_voter_file');
+            if (input) input.value = '';
+
+            const prompt = document.getElementById('csv-dropzone-prompt');
+            if (prompt) prompt.classList.remove('hidden');
+
+            const selectedInfo = document.getElementById('csv-dropzone-selected');
+            if (selectedInfo) {
+                selectedInfo.classList.add('hidden');
+                selectedInfo.classList.remove('flex');
+            }
+        }
+
+        function submitImportVoter(event) {
+            event.preventDefault();
+            const form = event.target;
+            const submitBtn = document.getElementById('btn-submit-import-voters');
+            const originalHtml = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i> Validating & Importing...';
+
+            const formData = new FormData(form);
+
+            fetch("{{ route('committees.election.voters.import', $election->id) }}", {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+
+                if (status === 200 && body.success) {
+                    closeImportVoterModal();
+                    
+                    const isDark = document.documentElement.classList.contains('dark');
+                    const cardBg = isDark ? '#020617' : '#f8fafc';
+                    const cardBorder = isDark ? '#1e293b' : '#e2e8f0';
+                    const textColor = isDark ? '#f8fafc' : '#0f172a';
+                    const subtextColor = isDark ? '#94a3b8' : '#475569';
+
+                    // Show rich SweetAlert summary (Dark mode compatible)
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Masterlist Import Completed',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: textColor,
+                        html: `
+                            <div class="space-y-3.5 text-sm" style="color: ${subtextColor};">
+                                <p class="font-bold leading-relaxed" style="color: ${textColor};">${body.message}</p>
+                                ${body.stats ? `
+                                    <div class="grid grid-cols-3 gap-2 p-3 rounded-2xl text-xs text-center" style="background-color: ${cardBg}; border: 1px solid ${cardBorder};">
+                                        <div><span class="block text-[10px] uppercase font-bold" style="color: ${subtextColor};">Enrolled</span><strong class="font-black text-sm text-emerald-500">${body.stats.new}</strong></div>
+                                        <div><span class="block text-[10px] uppercase font-bold" style="color: ${subtextColor};">Updated</span><strong class="font-black text-sm text-indigo-500">${body.stats.updated}</strong></div>
+                                        <div><span class="block text-[10px] uppercase font-bold" style="color: ${subtextColor};">Skipped</span><strong class="font-black text-sm" style="color: ${subtextColor};">${body.stats.skipped}</strong></div>
+                                    </div>
+                                ` : ''}
+                                ${body.stats && body.stats.warnings && body.stats.warnings.length > 0 ? `
+                                    <div class="text-left text-xs p-3 rounded-xl max-h-32 overflow-y-auto" style="background-color: ${isDark ? 'rgba(245, 158, 11, 0.1)' : '#fef3c7'}; border: 1px solid ${isDark ? 'rgba(245, 158, 11, 0.25)' : '#fde68a'}; color: ${isDark ? '#fcd34d' : '#92400e'};">
+                                        <span class="font-bold block mb-1">Warnings / Skipped Rows:</span>
+                                        ${body.stats.warnings.map(w => `<span class="block">• ${w}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `,
+                        confirmButtonColor: '#9333ea',
+                        confirmButtonText: 'Done',
+                        customClass: {
+                            popup: 'rounded-3xl border ' + (isDark ? 'border-slate-800 shadow-2xl' : 'border-slate-200/80 shadow-2xl'),
+                            title: isDark ? 'text-white font-extrabold' : 'text-slate-900 font-extrabold',
+                            confirmButton: 'rounded-xl text-xs font-bold px-6 py-2.5 text-white'
+                        }
+                    });
+
+                    // Refresh table & update voter count badge
+                    if (typeof fetchFilteredVoters === 'function') {
+                        fetchFilteredVoters(1);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    let errMsg = body.message || 'CSV Import failed. Please verify your file formatting.';
+                    if (body.errors && body.errors.csv_file) {
+                        errMsg = body.errors.csv_file[0];
+                    }
+
+                    const isDark = document.documentElement.classList.contains('dark');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'CSV Column Validation Failed',
+                        background: isDark ? '#0f172a' : '#ffffff',
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        html: `<div class="text-sm leading-relaxed" style="color: ${isDark ? '#cbd5e1' : '#475569'};">${errMsg}</div>`,
+                        confirmButtonColor: '#9333ea',
+                        confirmButtonText: 'Review Guidelines & Retry',
+                        customClass: {
+                            popup: 'rounded-3xl border ' + (isDark ? 'border-slate-800 shadow-2xl' : 'border-slate-200/80 shadow-2xl'),
+                            title: isDark ? 'text-white font-extrabold' : 'text-slate-900 font-extrabold',
+                            confirmButton: 'rounded-xl text-xs font-bold px-6 py-2.5 text-white'
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+                window.showToast('Server communication error during import.', 'error');
             });
         }
 

@@ -1178,6 +1178,270 @@ class ElectionController extends Controller
     }
 
     /**
+     * Download a clean sample CSV template for masterlist voter import.
+     */
+    public function downloadSampleVotersCsv(Election $election)
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="sako_voters_masterlist_template.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Excel opens it with proper encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Header Row (Exact column format matching the Voter Register)
+            fputcsv($file, ['Voter / Account', 'Division / Workplace', 'Gender', 'Age']);
+            
+            // Sample Data Rows
+            fputcsv($file, ['juan.delacruz@mlhuillier.com', 'Head Office - ICT', 'Male', '32']);
+            fputcsv($file, ['maria.santos@mlhuillier.com', 'Luzon Area Operations', 'Female', '28']);
+            fputcsv($file, ['alex.reyes@mlhuillier.com', 'Visayas Regional Office', 'Others', '35']);
+            fputcsv($file, ['carmen.ramos@mlhuillier.com', 'Mindanao Regional Office', 'Female', '41']);
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import a CSV file into the election voter masterlist with strict column and data validation.
+     */
+    public function importVoters(Request $request, Election $election)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|max:10240', // 10MB max
+        ]);
+
+        $file = $request->file('csv_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, ['csv', 'txt'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid file format: Please upload a valid .csv file.'
+            ], 422);
+        }
+
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
+        if (!$handle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to read the uploaded CSV file. Please verify the file and try again.'
+            ], 422);
+        }
+
+        // Read first line (Row 1 Header)
+        $rawHeaders = fgetcsv($handle);
+        if (!$rawHeaders || empty(array_filter($rawHeaders))) {
+            fclose($handle);
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded CSV file is empty. Please ensure Row 1 contains table headers.'
+            ], 422);
+        }
+
+        // Strip UTF-8 BOM from the first header if present
+        $rawHeaders[0] = preg_replace('/[\x{FEFF}\x{EF}\x{BB}\x{BF}]/u', '', $rawHeaders[0]);
+
+        // Normalize header strings
+        $normalizedHeaders = [];
+        foreach ($rawHeaders as $idx => $h) {
+            $normalized = strtolower(trim((string)$h));
+            $normalized = preg_replace('/[^a-z0-9\/_]/', ' ', $normalized);
+            $normalized = trim(preg_replace('/\s+/', ' ', $normalized));
+            $normalizedHeaders[$idx] = $normalized;
+        }
+
+        // Backend Column Checker: Look for required and optional columns
+        $emailColIdx = null;
+        $nameColIdx = null;
+        $divisionColIdx = null;
+        $genderColIdx = null;
+        $ageColIdx = null;
+
+        foreach ($normalizedHeaders as $idx => $header) {
+            if ($emailColIdx === null && (
+                str_contains($header, 'voter / account') ||
+                str_contains($header, 'voter account') ||
+                str_contains($header, 'email account') ||
+                str_contains($header, 'email') ||
+                str_contains($header, 'account') ||
+                str_contains($header, 'voter')
+            )) {
+                $emailColIdx = $idx;
+            }
+
+            if ($nameColIdx === null && (
+                str_contains($header, 'voter name') ||
+                str_contains($header, 'full name') ||
+                $header === 'name'
+            )) {
+                $nameColIdx = $idx;
+            }
+
+            if ($divisionColIdx === null && (
+                str_contains($header, 'division') ||
+                str_contains($header, 'workplace')
+            )) {
+                $divisionColIdx = $idx;
+            }
+
+            if ($genderColIdx === null && (
+                str_contains($header, 'gender') ||
+                str_contains($header, 'sex')
+            )) {
+                $genderColIdx = $idx;
+            }
+
+            if ($ageColIdx === null && str_contains($header, 'age')) {
+                $ageColIdx = $idx;
+            }
+        }
+
+        // Enforce required column: Voter / Account (or Email)
+        if ($emailColIdx === null) {
+            fclose($handle);
+            $foundColumnsList = implode(', ', array_filter(array_map('trim', $rawHeaders)));
+            return response()->json([
+                'success' => false,
+                'message' => "CSV Column Validation Failed: Missing required column 'Voter / Account' (or 'Email') in Row 1. Found headers: [{$foundColumnsList}]. Row 1 must match the required columns: Voter / Account, Division / Workplace, Gender, Age."
+            ], 422);
+        }
+
+        $importedNew = 0;
+        $updatedCount = 0;
+        $skippedCount = 0;
+        $warnings = [];
+        $rowNumber = 1;
+
+        DB::beginTransaction();
+        try {
+            while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
+
+                // Skip completely empty lines
+                if (empty(array_filter($row, fn($val) => trim((string)$val) !== ''))) {
+                    continue;
+                }
+
+                $rawVoterVal = isset($row[$emailColIdx]) ? trim((string)$row[$emailColIdx]) : '';
+                if ($rawVoterVal === '') {
+                    $skippedCount++;
+                    $warnings[] = "Row {$rowNumber}: Missing voter email address.";
+                    continue;
+                }
+
+                // Extract valid email address from raw value
+                $email = null;
+                $extractedName = null;
+
+                if (filter_var($rawVoterVal, FILTER_VALIDATE_EMAIL)) {
+                    $email = strtolower($rawVoterVal);
+                } elseif (preg_match('/<([^>]+)>/', $rawVoterVal, $matches) && filter_var($matches[1], FILTER_VALIDATE_EMAIL)) {
+                    $email = strtolower($matches[1]);
+                    $extractedName = trim(str_replace($matches[0], '', $rawVoterVal));
+                } elseif (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $rawVoterVal, $matches)) {
+                    $email = strtolower($matches[0]);
+                    $extractedName = trim(str_replace($matches[0], '', $rawVoterVal));
+                }
+
+                if (!$email) {
+                    $skippedCount++;
+                    $warnings[] = "Row {$rowNumber}: '{$rawVoterVal}' is not a valid email address.";
+                    continue;
+                }
+
+                // Determine Name
+                $name = null;
+                if ($nameColIdx !== null && isset($row[$nameColIdx]) && trim((string)$row[$nameColIdx]) !== '') {
+                    $name = trim((string)$row[$nameColIdx]);
+                } elseif ($extractedName) {
+                    $name = $extractedName;
+                }
+
+                // Determine Division
+                $division = null;
+                if ($divisionColIdx !== null && isset($row[$divisionColIdx])) {
+                    $divVal = trim((string)$row[$divisionColIdx]);
+                    $division = ($divVal !== '' && $divVal !== '-') ? substr($divVal, 0, 255) : null;
+                }
+
+                // Determine Gender
+                $gender = null;
+                if ($genderColIdx !== null && isset($row[$genderColIdx])) {
+                    $genVal = trim((string)$row[$genderColIdx]);
+                    $gender = ($genVal !== '' && $genVal !== '-') ? substr($genVal, 0, 255) : null;
+                }
+
+                // Determine Age
+                $age = null;
+                if ($ageColIdx !== null && isset($row[$ageColIdx])) {
+                    $ageVal = trim((string)$row[$ageColIdx]);
+                    if (is_numeric($ageVal) && (int)$ageVal >= 18 && (int)$ageVal <= 120) {
+                        $age = (int)$ageVal;
+                    }
+                }
+
+                // Check if voter already exists for this election
+                $existingVoter = $election->voters()->where('email', $email)->first();
+
+                if ($existingVoter) {
+                    $updatePayload = [];
+                    if ($name && empty($existingVoter->name)) $updatePayload['name'] = $name;
+                    if ($division) $updatePayload['division'] = $division;
+                    if ($gender) $updatePayload['gender'] = $gender;
+                    if ($age) $updatePayload['age'] = $age;
+
+                    if (!empty($updatePayload)) {
+                        $existingVoter->update($updatePayload);
+                    }
+                    $updatedCount++;
+                } else {
+                    $election->voters()->create([
+                        'email' => $email,
+                        'name' => $name,
+                        'division' => $division,
+                        'gender' => $gender,
+                        'age' => $age,
+                    ]);
+                    $importedNew++;
+                }
+            }
+
+            DB::commit();
+            fclose($handle);
+
+            $totalProcessed = $importedNew + $updatedCount;
+
+            return response()->json([
+                'success' => true,
+                'message' => "CSV Import Completed: {$totalProcessed} total voters processed ({$importedNew} newly enrolled, {$updatedCount} updated on masterlist).",
+                'stats' => [
+                    'new' => $importedNew,
+                    'updated' => $updatedCount,
+                    'skipped' => $skippedCount,
+                    'warnings' => array_slice($warnings, 0, 5)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            fclose($handle);
+            return response()->json([
+                'success' => false,
+                'message' => 'Import Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Export the voter registry as a downloadable CSV.
      */
     public function exportVoters(Election $election)
