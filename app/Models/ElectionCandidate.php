@@ -12,6 +12,7 @@ class ElectionCandidate extends Model
         'name',
         'party_affiliation',
         'avatar_path',
+        'background',
         'sort_order',
     ];
 

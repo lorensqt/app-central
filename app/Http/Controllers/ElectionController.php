@@ -392,6 +392,7 @@ class ElectionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
+            'background' => 'nullable|string',
             'avatar_file' => 'nullable|image|max:2048',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'nullable|integer',
@@ -413,6 +414,7 @@ class ElectionController extends Controller
             'name' => $validated['name'],
             'party_affiliation' => $validated['party_affiliation'],
             'avatar_path' => $avatarUrl,
+            'background' => $validated['background'] ?? null,
             'sort_order' => $validated['sort_order'],
         ]);
 
@@ -431,6 +433,7 @@ class ElectionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
+            'background' => 'nullable|string',
             'avatar_file' => 'nullable|image|max:2048',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'required|integer',
@@ -462,6 +465,7 @@ class ElectionController extends Controller
             'name' => $validated['name'],
             'party_affiliation' => $validated['party_affiliation'],
             'avatar_path' => $avatarUrl,
+            'background' => $validated['background'] ?? null,
             'sort_order' => $validated['sort_order'],
         ]);
 
@@ -505,6 +509,55 @@ class ElectionController extends Controller
     // ==========================================
 
     /**
+     * Display the public election landing page with live anonymous tally and How To Vote instructions.
+     */
+    public function showPublicLanding(Request $request, Election $election)
+    {
+        // Canonical redirect if requested by numeric ID instead of slug
+        if ($election->slug && is_numeric($request->segment(2))) {
+            return redirect()->route('elections.public_show', $election->slug);
+        }
+
+        $positions = $election->positions()
+            ->with(['candidates' => function($q) {
+                $q->withCount('votes')->orderByDesc('votes_count')->orderBy('id');
+            }])
+            ->withCount('votes')
+            ->get();
+
+        $totalMasterlistVoters = $election->voters()->count();
+        $totalVotesCast = $election->voters()->whereNotNull('voted_at')->count();
+        $turnoutPercentage = $totalMasterlistVoters > 0
+            ? round(($totalVotesCast / $totalMasterlistVoters) * 100, 1)
+            : 0;
+
+        $email = $this->getVoterEmail();
+        $currentVoter = null;
+        $isMasterlistEnrolled = false;
+        $hasVoted = false;
+
+        if ($email) {
+            $currentVoter = $election->voters()->where('email', strtolower($email))->first();
+            if ($currentVoter) {
+                $isMasterlistEnrolled = true;
+                $hasVoted = $currentVoter->voted_at !== null;
+            }
+        }
+
+        return view('committees.election-app.public', compact(
+            'election',
+            'positions',
+            'totalMasterlistVoters',
+            'totalVotesCast',
+            'turnoutPercentage',
+            'email',
+            'currentVoter',
+            'isMasterlistEnrolled',
+            'hasVoted'
+        ));
+    }
+
+    /**
      * Retrieve the verified voter email from either the Auth guard or the isolated voter session.
      */
     private function getVoterEmail()
@@ -526,20 +579,26 @@ class ElectionController extends Controller
     public function voterLogin(Election $election)
     {
         if ($election->status !== 'active') {
-            abort(403, 'Access Denied: This election is currently not active.');
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
         }
 
-        // If the voter has an active session, bypass Google SSO and route them immediately
+        // If the voter has an active session, check their masterlist standing immediately
         $email = $this->getVoterEmail();
         if ($email) {
-            $voter = $election->voters()->where('email', $email)->first();
-            if ($voter && $voter->voted_at !== null) {
-                return view('committees.election-app.voter_success', [
-                    'election' => $election,
-                    'message' => 'You have already successfully cast your vote in this election!'
-                ]);
+            $voter = $election->voters()->where('email', strtolower($email))->first();
+
+            if (!$voter) {
+                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                    ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
             }
-            return redirect()->route('elections.voter.setup', $election->id);
+
+            if ($voter->voted_at !== null) {
+                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                    ->with('voter_info', 'You have already successfully cast your vote in this election!');
+            }
+
+            return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
         }
 
         // Save election ID to session before going to Google
@@ -555,36 +614,34 @@ class ElectionController extends Controller
     {
         $email = $this->getVoterEmail();
         if (!$email) {
-            return redirect()->route('elections.voter.login', $election->id);
-        }
-
-        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $superAdminEmail = config('app.super_admin_email');
-        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
-        if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
         }
 
         // Check if election is active
         if ($election->status !== 'active') {
-            abort(403, 'Access Denied: This election is currently not accepting votes.');
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not accepting votes.');
+        }
+
+        // Verify if email is on the masterlist
+        $voter = $election->voters()->where('email', strtolower($email))->first();
+        if (!$voter) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
         }
 
         // Check if already voted
-        $voter = $election->voters()->where('email', $email)->first();
-        if ($voter && $voter->voted_at !== null) {
-            return view('committees.election-app.voter_success', [
-                'election' => $election,
-                'message' => 'You have already successfully cast your vote in this election!'
-            ]);
+        if ($voter->voted_at !== null) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('voter_info', 'You have already successfully cast your vote in this election!');
         }
 
-        // If profiling is already completed but not yet voted, redirect to ballot
-        if ($voter && $voter->division !== null && $voter->gender !== null && $voter->age !== null) {
-            return redirect()->route('elections.ballot', $election->id);
+        // If already accepted terms in this session, redirect directly to ballot
+        if (session('voter_accepted_terms_' . $election->id)) {
+            return redirect()->route('elections.ballot', $election->slug ?: $election->id);
         }
 
-        return view('committees.election-app.voter_setup', compact('election'));
+        return view('committees.election-app.voter_setup', compact('election', 'voter'));
     }
 
     /**
@@ -594,43 +651,35 @@ class ElectionController extends Controller
     {
         $email = $this->getVoterEmail();
         if (!$email) {
-            return redirect()->route('elections.voter.login', $election->id);
-        }
-
-        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $superAdminEmail = config('app.super_admin_email');
-        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
-        if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
         }
 
         if ($election->status !== 'active') {
-            abort(403, 'Access Denied: This election is currently not active.');
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
         }
 
-        $validated = $request->validate([
-            'division' => 'required|string|max:255',
-            'gender' => 'required|string|max:255',
-            'gender_other' => 'nullable|required_if:gender,Others|string|max:255',
-            'age' => 'required|integer|min:18|max:120',
-        ]);
-
-        $genderValue = $validated['gender'];
-        if ($genderValue === 'Others' && !empty($validated['gender_other'])) {
-            $genderValue = $validated['gender_other'];
+        $voter = $election->voters()->where('email', strtolower($email))->first();
+        if (!$voter) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
         }
 
-        $election->voters()->updateOrCreate(
-            ['email' => $email],
-            [
-                'user_id' => auth()->id(), // keeps it null for isolated guests!
-                'division' => $validated['division'],
-                'gender' => $genderValue,
-                'age' => $validated['age'],
-            ]
-        );
+        if ($voter->voted_at !== null) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('voter_info', 'You have already cast your ballot in this election.');
+        }
 
-        return redirect()->route('elections.ballot', $election->id);
+        if (auth()->check()) {
+            $voter->update([
+                'user_id' => auth()->id(),
+                'name' => $voter->name ?: auth()->user()->name,
+            ]);
+        }
+
+        session(['voter_accepted_terms_' . $election->id => true]);
+
+        return redirect()->route('elections.ballot', $election->slug ?: $election->id);
     }
 
     /**
@@ -640,32 +689,30 @@ class ElectionController extends Controller
     {
         $email = $this->getVoterEmail();
         if (!$email) {
-            return redirect()->route('elections.voter.login', $election->id);
-        }
-
-        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $superAdminEmail = config('app.super_admin_email');
-        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
-        if (!$isMlhuillier && !$isSuperAdmin) {
-            abort(403, 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
         }
 
         if ($election->status !== 'active') {
-            abort(403, 'Access Denied: This election is currently not active.');
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
         }
 
-        // Ensure setup has been completed
-        $voter = $election->voters()->where('email', $email)->first();
-        if (!$voter || $voter->division === null || $voter->gender === null || $voter->age === null) {
-            return redirect()->route('elections.voter.setup', $election->id);
+        // Ensure voter record exists on the masterlist
+        $voter = $election->voters()->where('email', strtolower($email))->first();
+        if (!$voter) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
+        }
+
+        // Ensure terms have been accepted
+        if (!session('voter_accepted_terms_' . $election->id)) {
+            return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
         }
 
         // Ensure they haven't voted yet
         if ($voter->voted_at !== null) {
-            return view('committees.election-app.voter_success', [
-                'election' => $election,
-                'message' => 'You have already successfully cast your vote in this election!'
-            ]);
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('voter_info', 'You have already successfully cast your vote in this election!');
         }
 
         $positions = $election->positions()->with('candidates')->get();
@@ -686,16 +733,6 @@ class ElectionController extends Controller
             ], 401);
         }
 
-        $isMlhuillier = str_ends_with($email, '@mlhuillier.com');
-        $superAdminEmail = config('app.super_admin_email');
-        $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
-        if (!$isMlhuillier && !$isSuperAdmin) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Access Denied: An authorized email domain is required.'
-            ], 403);
-        }
-
         if ($election->status !== 'active') {
             return response()->json([
                 'success' => false,
@@ -703,11 +740,18 @@ class ElectionController extends Controller
             ], 403);
         }
 
-        $voter = $election->voters()->where('email', $email)->first();
-        if (!$voter || $voter->division === null || $voter->gender === null || $voter->age === null) {
+        $voter = $election->voters()->where('email', strtolower($email))->first();
+        if (!$voter) {
             return response()->json([
                 'success' => false,
-                'message' => 'Voter profiling setup is incomplete.'
+                'message' => 'Your email is not on the official masterlist for this election. Please contact the SAKO Election Committee.'
+            ], 403);
+        }
+
+        if ($voter->voted_at !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Double-voting protection: You have already cast your ballot in this election.'
             ], 403);
         }
 

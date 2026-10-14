@@ -57,6 +57,14 @@
                             <input type="number" name="sort_order" id="edit_cand_sort_order" required
                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
                         </div>
+
+                        <!-- Candidate Background / Bio -->
+                        <div class="space-y-1.5">
+                            <label for="edit_cand_background" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Background / Bio (Optional)</label>
+                            <textarea name="background" id="edit_cand_background" rows="3"
+                                placeholder="e.g. Educational background, achievements, previous leadership experience..."
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition custom-scrollbar resize-none"></textarea>
+                        </div>
                     </div>
 
                     <!-- Right Side: Live Image Preview & Upload Controls (5 cols) -->

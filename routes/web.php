@@ -49,6 +49,7 @@ Route::get('/survey/{registration}', [EventController::class, 'showSurvey'])->na
 Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])->middleware('throttle:survey-submission')->name('events.survey_submit');
 
 // Isolated Voter Public Portal Routes (Purely session-based, no users accounts created)
+Route::get('/elections/{election}', [\App\Http\Controllers\ElectionController::class, 'showPublicLanding'])->name('elections.public_show');
 Route::get('/elections/{election}/login', [\App\Http\Controllers\ElectionController::class, 'voterLogin'])->name('elections.voter.login');
 Route::get('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'showVoterSetup'])->name('elections.voter.setup');
 Route::post('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'submitVoterSetup'])->middleware('throttle:election-setup')->name('elections.voter.setup.submit');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Election;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -37,18 +38,33 @@ class GoogleController extends Controller
         // Check if they are a public voter
         if (session()->has('voter_for_election')) {
             $electionId = session()->pull('voter_for_election');
+            $election = Election::find($electionId);
 
-            if ($isSuperAdmin || $isMlhuillier) {
-                // ISO-VOTER ACCESS: Completely isolated session, NO users table record created.
-                session([
-                    'voter_email' => $email,
-                    'voter_name' => $googleUser->getName() ?? 'Employee'
-                ]);
-
-                return redirect()->route('elections.voter.setup', $electionId);
-            } else {
-                return redirect()->route('login')->with('error', 'Access Denied: An authorized email domain is required to participate in cooperative elections.');
+            if (!$election) {
+                return redirect()->route('login')->with('error', 'The requested election could not be found.');
             }
+
+            // ISO-VOTER ACCESS: Completely isolated session, NO users table record created.
+            session([
+                'voter_email' => strtolower($email),
+                'voter_name' => $googleUser->getName() ?? 'Voter',
+            ]);
+
+            // Verify if the email is on the official election masterlist
+            $voter = $election->voters()->where('email', strtolower($email))->first();
+
+            if (!$voter) {
+                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                    ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
+            }
+
+            // Check if already voted
+            if ($voter->voted_at !== null) {
+                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                    ->with('voter_info', 'You have already successfully cast your vote in this election!');
+            }
+
+            return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
         }
 
         // Check if the user is in the database

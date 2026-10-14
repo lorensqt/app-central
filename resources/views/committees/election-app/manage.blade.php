@@ -102,7 +102,7 @@
                 class="border-t border-slate-200 dark:border-slate-800 pt-6 mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <!-- Left Side: Primary Reader & Quick Tools -->
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <a href="{{ route('elections.voter.setup', $election->id) }}" target="_blank"
+                    <a href="{{ route('elections.public_show', $election) }}" target="_blank"
                         class="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-sm transition duration-150">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -822,6 +822,7 @@
             document.getElementById('edit_cand_party').value = candidate.party_affiliation || '';
             document.getElementById('edit_cand_avatar').value = candidate.avatar_path || '';
             document.getElementById('edit_cand_sort_order').value = candidate.sort_order;
+            document.getElementById('edit_cand_background').value = candidate.background || '';
 
             // Load candidate portrait preview
             const preview = document.getElementById('edit_cand_avatar_preview');
@@ -1323,7 +1324,7 @@
         }
 
         function copyVotingLink() {
-            const link = "{{ route('elections.voter.setup', $election->id) }}";
+            const link = "{{ route('elections.public_show', $election) }}";
             navigator.clipboard.writeText(link)
                 .then(() => {
                     window.showToast('Voting link copied to clipboard!', 'success');
