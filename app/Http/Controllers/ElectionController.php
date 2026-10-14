@@ -755,13 +755,6 @@ class ElectionController extends Controller
             ], 403);
         }
 
-        if ($voter->voted_at !== null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Double-voting protection: You have already cast your ballot in this election.'
-            ], 403);
-        }
-
         try {
             DB::transaction(function () use ($election, $voter, $request) {
                 $votes = $request->input('votes', []);
@@ -799,37 +792,10 @@ class ElectionController extends Controller
                 ]);
             });
 
-            // 4. Send Official Email Receipt (Isolated & Robust)
-            try {
-                $votes = $request->input('votes', []);
-                $selectionsPayload = [];
-                
-                foreach ($election->positions as $position) {
-                    $candIds = isset($votes[$position->id]) ? (array)$votes[$position->id] : [];
-                    $candIds = array_filter($candIds);
-
-                    if (count($candIds) > 0) {
-                        $candidateNames = $position->candidates()
-                            ->whereIn('id', $candIds)
-                            ->pluck('name')
-                            ->toArray();
-
-                        $selectionsPayload[$position->name] = $candidateNames;
-                    }
-                }
-
-                \Illuminate\Support\Facades\Mail::to($email)->send(
-                    new \App\Mail\ElectionReceipt($election, $voter, $selectionsPayload)
-                );
-            } catch (\Exception $mailEx) {
-                // Log the exception but do not block the submission flow if mail servers are unconfigured or down
-                \Illuminate\Support\Facades\Log::error("Election receipt email failed: " . $mailEx->getMessage());
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Ballot submitted and recorded successfully! Thank you for voting.',
-                'redirect' => route('elections.ballot', $election->id)
+                'redirect' => route('elections.ballot', $election->slug ?: $election->id)
             ]);
 
         } catch (\Exception $e) {
