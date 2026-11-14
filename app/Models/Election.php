@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -105,5 +106,85 @@ class Election extends Model
             ->where('user_id', $userId)
             ->whereNotNull('voted_at')
             ->exists();
+    }
+
+    /* ---------------------------------------------------------------------
+     |  Dashboard query helpers (used by the Elections Dashboard index)
+     | ------------------------------------------------------------------ */
+
+    /**
+     * Adds `positions_count` and `voters_count`.
+     * `voters_count` only counts voters who actually cast a vote (voted_at set),
+     * so the card's "Votes Cast" stays accurate even if voters are registered up front.
+     */
+    public function scopeWithDashboardCounts(Builder $query): Builder
+    {
+        return $query->withCount([
+            'positions',
+            'voters' => fn (Builder $q) => $q->whereNotNull('voted_at'),
+        ]);
+    }
+
+    /**
+     * Filter by status. Anything other than draft/active/closed (e.g. "all") is ignored.
+     */
+    public function scopeFilterStatus(Builder $query, ?string $status): Builder
+    {
+        return in_array($status, ['draft', 'active', 'closed'], true)
+            ? $query->where('status', $status)
+            : $query;
+    }
+
+    /**
+     * Search title and description.
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+        if ($term === '') {
+            return $query;
+        }
+
+        // Escape LIKE wildcards so a search for "100%" or "_" behaves literally
+        $like = '%' . addcslashes($term, '%_\\') . '%';
+
+        return $query->where(function (Builder $q) use ($like) {
+            $q->where('title', 'like', $like)
+              ->orWhere('description', 'like', $like);
+        });
+    }
+
+    /**
+     * Sort options used by the dashboard dropdown: latest (default), ending, votes.
+     * "votes" needs scopeWithDashboardCounts() applied first.
+     */
+    public function scopeSortBy(Builder $query, ?string $sort): Builder
+    {
+        return match ($sort) {
+            'ending' => $query->orderByRaw('end_date IS NULL')->orderBy('end_date'),
+            'votes'  => $query->orderByDesc('voters_count')->latest(),
+            default  => $query->latest(),
+        };
+    }
+
+    /**
+     * Counts for the dashboard stats strip and filter pills, in a single query.
+     * Always unfiltered, so the numbers don't change while a filter is applied.
+     *
+     * @return array{all:int, active:int, draft:int, closed:int}
+     */
+    public static function statusCounts(): array
+    {
+        $rows = static::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return [
+            'all'    => (int) $rows->sum(),
+            'active' => (int) ($rows['active'] ?? 0),
+            'draft'  => (int) ($rows['draft'] ?? 0),
+            'closed' => (int) ($rows['closed'] ?? 0),
+        ];
     }
 }
