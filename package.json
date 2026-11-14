@@ -7,6 +7,8 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@emnapi/core": "^2.0.0-beta.2",
+        "@emnapi/runtime": "^2.0.0-beta.2",
         "@tailwindcss/vite": "^4.3.5",
         "axios": "^1.21.1",
         "concurrently": "^10.0.7",
