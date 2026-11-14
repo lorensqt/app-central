@@ -51,6 +51,12 @@ Route::post('/survey/{registration}', [EventController::class, 'submitSurvey'])-
 // Isolated Voter Public Portal Routes (Purely session-based, no users accounts created)
 Route::get('/elections/{election}', [\App\Http\Controllers\ElectionController::class, 'showPublicLanding'])->name('elections.public_show');
 Route::get('/elections/{election}/login', [\App\Http\Controllers\ElectionController::class, 'voterLogin'])->name('elections.voter.login');
+Route::get('/elections/{election}/google', [\App\Http\Controllers\ElectionController::class, 'redirectToVoterGoogle'])->name('elections.voter.google');
+Route::post('/elections/{election}/login', [\App\Http\Controllers\ElectionController::class, 'sendVoterOtp'])->middleware('throttle:6,1')->name('elections.voter.send_otp');
+Route::get('/elections/{election}/verify-otp', [\App\Http\Controllers\ElectionController::class, 'showVoterVerifyOtp'])->name('elections.voter.verify_otp');
+Route::post('/elections/{election}/verify-otp', [\App\Http\Controllers\ElectionController::class, 'submitVoterVerifyOtp'])->middleware('throttle:10,1')->name('elections.voter.verify_otp.submit');
+Route::post('/elections/{election}/resend-otp', [\App\Http\Controllers\ElectionController::class, 'resendVoterOtp'])->middleware('throttle:3,1')->name('elections.voter.resend_otp');
+Route::post('/elections/{election}/voter-logout', [\App\Http\Controllers\ElectionController::class, 'voterLogout'])->name('elections.voter.logout');
 Route::get('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'showVoterSetup'])->name('elections.voter.setup');
 Route::post('/elections/{election}/setup', [\App\Http\Controllers\ElectionController::class, 'submitVoterSetup'])->middleware('throttle:election-setup')->name('elections.voter.setup.submit');
 Route::get('/elections/{election}/vote', [\App\Http\Controllers\ElectionController::class, 'showBallot'])->name('elections.ballot');

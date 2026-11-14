@@ -75,6 +75,13 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">Ballot Cast Time</span>
                         <span class="text-xs font-semibold text-slate-800 dark:text-slate-200" id="view-voter-voted-at">-</span>
                     </div>
+                    <div class="col-span-2 p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 shadow-2xs flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-0.5">Submission IP Address</span>
+                            <span class="font-mono text-xs font-semibold text-purple-600 dark:text-purple-400" id="view-voter-ip-address">-</span>
+                        </div>
+                        <i class="fa-solid fa-network-wired text-slate-300 dark:text-slate-700 text-lg"></i>
+                    </div>
                 </div>
 
                 <!-- Ballot Cast Audit Section -->

@@ -8,10 +8,15 @@ use App\Models\ElectionCandidate;
 use App\Models\ElectionVoter;
 use App\Models\ElectionVote;
 use App\Models\User;
+use App\Mail\VoterLoginOtp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Laravel\Socialite\Facades\Socialite;
 
 class ElectionController extends Controller
 {
@@ -359,8 +364,12 @@ class ElectionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'max_votes' => 'required|integer|min:1',
-            'sort_order' => 'required|integer',
+            'sort_order' => 'nullable|integer',
         ]);
+
+        if (!isset($validated['sort_order']) || $validated['sort_order'] === null) {
+            $validated['sort_order'] = $position->sort_order ?? 1;
+        }
 
         $position->update($validated);
 
@@ -393,7 +402,8 @@ class ElectionController extends Controller
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
             'background' => 'nullable|string',
-            'avatar_file' => 'nullable|image|max:2048',
+            'poster_file' => 'nullable|image|max:10240',
+            'avatar_file' => 'nullable|image|max:5120',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'nullable|integer',
         ]);
@@ -405,6 +415,13 @@ class ElectionController extends Controller
             $avatarUrl = Storage::disk('s3')->url($path);
         }
 
+        $posterUrl = $validated['background'] ?? null;
+
+        if ($request->hasFile('poster_file')) {
+            $posterPath = $request->file('poster_file')->store('candidate-posters', 's3');
+            $posterUrl = Storage::disk('s3')->url($posterPath);
+        }
+
         // Default sort order if not set
         if (!isset($validated['sort_order'])) {
             $validated['sort_order'] = $position->candidates()->count() + 1;
@@ -412,9 +429,9 @@ class ElectionController extends Controller
 
         $candidate = $position->candidates()->create([
             'name' => $validated['name'],
-            'party_affiliation' => $validated['party_affiliation'],
+            'party_affiliation' => $validated['party_affiliation'] ?? null,
             'avatar_path' => $avatarUrl,
-            'background' => $validated['background'] ?? null,
+            'background' => $posterUrl,
             'sort_order' => $validated['sort_order'],
         ]);
 
@@ -434,7 +451,8 @@ class ElectionController extends Controller
             'name' => 'required|string|max:255',
             'party_affiliation' => 'nullable|string|max:255',
             'background' => 'nullable|string',
-            'avatar_file' => 'nullable|image|max:2048',
+            'poster_file' => 'nullable|image|max:10240',
+            'avatar_file' => 'nullable|image|max:5120',
             'avatar_path' => 'nullable|string|max:2048',
             'sort_order' => 'required|integer',
         ]);
@@ -461,11 +479,35 @@ class ElectionController extends Controller
             $avatarUrl = Storage::disk('s3')->url($path);
         }
 
+        $posterUrl = $candidate->background;
+
+        if ($request->hasFile('poster_file')) {
+            // Cleanup the old S3 poster if it exists in our bucket
+            $bucketName = env('AWS_BUCKET');
+            if ($candidate->background && !empty($bucketName) && str_contains($candidate->background, $bucketName)) {
+                $parsedUrl = parse_url($candidate->background);
+                $oldPath = ltrim($parsedUrl['path'] ?? '', '/');
+                
+                if (str_starts_with($oldPath, $bucketName . '/')) {
+                    $oldPath = substr($oldPath, strlen($bucketName . '/'));
+                }
+
+                if (!empty($oldPath) && Storage::disk('s3')->exists($oldPath)) {
+                    Storage::disk('s3')->delete($oldPath);
+                }
+            }
+
+            $posterPath = $request->file('poster_file')->store('candidate-posters', 's3');
+            $posterUrl = Storage::disk('s3')->url($posterPath);
+        } elseif ($request->has('background')) {
+            $posterUrl = $validated['background'];
+        }
+
         $candidate->update([
             'name' => $validated['name'],
-            'party_affiliation' => $validated['party_affiliation'],
+            'party_affiliation' => array_key_exists('party_affiliation', $validated) ? $validated['party_affiliation'] : $candidate->party_affiliation,
             'avatar_path' => $avatarUrl,
-            'background' => $validated['background'] ?? null,
+            'background' => $posterUrl,
             'sort_order' => $validated['sort_order'],
         ]);
 
@@ -485,6 +527,20 @@ class ElectionController extends Controller
         $bucketName = env('AWS_BUCKET');
         if ($candidate->avatar_path && !empty($bucketName) && str_contains($candidate->avatar_path, $bucketName)) {
             $parsedUrl = parse_url($candidate->avatar_path);
+            $path = ltrim($parsedUrl['path'] ?? '', '/');
+            
+            if (str_starts_with($path, $bucketName . '/')) {
+                $path = substr($path, strlen($bucketName . '/'));
+            }
+
+            if (!empty($path) && Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
+            }
+        }
+
+        // Delete candidate's poster from S3 if it exists in our bucket
+        if ($candidate->background && !empty($bucketName) && str_contains($candidate->background, $bucketName)) {
+            $parsedUrl = parse_url($candidate->background);
             $path = ltrim($parsedUrl['path'] ?? '', '/');
             
             if (str_starts_with($path, $bucketName . '/')) {
@@ -535,6 +591,7 @@ class ElectionController extends Controller
         $currentVoter = null;
         $isMasterlistEnrolled = false;
         $hasVoted = false;
+        $isOtpVerified = (bool) session('voter_otp_verified_' . $election->id);
 
         if ($email) {
             $currentVoter = $election->voters()->where('email', strtolower($email))->first();
@@ -553,7 +610,8 @@ class ElectionController extends Controller
             'email',
             'currentVoter',
             'isMasterlistEnrolled',
-            'hasVoted'
+            'hasVoted',
+            'isOtpVerified'
         ));
     }
 
@@ -562,19 +620,38 @@ class ElectionController extends Controller
      */
     private function getVoterEmail()
     {
-        if (auth()->check()) {
-            return strtolower(auth()->user()->email);
-        }
-
         if (session()->has('voter_email')) {
             return strtolower(session('voter_email'));
+        }
+
+        if (auth()->check()) {
+            return strtolower(auth()->user()->email);
         }
 
         return null;
     }
 
     /**
-     * Public gateway to start the Google SSO flow for a voter.
+     * Helper to mask an email address for privacy (e.g. j***n@mlhuillier.com).
+     */
+    private function maskEmail(string $email): string
+    {
+        $parts = explode('@', $email);
+        $name = $parts[0];
+        $domain = $parts[1] ?? '';
+
+        $len = strlen($name);
+        if ($len <= 2) {
+            $masked = substr($name, 0, 1) . '*';
+        } else {
+            $masked = substr($name, 0, 2) . str_repeat('*', max(3, $len - 3)) . substr($name, -1);
+        }
+
+        return $masked . '@' . $domain;
+    }
+
+    /**
+     * Public gateway for voter authentication.
      */
     public function voterLogin(Election $election)
     {
@@ -583,28 +660,257 @@ class ElectionController extends Controller
                 ->with('error', 'This election is currently not active.');
         }
 
-        // If the voter has an active session, check their masterlist standing immediately
-        $email = $this->getVoterEmail();
-        if ($email) {
-            $voter = $election->voters()->where('email', strtolower($email))->first();
-
-            if (!$voter) {
-                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
-                    ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
+        // If voter has already completed Email OTP verification for this election
+        if (session('voter_otp_verified_' . $election->id)) {
+            $email = $this->getVoterEmail();
+            if ($email) {
+                $voter = $election->voters()->where('email', strtolower($email))->first();
+                if ($voter && $voter->voted_at !== null) {
+                    return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                        ->with('voter_info', 'You have already successfully cast your vote in this election!');
+                }
             }
 
-            if ($voter->voted_at !== null) {
-                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
-                    ->with('voter_info', 'You have already successfully cast your vote in this election!');
+            if (session('voter_accepted_terms_' . $election->id)) {
+                return redirect()->route('elections.ballot', $election->slug ?: $election->id);
             }
 
             return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
         }
 
-        // Save election ID to session before going to Google
-        session(['voter_for_election' => $election->id]);
+        $prefilledEmail = $this->getVoterEmail();
 
-        return redirect()->route('auth.google');
+        return view('committees.election-app.voter_login', compact('election', 'prefilledEmail'));
+    }
+
+    /**
+     * Dedicated initiation for voter Google SSO (strictly isolated to election voting portal).
+     */
+    public function redirectToVoterGoogle(Election $election)
+    {
+        if ($election->status !== 'active') {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
+        }
+
+        session([
+            'voter_for_election' => $election->id,
+            'voter_for_election_slug' => $election->slug ?: $election->id,
+        ]);
+
+        return Socialite::driver('google')
+            ->stateless()
+            ->with(['state' => 'voter_election_' . $election->id])
+            ->redirect();
+    }
+
+    /**
+     * Send a 6-digit OTP to the voter's masterlist email.
+     */
+    public function sendVoterOtp(Request $request, Election $election)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        if ($election->status !== 'active') {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
+        }
+
+        $email = strtolower(trim($validated['email']));
+
+        // Check if email exists in the election's official masterlist
+        $voter = $election->voters()->where('email', $email)->first();
+
+        if (!$voter) {
+            return back()->withInput()->with('masterlist_error', "Your email ({$email}) is not registered on the official voter masterlist for this election. Please contact the SAKO Election Committee.");
+        }
+
+        // Check if voter has already voted
+        if ($voter->voted_at !== null) {
+            return back()->withInput()->with('voter_info', "You have already successfully cast your ballot in this election on " . $voter->voted_at->format('M d, Y h:i A') . ".");
+        }
+
+        // Generate a 6-digit cryptographically secure OTP
+        $otp = sprintf('%06d', random_int(0, 999999));
+
+        // Store OTP in cache for 10 minutes with zero attempt counter
+        $cacheKey = "voter_otp_{$election->id}_{$email}";
+        Cache::put($cacheKey, [
+            'code' => $otp,
+            'attempts' => 0,
+            'generated_at' => now(),
+        ], now()->addMinutes(10));
+
+        // Set pending voter in session
+        session([
+            'voter_pending_otp_election' => $election->id,
+            'voter_pending_otp_email' => $email,
+            'voter_pending_otp_name' => $voter->display_name,
+        ]);
+
+        // Send Email OTP
+        try {
+            Mail::to($email)->send(new VoterLoginOtp($election, $voter, $otp));
+        } catch (\Throwable $e) {
+            Log::error('Failed to send voter login OTP: ' . $e->getMessage());
+        }
+
+        return redirect()->route('elections.voter.verify_otp', $election->slug ?: $election->id)
+            ->with('status', 'We sent a 6-digit verification code to ' . $this->maskEmail($email) . '. Please enter it below.');
+    }
+
+    /**
+     * Show the OTP verification screen.
+     */
+    public function showVoterVerifyOtp(Election $election)
+    {
+        if ($election->status !== 'active') {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('error', 'This election is currently not active.');
+        }
+
+        $pendingElectionId = session('voter_pending_otp_election');
+        $email = session('voter_pending_otp_email');
+
+        if (!$email || $pendingElectionId != $election->id) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id)
+                ->with('error', 'Please enter your registered email address first.');
+        }
+
+        $maskedEmail = $this->maskEmail($email);
+        $voterName = session('voter_pending_otp_name', 'Voter');
+
+        return view('committees.election-app.voter_verify_otp', compact('election', 'email', 'maskedEmail', 'voterName'));
+    }
+
+    /**
+     * Submit and verify the 6-digit OTP.
+     */
+    public function submitVoterVerifyOtp(Request $request, Election $election)
+    {
+        $validated = $request->validate([
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $pendingElectionId = session('voter_pending_otp_election');
+        $email = session('voter_pending_otp_email');
+
+        if (!$email || $pendingElectionId != $election->id) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id)
+                ->with('error', 'Your session has expired. Please enter your email to receive a new code.');
+        }
+
+        $submittedOtp = trim($validated['otp']);
+        $cacheKey = "voter_otp_{$election->id}_{$email}";
+        $otpData = Cache::get($cacheKey);
+
+        if (!$otpData) {
+            return back()->with('error', 'Your verification code has expired. Please click "Resend Code" to receive a new one.');
+        }
+
+        if ($otpData['attempts'] >= 5) {
+            Cache::forget($cacheKey);
+            return back()->with('error', 'Too many incorrect attempts. For security, please request a new verification code.');
+        }
+
+        if ($otpData['code'] !== $submittedOtp) {
+            $otpData['attempts']++;
+            Cache::put($cacheKey, $otpData, now()->addMinutes(10));
+            $remaining = max(0, 5 - $otpData['attempts']);
+            return back()->with('error', "Invalid verification code. Please check your email carefully. ({$remaining} attempts remaining)");
+        }
+
+        // OTP is correct! Clear from cache
+        Cache::forget($cacheKey);
+
+        // Fetch and verify voter record
+        $voter = $election->voters()->where('email', $email)->first();
+        if (!$voter) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('masterlist_error', 'Your email is not on the official voter masterlist.');
+        }
+
+        if ($voter->voted_at !== null) {
+            return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                ->with('voter_info', 'You have already cast your ballot in this election.');
+        }
+
+        // Set session state
+        session([
+            'voter_otp_verified_' . $election->id => true,
+            'voter_email' => $email,
+            'voter_name' => $voter->display_name,
+            'voter_verified_at_' . $election->id => now()->toIso8601String(),
+        ]);
+
+        // Clean up pending state
+        session()->forget(['voter_pending_otp_election', 'voter_pending_otp_email', 'voter_pending_otp_name']);
+
+        if (auth()->check() && $voter->user_id === null) {
+            $voter->update(['user_id' => auth()->id()]);
+        }
+
+        if (session('voter_accepted_terms_' . $election->id)) {
+            return redirect()->route('elections.ballot', $election->slug ?: $election->id);
+        }
+
+        return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
+    }
+
+    /**
+     * Resend a fresh 6-digit OTP code to the pending voter.
+     */
+    public function resendVoterOtp(Request $request, Election $election)
+    {
+        $pendingElectionId = session('voter_pending_otp_election');
+        $email = session('voter_pending_otp_email');
+
+        if (!$email || $pendingElectionId != $election->id) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
+        }
+
+        $voter = $election->voters()->where('email', $email)->first();
+        if (!$voter) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
+        }
+
+        // Generate new OTP
+        $otp = sprintf('%06d', random_int(0, 999999));
+        $cacheKey = "voter_otp_{$election->id}_{$email}";
+        Cache::put($cacheKey, [
+            'code' => $otp,
+            'attempts' => 0,
+            'generated_at' => now(),
+        ], now()->addMinutes(10));
+
+        try {
+            Mail::to($email)->send(new VoterLoginOtp($election, $voter, $otp));
+        } catch (\Throwable $e) {
+            Log::error('Failed to resend voter login OTP: ' . $e->getMessage());
+        }
+
+        return back()->with('status', 'A new 6-digit verification code has been dispatched to your email (' . $this->maskEmail($email) . ').');
+    }
+
+    /**
+     * Logout/clear voter session for this election.
+     */
+    public function voterLogout(Election $election)
+    {
+        session()->forget([
+            'voter_otp_verified_' . $election->id,
+            'voter_accepted_terms_' . $election->id,
+            'voter_email',
+            'voter_name',
+            'voter_pending_otp_email',
+            'voter_pending_otp_election',
+            'voter_pending_otp_name',
+        ]);
+
+        return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+            ->with('voter_info', 'You have signed out of this election session.');
     }
 
     /**
@@ -613,8 +919,9 @@ class ElectionController extends Controller
     public function showVoterSetup(Election $election)
     {
         $email = $this->getVoterEmail();
-        if (!$email) {
-            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
+        if (!$email || !session('voter_otp_verified_' . $election->id)) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id)
+                ->with('error', 'Please verify your identity with an Email OTP to access this election.');
         }
 
         // Check if election is active
@@ -650,7 +957,7 @@ class ElectionController extends Controller
     public function submitVoterSetup(Request $request, Election $election)
     {
         $email = $this->getVoterEmail();
-        if (!$email) {
+        if (!$email || !session('voter_otp_verified_' . $election->id)) {
             return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
         }
 
@@ -688,8 +995,9 @@ class ElectionController extends Controller
     public function showBallot(Election $election)
     {
         $email = $this->getVoterEmail();
-        if (!$email) {
-            return redirect()->route('elections.voter.login', $election->slug ?: $election->id);
+        if (!$email || !session('voter_otp_verified_' . $election->id)) {
+            return redirect()->route('elections.voter.login', $election->slug ?: $election->id)
+                ->with('error', 'Please verify your identity with an Email OTP to access this election.');
         }
 
         if ($election->status !== 'active') {
@@ -726,10 +1034,10 @@ class ElectionController extends Controller
     public function submitBallot(Request $request, Election $election)
     {
         $email = $this->getVoterEmail();
-        if (!$email) {
+        if (!$email || !session('voter_otp_verified_' . $election->id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated voter session.'
+                'message' => 'Unauthenticated voter session. Please verify your identity with an Email OTP.'
             ], 401);
         }
 
@@ -786,9 +1094,15 @@ class ElectionController extends Controller
                     }
                 }
 
-                // 3. Complete ballot casting securely
+                // 3. Complete ballot casting securely with client IP audit
+                $clientIp = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
+                if ($clientIp && str_contains($clientIp, ',')) {
+                    $clientIp = trim(explode(',', $clientIp)[0]);
+                }
+
                 $voter->update([
-                    'voted_at' => now()
+                    'voted_at' => now(),
+                    'ip_address' => $clientIp,
                 ]);
             });
 
@@ -1012,6 +1326,7 @@ class ElectionController extends Controller
                     'raw_age' => $voter->age ?? '',
                     'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
                     'voted_at_formatted' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-',
+                    'ip_address' => $voter->ip_address,
                     'status' => $voter->voted_at ? 'Voted' : 'In Queue',
                     'is_voted' => $voter->voted_at !== null,
                 ];
@@ -1100,6 +1415,7 @@ class ElectionController extends Controller
                 'status' => $voter->voted_at ? 'Voted' : 'In Queue',
                 'is_voted' => $voter->voted_at !== null,
                 'voted_at' => $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : null,
+                'ip_address' => $voter->ip_address,
                 'created_at' => $voter->created_at ? $voter->created_at->format('M d, Y • h:i A') : null,
                 'votes' => $voter->votes->map(function ($vote) {
                     return [
@@ -1482,7 +1798,7 @@ class ElectionController extends Controller
             $file = fopen('php://output', 'w');
             
             // CSV Header
-            fputcsv($file, ['Voter Name', 'Email Account', 'Division / Workplace', 'Gender', 'Age', 'Voting Status', 'Submission Time']);
+            fputcsv($file, ['Voter Name', 'Email Account', 'Division / Workplace', 'Gender', 'Age', 'Voting Status', 'Submission Time', 'IP Address']);
 
             foreach ($voters as $voter) {
                 fputcsv($file, [
@@ -1492,7 +1808,8 @@ class ElectionController extends Controller
                     $voter->gender ?? '-',
                     $voter->age ?? '-',
                     $voter->voted_at ? 'Voted' : 'In Queue',
-                    $voter->voted_at ? $voter->voted_at->format('Y-m-d H:i:s') : '-'
+                    $voter->voted_at ? $voter->voted_at->format('Y-m-d H:i:s') : '-',
+                    $voter->ip_address ?? '-'
                 ]);
             }
 

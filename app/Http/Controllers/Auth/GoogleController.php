@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Election;
+use App\Mail\VoterLoginOtp;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
@@ -24,9 +28,42 @@ class GoogleController extends Controller
      */
     public function handleGoogleCallback()
     {
+        // Identify if this is a public voter election authentication
+        $state = request('state');
+        $voterElectionId = session('voter_for_election');
+
+        if (!$voterElectionId && is_string($state) && str_starts_with($state, 'voter_election_')) {
+            $voterElectionId = (int) str_replace('voter_election_', '', $state);
+        }
+
+        $voterElection = $voterElectionId ? Election::find($voterElectionId) : null;
+
+        // Handle Google OAuth cancellation or error query params (e.g. user pressed cancel)
+        if (request()->has('error') || request('error') === 'access_denied') {
+            if ($voterElection) {
+                session()->forget(['voter_for_election', 'voter_for_election_slug']);
+                return redirect()->route('elections.voter.login', $voterElection->slug ?: $voterElection->id)
+                    ->with('error', 'Google authentication was cancelled. You can sign in using your registered email address below.');
+            }
+
+            return redirect()->route('login')->with('error', 'Google authentication was cancelled.');
+        }
+
         try {
-            $googleUser = Socialite::driver('google')->user();
+            if ($voterElection) {
+                $googleUser = Socialite::driver('google')->stateless()->user();
+            } else {
+                $googleUser = Socialite::driver('google')->user();
+            }
         } catch (Exception $e) {
+            Log::warning('Google OAuth failure: ' . $e->getMessage());
+
+            if ($voterElection) {
+                session()->forget(['voter_for_election', 'voter_for_election_slug']);
+                return redirect()->route('elections.voter.login', $voterElection->slug ?: $voterElection->id)
+                    ->with('error', 'Google authentication could not be completed. Please try again or use your masterlist email below.');
+            }
+
             return redirect()->route('login')->with('error', 'Google authentication failed. Please try again.');
         }
 
@@ -35,36 +72,47 @@ class GoogleController extends Controller
         $isSuperAdmin = ($superAdminEmail && $email === $superAdminEmail);
         $isMlhuillier = str_ends_with(strtolower($email), '@mlhuillier.com');
 
-        // Check if they are a public voter
-        if (session()->has('voter_for_election')) {
-            $electionId = session()->pull('voter_for_election');
-            $election = Election::find($electionId);
-
-            if (!$election) {
-                return redirect()->route('login')->with('error', 'The requested election could not be found.');
-            }
-
-            // ISO-VOTER ACCESS: Completely isolated session, NO users table record created.
-            session([
-                'voter_email' => strtolower($email),
-                'voter_name' => $googleUser->getName() ?? 'Voter',
-            ]);
+        // Handle isolated public voter flow
+        if ($voterElection) {
+            session()->forget(['voter_for_election', 'voter_for_election_slug']);
+            $normalizedEmail = strtolower($email);
 
             // Verify if the email is on the official election masterlist
-            $voter = $election->voters()->where('email', strtolower($email))->first();
+            $voter = $voterElection->voters()->where('email', $normalizedEmail)->first();
 
             if (!$voter) {
-                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
+                return redirect()->route('elections.public_show', $voterElection->slug ?: $voterElection->id)
                     ->with('masterlist_error', 'Your email (' . $email . ') is not on the official masterlist for this election. Please contact the SAKO Election Committee.');
             }
 
             // Check if already voted
             if ($voter->voted_at !== null) {
-                return redirect()->route('elections.public_show', $election->slug ?: $election->id)
-                    ->with('voter_info', 'You have already successfully cast your vote in this election!');
+                return redirect()->route('elections.public_show', $voterElection->slug ?: $voterElection->id)
+                    ->with('voter_info', 'You have already successfully cast your vote in this election on ' . $voter->voted_at->format('M d, Y h:i A') . '!');
             }
 
-            return redirect()->route('elections.voter.setup', $election->slug ?: $election->id);
+            // Generate 6-digit Email OTP
+            $otp = sprintf('%06d', random_int(0, 999999));
+            Cache::put("voter_otp_{$voterElection->id}_{$normalizedEmail}", [
+                'code' => $otp,
+                'attempts' => 0,
+                'generated_at' => now(),
+            ], now()->addMinutes(10));
+
+            session([
+                'voter_pending_otp_election' => $voterElection->id,
+                'voter_pending_otp_email' => $normalizedEmail,
+                'voter_name' => $googleUser->getName() ?? $voter->display_name,
+            ]);
+
+            try {
+                Mail::to($normalizedEmail)->send(new VoterLoginOtp($voterElection, $voter, $otp));
+            } catch (Exception $e) {
+                Log::error('Failed to send voter login OTP via Google SSO: ' . $e->getMessage());
+            }
+
+            return redirect()->route('elections.voter.verify_otp', $voterElection->slug ?: $voterElection->id)
+                ->with('status', 'We sent a 6-digit verification code to ' . $email . '. Please enter it below to confirm your identity.');
         }
 
         // Check if the user is in the database

@@ -414,8 +414,18 @@
                                                     ${voter.status}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4.5 text-xs text-slate-400 dark:text-slate-500">
-                                                ${voter.voted_at_formatted}
+                                            <td class="px-6 py-4.5 text-xs text-slate-500 dark:text-slate-400">
+                                                ${voter.is_voted ? `
+                                                    <div class="space-y-0.5">
+                                                        <span class="block text-slate-700 dark:text-slate-300 font-medium">${voter.voted_at_formatted}</span>
+                                                        ${voter.ip_address ? `
+                                                            <span class="inline-flex items-center gap-1 font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/60" title="Voter Submission IP Address">
+                                                                <i class="fa-solid fa-network-wired text-[9px] text-purple-500"></i>
+                                                                ${voter.ip_address}
+                                                            </span>
+                                                        ` : ''}
+                                                    </div>
+                                                ` : '<span class="text-slate-400 dark:text-slate-500">-</span>'}
                                             </td>
                                             <td class="px-6 py-4.5 text-right whitespace-nowrap">
                                                 <div class="flex items-center justify-end gap-1.5">
@@ -737,22 +747,43 @@
         }
 
         // --- POSITION MODALS ---
-        function openEditPositionModal(position) {
+        function openEditPositionModal(posOrId, name, maxVotes, sortOrder) {
+            let id, posName, maxV, sOrder;
+            if (typeof posOrId === 'object' && posOrId !== null) {
+                id = posOrId.id;
+                posName = posOrId.name;
+                maxV = posOrId.max_votes;
+                sOrder = posOrId.sort_order;
+            } else {
+                id = posOrId;
+                posName = name;
+                maxV = maxVotes;
+                sOrder = sortOrder;
+            }
+
             const modal = document.getElementById('edit-position-modal');
             const content = document.getElementById('edit-position-modal-content');
+            if (!modal) return;
 
-            document.getElementById('edit_position_id').value = position.id;
-            document.getElementById('edit_pos_name').value = position.name;
-            document.getElementById('edit_pos_max_votes').value = position.max_votes;
-            document.getElementById('edit_pos_sort_order').value = position.sort_order;
+            const idInput = document.getElementById('edit_position_id');
+            const nameInput = document.getElementById('edit_pos_name');
+            const maxVotesInput = document.getElementById('edit_pos_max_votes');
+            const sortOrderInput = document.getElementById('edit_pos_sort_order');
+
+            if (idInput) idInput.value = id || '';
+            if (nameInput) nameInput.value = posName || '';
+            if (maxVotesInput) maxVotesInput.value = maxV !== undefined && maxV !== null ? maxV : 1;
+            if (sortOrderInput) sortOrderInput.value = sOrder !== undefined && sOrder !== null ? sOrder : 1;
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             requestAnimationFrame(() => {
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
+                if (content) {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }
             });
         }
 
@@ -801,6 +832,9 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
                 document.getElementById('create-candidate-form').reset();
+                if (typeof clearCreatePoster === 'function') clearCreatePoster();
+                const avatarPreview = document.getElementById('cand_avatar_preview');
+                if (avatarPreview) avatarPreview.src = 'https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder';
             }, 300);
         }
 
@@ -810,10 +844,36 @@
 
             document.getElementById('edit_candidate_id').value = candidate.id;
             document.getElementById('edit_cand_name').value = candidate.name;
-            document.getElementById('edit_cand_party').value = candidate.party_affiliation || '';
+            const partyInput = document.getElementById('edit_cand_party');
+            if (partyInput) partyInput.value = candidate.party_affiliation || '';
             document.getElementById('edit_cand_avatar').value = candidate.avatar_path || '';
             document.getElementById('edit_cand_sort_order').value = candidate.sort_order;
-            document.getElementById('edit_cand_background').value = candidate.background || '';
+            
+            // Poster initialization
+            const posterInput = document.getElementById('edit_cand_background');
+            const posterFileInput = document.getElementById('edit_cand_poster_file');
+            if (posterFileInput) posterFileInput.value = '';
+            if (posterInput) posterInput.value = candidate.background || '';
+
+            const posterPreview = document.getElementById('edit_cand_poster_preview');
+            const posterPlaceholder = document.getElementById('edit_cand_poster_placeholder');
+            const posterRemoveBtn = document.getElementById('edit_cand_poster_remove_btn');
+
+            if (candidate.background && candidate.background.trim() !== '') {
+                if (posterPreview) {
+                    posterPreview.src = candidate.background;
+                    posterPreview.classList.remove('hidden');
+                }
+                if (posterPlaceholder) posterPlaceholder.classList.add('hidden');
+                if (posterRemoveBtn) posterRemoveBtn.classList.remove('hidden');
+            } else {
+                if (posterPreview) {
+                    posterPreview.src = '';
+                    posterPreview.classList.add('hidden');
+                }
+                if (posterPlaceholder) posterPlaceholder.classList.remove('hidden');
+                if (posterRemoveBtn) posterRemoveBtn.classList.add('hidden');
+            }
 
             // Load candidate portrait preview
             const preview = document.getElementById('edit_cand_avatar_preview');
@@ -840,6 +900,7 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
                 document.getElementById('edit-candidate-form').reset();
+                if (typeof clearEditPoster === 'function') clearEditPoster();
             }, 300);
         }
 
@@ -926,8 +987,10 @@
             event.preventDefault();
             const form = event.target;
             const submitBtn = form.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+            }
 
             const id = document.getElementById('edit_position_id').value;
             const formData = new FormData(form);
@@ -940,23 +1003,34 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 })
-                .then(response => response.json())
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        const errorMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(' ') : 'Error updating position.');
+                        throw new Error(errorMsg);
+                    }
+                    return data;
+                })
                 .then(res => {
                     if (res.success) {
-                        window.showToast(res.message, 'success');
+                        if (window.showToast) window.showToast(res.message, 'success');
                         closeEditPositionModal();
-                        setTimeout(() => window.location.reload(), 800);
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('tab', 'structure');
+                        setTimeout(() => window.location.href = currentUrl.toString(), 700);
                     } else {
-                        window.showToast(res.message || 'Error occurred.', 'error');
+                        if (window.showToast) window.showToast(res.message || 'Error occurred.', 'error');
                     }
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save Changes';
                 })
                 .catch(err => {
                     console.error(err);
-                    window.showToast('Connection error.', 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save Changes';
+                    if (window.showToast) window.showToast(err.message || 'Connection error.', 'error');
+                })
+                .finally(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Save Changes';
+                    }
                 });
         }
 
@@ -1731,6 +1805,11 @@
                     document.getElementById('view-voter-age').textContent = voter.age !== '-' ? `${voter.age} yrs old` : 'Unspecified';
                     document.getElementById('view-voter-created-at').textContent = voter.created_at || 'Registered';
                     document.getElementById('view-voter-voted-at').textContent = voter.voted_at || 'Not yet cast';
+
+                    const ipEl = document.getElementById('view-voter-ip-address');
+                    if (ipEl) {
+                        ipEl.textContent = voter.ip_address || 'Not recorded';
+                    }
 
                     const votesCount = document.getElementById('view-voter-votes-count');
                     const votesList = document.getElementById('view-voter-votes-list');

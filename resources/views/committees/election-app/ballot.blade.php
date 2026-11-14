@@ -112,12 +112,13 @@
                                 {{ $candidate->party_affiliation ?? 'Independent' }}
                             </p>
 
-                            <!-- Profile & Bio Quick Pill -->
+                            <!-- Profile & Poster Quick Pill -->
                             <button type="button"
                                 onclick="event.stopPropagation(); openCandidateModalFromCard(this.closest('.candidate-card-btn'))"
-                                class="mt-1.5 sm:mt-2 inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 py-0.5 px-2 rounded-md bg-purple-500/10 hover:bg-purple-500/15 transition border border-purple-500/20 active:scale-95">
-                                <span>Bio</span>
-                                <i class="fa-solid fa-chevron-right text-[7px]"></i>
+                                class="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 py-1 px-2.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/15 transition border border-purple-500/20 active:scale-95 shadow-2xs">
+                                <i class="fa-solid fa-image text-[8px] sm:text-[9px]"></i>
+                                <span>Poster</span>
+                                <i class="fa-solid fa-chevron-right text-[7px] opacity-70"></i>
                             </button>
                         </div>
                     @empty
@@ -330,7 +331,7 @@
         );
     }
 
-    // --- BALLOT CANDIDATE PROFILE & BACKGROUND MODAL LOGIC ---
+    // --- BALLOT CANDIDATE PROFILE & POSTER MODAL LOGIC ---
     function openCandidateModalFromCard(card) {
         if (!card) return;
         const url = card.dataset.avatar || '';
@@ -341,6 +342,20 @@
         viewBallotCandidateProfile(url, name, party, position, background);
     }
 
+    function isPosterImageUrl(str) {
+        if (!str || typeof str !== 'string') return false;
+        const trimmed = str.trim();
+        if (trimmed.startsWith('data:image/')) return true;
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+            return /\.(jpeg|jpg|png|gif|webp|svg)(\?.*)?$/i.test(trimmed) ||
+                   trimmed.includes('/candidates') ||
+                   trimmed.includes('/candidate-posters') ||
+                   trimmed.includes('s3') ||
+                   trimmed.includes('storage');
+        }
+        return false;
+    }
+
     function viewBallotCandidateProfile(url, name, party, positionName, background) {
         const modal = document.getElementById('ballot-candidate-photo-modal');
         const content = document.getElementById('ballot-candidate-photo-content');
@@ -349,12 +364,24 @@
         const nameEl = document.getElementById('ballot-candidate-viewer-name');
         const partyEl = document.getElementById('ballot-candidate-viewer-party');
         const posEl = document.getElementById('ballot-candidate-viewer-position');
-        const bgEl = document.getElementById('ballot-candidate-viewer-background');
+        
+        const posterImg = document.getElementById('ballot-candidate-viewer-poster');
+        const posterLink = document.getElementById('ballot-poster-link');
+        const posterImgLink = document.getElementById('ballot-poster-img-link');
+        const posterEmpty = document.getElementById('ballot-poster-empty');
+        const bgText = document.getElementById('ballot-candidate-viewer-background');
 
         if (!modal) return;
 
         if (nameEl) nameEl.textContent = name || 'Candidate Profile';
-        if (partyEl) partyEl.textContent = party || 'Independent';
+        if (partyEl) {
+            if (party && party !== 'Independent') {
+                partyEl.textContent = party;
+                partyEl.classList.remove('hidden');
+            } else {
+                partyEl.classList.add('hidden');
+            }
+        }
         if (posEl) posEl.textContent = positionName || 'Candidate';
 
         if (url && url.trim() !== '') {
@@ -375,14 +402,41 @@
             }
         }
 
-        if (bgEl) {
-            if (background && background.trim() !== '') {
-                bgEl.textContent = background;
-                bgEl.classList.remove('italic', 'text-slate-400', 'dark:text-slate-500');
-            } else {
-                bgEl.textContent = 'No background information or platform statement has been provided for this candidate.';
-                bgEl.classList.add('italic', 'text-slate-400', 'dark:text-slate-500');
+        const trimmedBg = (background || '').trim();
+
+        if (trimmedBg && isPosterImageUrl(trimmedBg)) {
+            if (posterImg) {
+                posterImg.src = trimmedBg;
+                posterImg.classList.remove('hidden');
             }
+            if (posterLink) {
+                posterLink.href = trimmedBg;
+                posterLink.classList.remove('hidden');
+            }
+            if (posterImgLink) {
+                posterImgLink.href = trimmedBg;
+            }
+            if (posterEmpty) posterEmpty.classList.add('hidden');
+            if (bgText) bgText.classList.add('hidden');
+        } else if (trimmedBg && !isPosterImageUrl(trimmedBg) && trimmedBg !== 'No background details provided.') {
+            if (posterImg) {
+                posterImg.src = '';
+                posterImg.classList.add('hidden');
+            }
+            if (posterLink) posterLink.classList.add('hidden');
+            if (posterEmpty) posterEmpty.classList.add('hidden');
+            if (bgText) {
+                bgText.textContent = trimmedBg;
+                bgText.classList.remove('hidden');
+            }
+        } else {
+            if (posterImg) {
+                posterImg.src = '';
+                posterImg.classList.add('hidden');
+            }
+            if (posterLink) posterLink.classList.add('hidden');
+            if (posterEmpty) posterEmpty.classList.remove('hidden');
+            if (bgText) bgText.classList.add('hidden');
         }
 
         modal.classList.remove('hidden');
@@ -413,7 +467,9 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             const img = document.getElementById('ballot-candidate-viewer-img');
+            const posterImg = document.getElementById('ballot-candidate-viewer-poster');
             if (img) img.src = '';
+            if (posterImg) posterImg.src = '';
         }, 300);
     }
 
@@ -427,21 +483,21 @@
     });
 </script>
 
-<!-- BALLOT CANDIDATE PROFILE & BACKGROUND MODAL (Mobile-Optimized) -->
+<!-- BALLOT CANDIDATE PROFILE & POSTER MODAL (Mobile-Optimized) -->
 <div id="ballot-candidate-photo-modal"
     onclick="if (event.target === this) closeBallotCandidateImage()"
     class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-3 sm:p-6 transition-all duration-300 opacity-0"
     role="dialog" aria-modal="true" aria-labelledby="ballot-candidate-viewer-name">
-    <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 max-w-lg sm:max-w-xl w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[88vh] sm:max-h-[90vh]"
+    <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 max-w-lg sm:max-w-2xl w-full shadow-2xl overflow-hidden transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[90vh] sm:max-h-[92vh]"
         id="ballot-candidate-photo-content">
 
         <!-- Modal Header -->
-        <div class="px-4 py-3 sm:px-7 sm:py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-950/40 shrink-0">
+        <div class="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-950/40 shrink-0">
             <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                 <span id="ballot-candidate-viewer-position" class="inline-flex items-center text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wide">
                     Position
                 </span>
-                <span id="ballot-candidate-viewer-party" class="inline-flex items-center text-[10px] sm:text-xs font-medium px-2.5 py-0.5 sm:py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+                <span id="ballot-candidate-viewer-party" class="hidden inline-flex items-center text-[10px] sm:text-xs font-medium px-2.5 py-0.5 sm:py-1 rounded-lg bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
                     Party Affiliation
                 </span>
             </div>
@@ -455,12 +511,12 @@
             </button>
         </div>
 
-        <!-- Scrollable Modal Body (Photo + Profile + Background) -->
-        <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-3.5 sm:space-y-4">
-            <!-- Candidate Identity Row (Side-by-side on mobile saves vertical space) -->
-            <div class="flex items-center sm:items-start gap-3 sm:gap-4 text-left">
+        <!-- Scrollable Modal Body (Photo + Profile + Poster) -->
+        <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+            <!-- Candidate Identity Row -->
+            <div class="flex items-center gap-3.5 sm:gap-4 text-left">
                 <!-- Avatar / Photo -->
-                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-950 shadow-sm shrink-0 flex items-center justify-center">
+                <div class="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-950 shadow-sm shrink-0 flex items-center justify-center">
                     <img id="ballot-candidate-viewer-img" src="" alt="Candidate Portrait"
                         class="w-full h-full object-cover">
                     <div id="ballot-candidate-viewer-initials" class="hidden w-full h-full flex items-center justify-center text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50">
@@ -470,38 +526,63 @@
 
                 <!-- Name & Subtitles -->
                 <div class="space-y-0.5 min-w-0 flex-grow">
-                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
+                    <span class="text-[9px] sm:text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block">
                         Official Candidate
                     </span>
                     <h3 id="ballot-candidate-viewer-name" class="font-black text-slate-900 dark:text-white text-base sm:text-xl leading-snug truncate">
                         Candidate Name
                     </h3>
-                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
-                        Running for cooperative leadership under the verified ballot registry.
+                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                        Official Campaign Poster & Profile
                     </p>
                 </div>
             </div>
 
-            <!-- Background & Platform Statement Section -->
-            <div class="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                <div class="flex items-center gap-1.5">
-                    <div class="w-4 h-4 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-[10px]">
-                        <i class="fa-solid fa-file-lines"></i>
+            <!-- Campaign Poster Display Section -->
+            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-5 h-5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-image"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                            Campaign Poster
+                        </span>
                     </div>
-                    <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Candidate Background & Bio
-                    </span>
+
+                    <a id="ballot-poster-link" href="#" target="_blank" rel="noopener noreferrer"
+                        class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition">
+                        <span>View Full Size</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
                 </div>
                 
-                <div class="p-3 sm:p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800/80 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words max-h-52 sm:max-h-64 overflow-y-auto custom-scrollbar"
-                    id="ballot-candidate-viewer-background">
-                    No background details provided.
+                <!-- Poster Container -->
+                <div id="ballot-poster-container" class="relative rounded-2xl overflow-hidden bg-slate-900/5 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-center min-h-[200px] p-2 sm:p-4">
+                    <!-- Poster Image (Clickable for full resolution in new tab) -->
+                    <a id="ballot-poster-img-link" href="#" target="_blank" rel="noopener noreferrer" class="block w-full text-center group cursor-zoom-in">
+                        <img id="ballot-candidate-viewer-poster" src="" alt="Candidate Campaign Poster"
+                            class="hidden max-h-[58vh] sm:max-h-[64vh] w-auto max-w-full mx-auto object-contain rounded-xl shadow-md transition-transform duration-200 group-hover:scale-[1.01]">
+                    </a>
+
+                    <!-- Empty State (No Poster) -->
+                    <div id="ballot-poster-empty" class="hidden flex flex-col items-center justify-center py-8 px-4 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-2.5 shadow-xs">
+                            <i class="fa-solid fa-image text-lg"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">No Campaign Poster Available</p>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 max-w-xs">The candidate has not published an official campaign poster yet.</p>
+                    </div>
+
+                    <!-- Fallback Text Bio (if legacy text is present instead of an image URL) -->
+                    <div id="ballot-candidate-viewer-background" class="hidden w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words max-h-52 overflow-y-auto custom-scrollbar">
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-4 py-2.5 sm:px-7 sm:py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
+        <div class="px-4 py-2.5 sm:px-6 sm:py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
             <span class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 font-medium">SAKO Secret Ballot</span>
             <button type="button" onclick="closeBallotCandidateImage()"
                 class="px-4 py-1.5 sm:px-5 sm:py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">

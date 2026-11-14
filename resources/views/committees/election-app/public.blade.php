@@ -81,19 +81,33 @@
                     <i id="theme-toggle-light-icon" class="fas fa-sun hidden w-3.5 h-3.5 sm:w-4 sm:h-4 flex items-center justify-center"></i>
                 </button>
 
-                @if($email)
+                @if(!empty($isOtpVerified) && $email)
                     <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/60 text-xs">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span class="font-medium text-slate-600 dark:text-slate-300 max-w-[140px] truncate">{{ $email }}</span>
+                        <span class="font-medium text-slate-600 dark:text-slate-300 max-w-[140px] truncate" title="Verified Voter">{{ $email }}</span>
+                        <form action="{{ route('elections.voter.logout', $election) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="text-slate-400 hover:text-rose-500 transition ml-1 cursor-pointer" title="Sign out session">
+                                <i class="fa-solid fa-arrow-right-from-bracket text-[10px]"></i>
+                            </button>
+                        </form>
                     </div>
                 @endif
 
                 @if($election->status === 'active' && !$hasVoted)
-                    <a href="{{ route('elections.voter.login', $election) }}"
-                        class="inline-flex items-center gap-1.5 sm:gap-2 bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-purple-500/20 transition">
-                        <i class="fa-solid fa-check-to-slot text-xs sm:text-sm"></i>
-                        <span>Vote Now</span>
-                    </a>
+                    @if(!empty($isOtpVerified))
+                        <a href="{{ route('elections.ballot', $election) }}"
+                            class="inline-flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-emerald-500/20 transition">
+                            <i class="fa-solid fa-check-to-slot text-xs sm:text-sm"></i>
+                            <span>Enter Ballot Booth</span>
+                        </a>
+                    @else
+                        <a href="{{ route('elections.voter.login', $election) }}"
+                            class="inline-flex items-center gap-1.5 sm:gap-2 bg-purple-600 hover:bg-purple-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-purple-500/20 transition">
+                            <i class="fa-solid fa-key text-xs sm:text-sm"></i>
+                            <span>Vote (OTP Login)</span>
+                        </a>
+                    @endif
                 @elseif($hasVoted)
                     <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         <i class="fa-solid fa-circle-check text-xs"></i>
@@ -199,29 +213,43 @@
                             </div>
                         @else
                             <div class="space-y-1.5 sm:space-y-2">
-                                <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400">
-                                    Official Secret Ballot Booth
+                                <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400">
+                                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                                    Official 2FA Secret Ballot Booth
                                 </span>
                                 <h3 class="text-lg xs:text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                                     Ready to Cast Your Vote?
                                 </h3>
                                 <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                                    Sign in with your masterlist email, review the terms of agreement, and vote for your chosen candidates.
+                                    @if(!empty($isOtpVerified))
+                                        Your identity has been verified via Email OTP. You may proceed directly to the secret ballot booth.
+                                    @else
+                                        Sign in with your masterlist email, verify the 6-digit one-time code sent to your inbox, and cast your ballot.
+                                    @endif
                                 </p>
                             </div>
 
                             <div class="pt-1 sm:pt-2">
-                                <a href="{{ route('elections.voter.login', $election) }}"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 active:scale-[0.98] text-white font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl transition-all cursor-pointer">
-                                    <i class="fa-solid fa-check-to-slot text-base sm:text-lg"></i>
-                                    <span>Vote Now in This Election</span>
-                                    <i class="fa-solid fa-arrow-right text-xs"></i>
-                                </a>
+                                @if(!empty($isOtpVerified))
+                                    <a href="{{ route('elections.ballot', $election) }}"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all cursor-pointer">
+                                        <i class="fa-solid fa-check-to-slot text-base sm:text-lg"></i>
+                                        <span>Enter Secret Ballot Booth</span>
+                                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                                    </a>
+                                @else
+                                    <a href="{{ route('elections.voter.login', $election) }}"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 active:scale-[0.98] text-white font-extrabold text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl transition-all cursor-pointer">
+                                        <i class="fa-solid fa-key text-base sm:text-lg"></i>
+                                        <span>Sign In with Email OTP</span>
+                                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                                    </a>
+                                @endif
                             </div>
 
                             <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 pt-0.5">
                                 <i class="fa-solid fa-shield-halved mr-1 text-purple-500"></i>
-                                100% Secret Ballot • One Member, One Vote • Governed by SAKO & CDA
+                                Email OTP Verified • 100% Secret Ballot • One Member, One Vote • CDA Compliant
                             </p>
                         @endif
                     @elseif($election->status === 'closed')

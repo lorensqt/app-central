@@ -17,6 +17,7 @@ class ElectionVoter extends Model
         'gender',
         'age',
         'voted_at',
+        'ip_address',
     ];
 
     protected $casts = [

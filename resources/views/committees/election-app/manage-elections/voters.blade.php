@@ -240,8 +240,22 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4.5 text-xs text-slate-400 dark:text-slate-500">
-                                {{ $voter->voted_at ? $voter->voted_at->format('M d, Y • h:i A') : '-' }}
+                            <td class="px-6 py-4.5 text-xs text-slate-500 dark:text-slate-400">
+                                @if($voter->voted_at)
+                                    <div class="space-y-0.5">
+                                        <span class="block text-slate-700 dark:text-slate-300 font-medium">
+                                            {{ $voter->voted_at->format('M d, Y • h:i A') }}
+                                        </span>
+                                        @if(!empty($voter->ip_address))
+                                            <span class="inline-flex items-center gap-1 font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/60" title="Voter Submission IP Address">
+                                                <i class="fa-solid fa-network-wired text-[9px] text-purple-500"></i>
+                                                {{ $voter->ip_address }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="text-slate-400 dark:text-slate-500">-</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4.5 text-right whitespace-nowrap">
                                 <div class="flex items-center justify-end gap-1.5">

@@ -43,14 +43,6 @@
                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
                         </div>
 
-                        <!-- Party Affiliation -->
-                        <div class="space-y-1.5">
-                            <label for="edit_cand_party" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Party / Alliance (Optional)</label>
-                            <input type="text" name="party_affiliation" id="edit_cand_party"
-                                placeholder="e.g. Reform Alliance, Independent"
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
-                        </div>
-
                         <!-- Sort Order -->
                         <div class="space-y-1.5">
                             <label for="edit_cand_sort_order" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ballot Order</label>
@@ -58,12 +50,49 @@
                                 class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-3 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition">
                         </div>
 
-                        <!-- Candidate Background / Bio -->
-                        <div class="space-y-1.5">
-                            <label for="edit_cand_background" class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Background / Bio (Optional)</label>
-                            <textarea name="background" id="edit_cand_background" rows="3"
-                                placeholder="e.g. Educational background, achievements, previous leadership experience..."
-                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 py-2.5 px-4 text-slate-800 dark:text-slate-200 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none bg-white dark:bg-slate-950 shadow-sm transition custom-scrollbar resize-none"></textarea>
+                        <!-- Candidate Campaign Poster -->
+                        <div class="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    Campaign Poster (Optional)
+                                </label>
+                                <span class="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Banner / Infographic</span>
+                            </div>
+
+                            <div class="flex items-start gap-3 bg-white dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                                <!-- Poster Preview Box -->
+                                <div class="relative w-20 h-28 sm:w-24 sm:h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 flex items-center justify-center shrink-0 shadow-inner group/poster">
+                                    <img id="edit_cand_poster_preview" src="" class="hidden w-full h-full object-cover" alt="Poster Preview">
+                                    <div id="edit_cand_poster_placeholder" class="flex flex-col items-center justify-center p-2 text-center text-slate-400 dark:text-slate-500">
+                                        <svg class="w-6 h-6 mb-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span class="text-[9px] font-bold leading-tight">No Poster</span>
+                                    </div>
+                                    <button type="button" id="edit_cand_poster_remove_btn" onclick="clearEditPoster()" class="hidden absolute top-1 right-1 p-1 bg-slate-900/80 hover:bg-rose-600 text-white rounded-md transition shadow-xs" title="Remove poster">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+
+                                <!-- Poster Inputs -->
+                                <div class="flex-grow space-y-2 min-w-0">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Upload New Poster</span>
+                                        <input type="file" name="poster_file" id="edit_cand_poster_file" accept="image/*" onchange="previewEditPosterFile(event)"
+                                            class="w-full py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 shadow-xs file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-50 file:text-purple-700 dark:file:bg-purple-950/30 dark:file:text-purple-400 hover:file:bg-purple-100 transition">
+                                    </div>
+
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Or Poster Image URL</span>
+                                        <input type="url" name="background" id="edit_cand_background" oninput="previewEditPosterUrl(this.value)"
+                                            placeholder="https://.../poster.jpg"
+                                            class="w-full py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-200 text-xs focus:border-purple-500 focus:outline-none bg-slate-50/50 dark:bg-slate-950 shadow-xs transition">
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500">
+                                Candidates' posters are displayed to voters on the ballot screen when they click on the candidate.
+                            </p>
                         </div>
                     </div>
 
@@ -142,5 +171,61 @@
         } else {
             document.getElementById('edit_cand_avatar_preview').src = 'https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder';
         }
+    }
+
+    function previewEditPosterFile(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('edit_cand_poster_preview');
+        const placeholder = document.getElementById('edit_cand_poster_placeholder');
+        const removeBtn = document.getElementById('edit_cand_poster_remove_btn');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                if (placeholder) placeholder.classList.add('hidden');
+                if (removeBtn) removeBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewEditPosterUrl(url) {
+        const preview = document.getElementById('edit_cand_poster_preview');
+        const placeholder = document.getElementById('edit_cand_poster_placeholder');
+        const removeBtn = document.getElementById('edit_cand_poster_remove_btn');
+        if (url && url.trim() !== '') {
+            if (preview) {
+                preview.src = url;
+                preview.classList.remove('hidden');
+            }
+            if (placeholder) placeholder.classList.add('hidden');
+            if (removeBtn) removeBtn.classList.remove('hidden');
+        } else {
+            if (preview) {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+            if (placeholder) placeholder.classList.remove('hidden');
+            if (removeBtn) removeBtn.classList.add('hidden');
+        }
+    }
+
+    function clearEditPoster() {
+        const fileInput = document.getElementById('edit_cand_poster_file');
+        const urlInput = document.getElementById('edit_cand_background');
+        const preview = document.getElementById('edit_cand_poster_preview');
+        const placeholder = document.getElementById('edit_cand_poster_placeholder');
+        const removeBtn = document.getElementById('edit_cand_poster_remove_btn');
+        if (fileInput) fileInput.value = '';
+        if (urlInput) urlInput.value = '';
+        if (preview) {
+            preview.src = '';
+            preview.classList.add('hidden');
+        }
+        if (placeholder) placeholder.classList.remove('hidden');
+        if (removeBtn) removeBtn.classList.add('hidden');
     }
 </script>
